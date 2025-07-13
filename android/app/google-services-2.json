@@ -1,0 +1,127 @@
+{
+  "project_info": {
+    "project_number": "681618792124",
+    "firebase_url": "https://hino-connect-6ba57.firebaseio.com",
+    "project_id": "hino-connect-6ba57",
+    "storage_bucket": "hino-connect-6ba57.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681618792124:android:2727ceb9cf38a1b9f0fab9",
+        "android_client_info": {
+          "package_name": "com.hinogpsfleetmanagerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681618792124-2qeijnbpm7k0vln37ibq164uq6vplrln.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy8_co1CcIFm6aPJU_BmuC6HEeUgKFwK0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681618792124-2qeijnbpm7k0vln37ibq164uq6vplrln.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "681618792124-08c2n9bamgmjd0q2akjhd698javijicl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.onelink.HinoFleetManager"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681618792124:android:0bc33ba3114ad146f0fab9",
+        "android_client_info": {
+          "package_name": "com.thamming.hino"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681618792124-2qeijnbpm7k0vln37ibq164uq6vplrln.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy8_co1CcIFm6aPJU_BmuC6HEeUgKFwK0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681618792124-2qeijnbpm7k0vln37ibq164uq6vplrln.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "681618792124-08c2n9bamgmjd0q2akjhd698javijicl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.onelink.HinoFleetManager"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681618792124:android:7fabf96006bb565af0fab9",
+        "android_client_info": {
+          "package_name": "th.co.dodeep.hino"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681618792124-pi3cb9uahvqa1gjqas0h3kg8ajdl7r33.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "th.co.dodeep.hino",
+            "certificate_hash": "7cc63f36dea4f963f5a6d3b4b7c02f9fcfa73b8a"
+          }
+        },
+        {
+          "client_id": "681618792124-2qeijnbpm7k0vln37ibq164uq6vplrln.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy8_co1CcIFm6aPJU_BmuC6HEeUgKFwK0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681618792124-2qeijnbpm7k0vln37ibq164uq6vplrln.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "681618792124-08c2n9bamgmjd0q2akjhd698javijicl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.onelink.HinoFleetManager"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

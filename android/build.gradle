@@ -1,0 +1,35 @@
+buildscript {
+    ext.kotlin_version = '1.9.10' // ✅ cập nhật Kotlin mới, tương thích AGP 8.1.1
+    repositories {
+        // ✅ thêm mirror nhanh hơn nếu bạn hay bị timeout
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.1'// ✅ tương thích Java 21
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        //classpath 'com.google.gms:google-services:4.3.10' // ✅ cập nhật nhẹ nếu có Firebase
+        classpath 'com.google.gms:google-services:4.4.1' // or latest
+
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' } // ✅ mirror tránh timeout
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

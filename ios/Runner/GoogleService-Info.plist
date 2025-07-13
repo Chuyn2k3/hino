@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>681618792124-m6jiu649rs88rp9iqr2na8pnj5c2fnev.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.681618792124-m6jiu649rs88rp9iqr2na8pnj5c2fnev</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>681618792124-pi3cb9uahvqa1gjqas0h3kg8ajdl7r33.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBk4NZUX44SxpSWyYJNYGyqeUBlKF4sI74</string>
+	<key>GCM_SENDER_ID</key>
+	<string>681618792124</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.hinogpsfleetmanagerapp</string>
+	<key>PROJECT_ID</key>
+	<string>hino-connect-6ba57</string>
+	<key>STORAGE_BUCKET</key>
+	<string>hino-connect-6ba57.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:681618792124:ios:61357e0a8b5a6355f0fab9</string>
+	<key>DATABASE_URL</key>
+	<string>https://hino-connect-6ba57.firebaseio.com</string>
+</dict>
+</plist>

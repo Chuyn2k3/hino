@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "834996330799",
+    "project_id": "hino-7171e",
+    "storage_bucket": "hino-7171e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834996330799:android:e2439fc647c54f40bcc1da",
+        "android_client_info": {
+          "package_name": "com.hinogpsfleetmanagerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "834996330799-df8ojdk2m3mahm9ellop3fask0sumhpj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBadZSva_YV7zU6swXSdAaamRP87v-VBgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "834996330799-df8ojdk2m3mahm9ellop3fask0sumhpj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "834996330799-alk5fb84lji5er2o25cfti00gg86tioq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thamming.hino"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:834996330799:android:a4b642820f906699bcc1da",
+        "android_client_info": {
+          "package_name": "com.thamming.hino.hino"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "834996330799-df8ojdk2m3mahm9ellop3fask0sumhpj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBadZSva_YV7zU6swXSdAaamRP87v-VBgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "834996330799-df8ojdk2m3mahm9ellop3fask0sumhpj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "834996330799-alk5fb84lji5er2o25cfti00gg86tioq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thamming.hino"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
