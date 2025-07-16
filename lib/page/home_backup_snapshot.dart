@@ -290,7 +290,7 @@ class _PageState extends State<HomeBackupSnapshotPage> {
                 margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: ColorCustom.blue,
+                    backgroundColor: ColorCustom.blue,
                     padding: EdgeInsets.all(15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10), // <-- Radius

@@ -66,7 +66,7 @@ class Api {
   static String postFileUrl =
       "https://ru.71dev.com/etest-enrollment/api/upload/upload";
 
-  static String version = "https://apihinov1.hino-connect.vn//prod/fleet/mobile/getLastestVersion";
+  static String version = "https://apihinov1.hino-connect.vn/prod/fleet/mobile/getLastestVersion";
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect

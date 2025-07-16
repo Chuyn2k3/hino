@@ -39,26 +39,26 @@ class _PageState extends State<InfoPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          margin: EdgeInsets.only(left: 20, right: 20, top: 40),
-          decoration: BoxDecoration(
+          margin: const EdgeInsets.only(left: 20, right: 20, top: 40),
+          decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.all(Radius.circular(15.0))),
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           child: Column(
             children: [
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.info,
                     size: 30,
                     color: Colors.grey,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.info_map,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: ColorCustom.black,
                           fontSize: 16,
                           fontWeight: FontWeight.bold),
@@ -66,183 +66,183 @@ class _PageState extends State<InfoPage> {
                   ),
                   Text(
                       widget.count!=0?Languages.of(context)!.total_vehicle+" " + widget.count.toString() + " "+Languages.of(context)!.unit:"",
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: ColorCustom.blue,
                         fontSize: 16,
                         fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
-              Divider(
+              const Divider(
                 color: Colors.grey,
                 height: 1,
               ),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: ColorCustom.run,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.driving,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: ColorCustom.parking,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.ignOff,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   )
                 ],
               ),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: ColorCustom.idle,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.idle,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: ColorCustom.offline,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.offline,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   )
                 ],
               ),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: ColorCustom.over_speed,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.overspeed_info,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: ColorCustom.blue,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.vehicle_group,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   )
                 ],
               ),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.credit_card,
                     color: Colors.green,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.swipe_card,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.credit_card,
                     color: Colors.red,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.wrong_license,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   )
                 ],
               ),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.credit_card,
                     color: Colors.grey,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.no_swipe_card,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: Colors.lightGreen,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.rpm_green,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   )
                 ],
               ),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.circle,
                     color: Colors.red,
                     size: 15,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 10,
                   ),
                   Expanded(
                     child: Text(Languages.of(context)!.rpm_red,
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                   ),
                 ],
@@ -250,21 +250,21 @@ class _PageState extends State<InfoPage> {
             ],
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 5,
         ),
         ElevatedButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Icon(
+          child: const Icon(
             Icons.close,
             color: Colors.red,
           ),
           style: ElevatedButton.styleFrom(
-            primary: Colors.white,
-            shape: CircleBorder(),
-            padding: EdgeInsets.all(10),
+            backgroundColor: Colors.white,
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(10),
           ),
         ),
       ],

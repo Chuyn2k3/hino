@@ -299,7 +299,7 @@ class _PageState extends State<DashboardFilter> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: ColorCustom.blue,
+                backgroundColor: ColorCustom.blue,
                 padding: EdgeInsets.all(10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5), // <-- Radius

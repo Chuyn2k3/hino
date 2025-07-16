@@ -621,7 +621,7 @@ class _PageState extends State<HomeNotiMapPage> {
                                     size: 30,
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    primary: Colors.white,
+                                    backgroundColor: Colors.white,
                                     shape: CircleBorder(),
                                     padding: EdgeInsets.all(13),
                                   ),
@@ -679,7 +679,7 @@ class _PageState extends State<HomeNotiMapPage> {
                                 size: 30,
                               ),
                               style: ElevatedButton.styleFrom(
-                                primary: Colors.grey,
+                                backgroundColor: Colors.grey,
                                 shape: CircleBorder(),
                                 padding: EdgeInsets.all(10),
                               ),

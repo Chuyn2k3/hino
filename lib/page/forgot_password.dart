@@ -72,7 +72,7 @@ class _PageState extends State<ForgotPasswordPage> {
       backgroundColor: Colors.grey,
       body: SafeArea(
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
@@ -87,21 +87,21 @@ class _PageState extends State<ForgotPasswordPage> {
               BackIOS(),
               Expanded(
                 child: Container(
-                  margin: EdgeInsets.all(20),
+                  margin: const EdgeInsets.all(20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
                         alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.only(bottom: 40, top: 40),
+                        margin: const EdgeInsets.only(bottom: 40, top: 40),
                         child: Text(Languages.of(context)!.forgot_password,
-                          style: TextStyle(color: Colors.black, fontSize: 40),
+                          style: const TextStyle(color: Colors.black, fontSize: 40),
                         ),
                       ),
                       Container(
                         alignment: Alignment.centerLeft,
                         child: Text(Languages.of(context)!.email_phone,
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                          style: const TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                       ),
                       Container(
@@ -110,7 +110,7 @@ class _PageState extends State<ForgotPasswordPage> {
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
                             hintText: Languages.of(context)!.email_phone,
-                            hintStyle: TextStyle(fontSize: 16),
+                            hintStyle: const TextStyle(fontSize: 16),
                             // fillColor: colorSearchBg,
                           ),
                         ),
@@ -120,8 +120,8 @@ class _PageState extends State<ForgotPasswordPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: ColorCustom.blue,
-                            padding: EdgeInsets.all(15),
+                            backgroundColor: ColorCustom.blue,
+                            padding: const EdgeInsets.all(15),
                             shape: RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.circular(5), // <-- Radius
@@ -131,7 +131,7 @@ class _PageState extends State<ForgotPasswordPage> {
                             forgot(context);
                           },
                           child: Text(Languages.of(context)!.confirm,
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                            style: const TextStyle(color: Colors.white, fontSize: 18),
                           ),
                         ),
                       ),
@@ -139,7 +139,7 @@ class _PageState extends State<ForgotPasswordPage> {
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               )
             ],

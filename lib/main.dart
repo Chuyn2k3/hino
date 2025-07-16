@@ -38,11 +38,11 @@ alertNoti(RemoteMessage message) {
   String unix = "";
   if (isNotiSetting) {
     print("noti in");
-    if (message.notification != null && message.notification!.body != null) {
+    if (message.notification != null && message.notification?.body != null) {
       notiController.sink.add(noti_count);
       if (unix != message.data["unix"]) {
-        Utils.sendNotification(message.notification!.title!,
-            message.notification!.body!, message.notification!.title!);
+        Utils.sendNotification(message.notification!.title??"",
+            message.notification!.body??"", message.notification!.title??"");
       } else {
         unix = message.data["unix"];
       }
@@ -180,7 +180,7 @@ class MyAppState extends State<StatefulWidget> {
   void _handleMessage(RemoteMessage message) {
     MyApp.navigatorKey.currentState?.pushNamedAndRemoveUntil(
         '/noti', (route) => (route.settings.name != '/noti') || route.isFirst,
-        arguments: message.notification!.title);
+        arguments: message.notification?.title);
   }
 
   @override
@@ -230,8 +230,8 @@ class MyAppState extends State<StatefulWidget> {
     return MaterialApp(
       navigatorKey: MyApp.navigatorKey,
       // onGenerateInitialRoutes: onGenerateInitialRoutes,
-      supportedLocales: [Locale('en', ''), Locale('vi', '')],
-      localizationsDelegates: [
+      supportedLocales: const [Locale('en', ''), Locale('vi', '')],
+      localizationsDelegates: const [
         AppLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -251,7 +251,7 @@ class MyAppState extends State<StatefulWidget> {
       builder: FlutterSmartDialog.init(
         //default loading widget
         loadingBuilder: (String msg) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         },
       ),
       debugShowCheckedModeBanner: false,
@@ -274,7 +274,7 @@ class MyAppState extends State<StatefulWidget> {
       initialRoute: '/root',
       routes: <String, WidgetBuilder>{
         '/root': (BuildContext context) => HomePage(),
-        '/login': (BuildContext context) => LoginPage(),
+        '/login': (BuildContext context) => const LoginPage(),
         '/noti': (BuildContext context) => HomeNotiMapPage(
             license: ModalRoute.of(context)?.settings.arguments.toString()),
         // HomeNotiMapPage.routeName: (context) => const HomeNotiMapPage(),

@@ -75,7 +75,7 @@ class _PageState extends State<HomeDashboardPage>
     getData(context);
     getDataRealtime(context);
     getDataDriver(context);
-    timer = Timer.periodic(Duration(seconds: 10), (Timer t) {
+    timer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
       getDataRealtime(context);
       getDataDriver(context);
     });
@@ -266,7 +266,7 @@ class _PageState extends State<HomeDashboardPage>
   List<double> avg2 = [];
   List<double> point2 = [];
 
-  var start = DateTime.now().subtract(Duration(
+  var start = DateTime.now().subtract(const Duration(
     days: 6,
   ));
   var to = DateTime.now();
@@ -315,9 +315,9 @@ class _PageState extends State<HomeDashboardPage>
           builder: (context, setState) {
             return Center(
               child: Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 margin:
-                    EdgeInsets.only(left: 20, right: 20, top: 50, bottom: 50),
+                    const EdgeInsets.only(left: 20, right: 20, top: 50, bottom: 50),
                 color: Colors.white,
                 child: DashboardFilter(
                   data: (List<Vehicle> value) {
@@ -435,7 +435,7 @@ class _PageState extends State<HomeDashboardPage>
       child: Column(
         children: <Widget>[
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             color: Colors.white,
             child: TabBar(
               controller: tabController,
@@ -458,11 +458,11 @@ class _PageState extends State<HomeDashboardPage>
                     children: [
                       dashboard != null
                           ? Container(
-                              padding: EdgeInsets.all(10),
-                              margin: EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 border: Border.all(color: ColorCustom.greyBG2),
-                                borderRadius: BorderRadius.all(
+                                borderRadius: const BorderRadius.all(
                                   Radius.circular(10.0),
                                 ),
                               ),
@@ -470,17 +470,17 @@ class _PageState extends State<HomeDashboardPage>
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.near_me,
                                         size: 40,
                                         color: Colors.grey,
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         width: 8,
                                       ),
                                       Text(
                                         Languages.of(context)!.dashboardGraph1,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: ColorCustom.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -488,7 +488,7 @@ class _PageState extends State<HomeDashboardPage>
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 10,
                                   ),
                                   SfCartesianChart(
@@ -496,7 +496,7 @@ class _PageState extends State<HomeDashboardPage>
                                     // Chart title
                                     // title: ChartTitle(text: 'Half yearly sales analysis'),
                                     // Enable legend
-                                    legend: Legend(isVisible: false),
+                                    legend: const Legend(isVisible: false),
                                     // Enable tooltip
 
                                     primaryXAxis: CategoryAxis(
@@ -543,7 +543,7 @@ class _PageState extends State<HomeDashboardPage>
                                         }
                                         ChartAxisLabel a = new ChartAxisLabel(
                                           text,
-                                          TextStyle(
+                                          const TextStyle(
                                             color: ColorCustom.black,
                                             fontSize: 8,
                                           ),
@@ -551,11 +551,11 @@ class _PageState extends State<HomeDashboardPage>
                                         return a;
                                       },
                                     ),
-                                    primaryYAxis: NumericAxis(
+                                    primaryYAxis: const NumericAxis(
                                         rangePadding: ChartRangePadding.none,
-                                        axisLine: const AxisLine(width: 0),
+                                        axisLine: AxisLine(width: 0),
                                         majorTickLines:
-                                            const MajorTickLines(size: 0)),
+                                            MajorTickLines(size: 0)),
                                     // tooltipBehavior:
                                     //     TooltipBehavior(enable: true),
                                     tooltipBehavior: TooltipBehavior(
@@ -651,7 +651,7 @@ class _PageState extends State<HomeDashboardPage>
                                                   c +
                                                   "\n" +
                                                   d,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: ColorCustom.white,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 12,
@@ -731,20 +731,20 @@ class _PageState extends State<HomeDashboardPage>
                               children: [
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                     ),
-                                    Icon(
+                                    const Icon(
                                       Icons.circle,
                                       size: 15,
                                       color: ColorCustom.run,
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 10,
                                     ),
                                     Text(
                                       Languages.of(context)!.driving,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -754,7 +754,7 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 30,
                                     ),
                                     Text(
@@ -764,7 +764,7 @@ class _PageState extends State<HomeDashboardPage>
                                           ((drive * 100) / sum)
                                               .toStringAsFixed(1) +
                                           " %",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontSize: 12,
                                       ),
@@ -783,20 +783,20 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                     ),
-                                    Icon(
+                                    const Icon(
                                       Icons.circle,
                                       size: 15,
                                       color: ColorCustom.parking,
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 10,
                                     ),
                                     Text(
                                       Languages.of(context)!.ignOff,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -806,7 +806,7 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 30,
                                     ),
                                     Text(
@@ -816,7 +816,7 @@ class _PageState extends State<HomeDashboardPage>
                                           ((parking * 100) / sum)
                                               .toStringAsFixed(1) +
                                           " %",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontSize: 12,
                                       ),
@@ -825,20 +825,20 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                     ),
-                                    Icon(
+                                    const Icon(
                                       Icons.circle,
                                       size: 15,
                                       color: ColorCustom.idle,
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 10,
                                     ),
                                     Text(
                                       Languages.of(context)!.idle,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -848,7 +848,7 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 30,
                                     ),
                                     Text(
@@ -858,7 +858,7 @@ class _PageState extends State<HomeDashboardPage>
                                           ((idle * 100) / sum)
                                               .toStringAsFixed(1) +
                                           " %",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontSize: 12,
                                       ),
@@ -867,20 +867,20 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                     ),
-                                    Icon(
+                                    const Icon(
                                       Icons.circle,
                                       size: 15,
                                       color: ColorCustom.offline,
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 10,
                                     ),
                                     Text(
                                       Languages.of(context)!.offline,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
@@ -890,7 +890,7 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 30,
                                     ),
                                     Text(
@@ -900,7 +900,7 @@ class _PageState extends State<HomeDashboardPage>
                                           ((offline * 100) / sum)
                                               .toStringAsFixed(1) +
                                           " %",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: ColorCustom.black,
                                         fontSize: 12,
                                       ),
@@ -911,11 +911,11 @@ class _PageState extends State<HomeDashboardPage>
                             )
                           : Container(),
                       Container(
-                        padding: EdgeInsets.all(10),
-                        margin: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           border: Border.all(color: ColorCustom.greyBG2),
-                          borderRadius: BorderRadius.all(
+                          borderRadius: const BorderRadius.all(
                             Radius.circular(10.0),
                           ),
                         ),
@@ -929,7 +929,7 @@ class _PageState extends State<HomeDashboardPage>
                                   height: 40,
                                   color: Colors.grey,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 Text(
@@ -938,7 +938,7 @@ class _PageState extends State<HomeDashboardPage>
                                       ((sumPoint * 100) / 30)
                                           .toStringAsFixed(0) +
                                       "/100)",
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: ColorCustom.black,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -946,7 +946,7 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                               ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             // avg.isEmpty?Container():AspectRatio(
@@ -1000,11 +1000,11 @@ class _PageState extends State<HomeDashboardPage>
                                     vertices: [
                                       for (int i = 0; i < features.length; i++)
                                         RadarVertex(
-                                          textOffset: Offset(0.5, 0.5),
+                                          textOffset: const Offset(0.5, 0.5),
                                           radius: 20,
                                           text: Text(
                                             Utils.mapEcoName(features[i]),
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: ColorCustom.black,
                                               fontSize: 10,
                                             ),
@@ -1033,33 +1033,33 @@ class _PageState extends State<HomeDashboardPage>
                                       ),
                                     ],
                                   ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.fiber_manual_record,
                                   size: 15,
                                   color: ColorCustom.dashboard_save_avg,
                                 ),
                                 Text(
                                   Languages.of(context)!.avg,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: ColorCustom.black,
                                     fontSize: 12,
                                   ),
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.fiber_manual_record,
                                   size: 15,
                                   color: ColorCustom.dashboard_save_point,
                                 ),
                                 Text(
                                   Languages.of(context)!.score,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: ColorCustom.black,
                                     fontSize: 12,
                                   ),
@@ -1071,11 +1071,11 @@ class _PageState extends State<HomeDashboardPage>
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.all(10),
-                        margin: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           border: Border.all(color: ColorCustom.greyBG2),
-                          borderRadius: BorderRadius.all(
+                          borderRadius: const BorderRadius.all(
                             Radius.circular(10.0),
                           ),
                         ),
@@ -1089,7 +1089,7 @@ class _PageState extends State<HomeDashboardPage>
                                   height: 40,
                                   color: Colors.grey,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 Text(
@@ -1098,7 +1098,7 @@ class _PageState extends State<HomeDashboardPage>
                                       ((sumPoint2 * 100) / 30)
                                           .toStringAsFixed(0) +
                                       "/100)",
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: ColorCustom.black,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -1106,7 +1106,7 @@ class _PageState extends State<HomeDashboardPage>
                                 ),
                               ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             // avg2.isEmpty?Container():AspectRatio(
@@ -1160,10 +1160,10 @@ class _PageState extends State<HomeDashboardPage>
                                       for (int i = 0; i < features2.length; i++)
                                         RadarVertex(
                                           radius: 15,
-                                          textOffset: Offset(0.5, 0.5),
+                                          textOffset: const Offset(0.5, 0.5),
                                           text: Text(
                                             Utils.mapSafetyName(features2[i]),
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: ColorCustom.black,
                                               fontSize: 10,
                                             ),
@@ -1191,33 +1191,33 @@ class _PageState extends State<HomeDashboardPage>
                                       ),
                                     ],
                                   ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.fiber_manual_record,
                                   size: 15,
                                   color: ColorCustom.dashboard_safe_avg,
                                 ),
                                 Text(
                                   Languages.of(context)!.avg,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: ColorCustom.black,
                                     fontSize: 12,
                                   ),
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.fiber_manual_record,
                                   size: 15,
                                   color: ColorCustom.dashboard_safe_point,
                                 ),
                                 Text(
                                   Languages.of(context)!.score,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: ColorCustom.black,
                                     fontSize: 12,
                                   ),
@@ -1235,11 +1235,11 @@ class _PageState extends State<HomeDashboardPage>
                     children: [
                       dashboardRealtime != null
                           ? Container(
-                              padding: EdgeInsets.all(10),
-                              margin: EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 border: Border.all(color: ColorCustom.greyBG2),
-                                borderRadius: BorderRadius.all(
+                                borderRadius: const BorderRadius.all(
                                   Radius.circular(10.0),
                                 ),
                               ),
@@ -1247,14 +1247,14 @@ class _PageState extends State<HomeDashboardPage>
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.near_me,
                                         size: 40,
                                         color: Colors.grey,
                                       ),
                                       Text(
                                         Languages.of(context)!.status_last,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: ColorCustom.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -1262,7 +1262,7 @@ class _PageState extends State<HomeDashboardPage>
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 10,
                                   ),
                                   Row(
@@ -1277,7 +1277,7 @@ class _PageState extends State<HomeDashboardPage>
                                                 // title: ChartTitle(text: 'Half yearly sales analysis'),
                                                 // Enable legend
                                                 legend:
-                                                    Legend(isVisible: false),
+                                                    const Legend(isVisible: false),
                                                 tooltipBehavior:
                                                     TooltipBehavior(
                                                         enable: true),
@@ -1313,7 +1313,7 @@ class _PageState extends State<HomeDashboardPage>
                                                 Text(
                                                   Languages.of(context)!
                                                       .my_vehicle,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 16,
@@ -1325,7 +1325,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       ' ' +
                                                       Languages.of(context)!
                                                           .unit,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 18,
                                                   ),
@@ -1357,13 +1357,13 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardRealtime!
                                                           .ioColorDriving!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
                                                   Languages.of(context)!
                                                       .driving,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1373,7 +1373,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1383,7 +1383,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1403,12 +1403,12 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardRealtime!
                                                           .ioColorParking!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
                                                   Languages.of(context)!.ignOff,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1418,7 +1418,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1428,7 +1428,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1448,14 +1448,14 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardRealtime!
                                                           .ioColorIdling!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
                                                   Languages.of(context)!.idle,
                                                   overflow:
                                                       TextOverflow.ellipsis,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1465,7 +1465,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1475,7 +1475,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1495,13 +1495,13 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardRealtime!
                                                           .ioColorOverspeed!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
                                                   Languages.of(context)!
                                                       .over_speed,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1511,7 +1511,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1521,7 +1521,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1541,7 +1541,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardRealtime!
                                                           .ioColorOffline!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
@@ -1549,7 +1549,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       .offline,
                                                   overflow:
                                                       TextOverflow.ellipsis,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1559,7 +1559,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1569,7 +1569,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1587,11 +1587,11 @@ class _PageState extends State<HomeDashboardPage>
                           : Container(),
                       dashboardDriver != null
                           ? Container(
-                              padding: EdgeInsets.all(10),
-                              margin: EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 border: Border.all(color: ColorCustom.greyBG2),
-                                borderRadius: BorderRadius.all(
+                                borderRadius: const BorderRadius.all(
                                   Radius.circular(10.0),
                                 ),
                               ),
@@ -1599,14 +1599,14 @@ class _PageState extends State<HomeDashboardPage>
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.near_me,
                                         size: 40,
                                         color: Colors.grey,
                                       ),
                                       Text(
                                         Languages.of(context)!.my_driver,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: ColorCustom.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -1614,7 +1614,7 @@ class _PageState extends State<HomeDashboardPage>
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 10,
                                   ),
                                   Row(
@@ -1629,7 +1629,7 @@ class _PageState extends State<HomeDashboardPage>
                                                 // title: ChartTitle(text: 'Half yearly sales analysis'),
                                                 // Enable legend
                                                 legend:
-                                                    Legend(isVisible: false),
+                                                    const Legend(isVisible: false),
                                                 tooltipBehavior:
                                                     TooltipBehavior(
                                                         enable: true),
@@ -1666,7 +1666,7 @@ class _PageState extends State<HomeDashboardPage>
                                                 Text(
                                                   Languages.of(context)!
                                                       .my_driver_total,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 16,
@@ -1677,7 +1677,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       ' ' +
                                                       Languages.of(context)!
                                                           .unit_driver,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 18,
                                                   ),
@@ -1709,13 +1709,13 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardDriver!
                                                           .ioColorSwipecard!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
                                                   Languages.of(context)!
                                                       .swipe_card,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1725,7 +1725,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1735,7 +1735,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit_driver,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1755,13 +1755,13 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardDriver!
                                                           .ioColorNotSwipecard!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
                                                   Languages.of(context)!
                                                       .no_swipe_card,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1771,7 +1771,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1781,7 +1781,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit_driver,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1801,7 +1801,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       dashboardDriver!
                                                           .ioColorValidate!),
                                                 ),
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 10,
                                                 ),
                                                 Text(
@@ -1809,7 +1809,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       .wrong_license,
                                                   overflow:
                                                       TextOverflow.ellipsis,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 12,
@@ -1819,7 +1819,7 @@ class _PageState extends State<HomeDashboardPage>
                                             ),
                                             Row(
                                               children: [
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 30,
                                                 ),
                                                 Text(
@@ -1829,7 +1829,7 @@ class _PageState extends State<HomeDashboardPage>
                                                       " " +
                                                       Languages.of(context)!
                                                           .unit_driver,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: ColorCustom.black,
                                                     fontSize: 12,
                                                   ),
@@ -1901,7 +1901,7 @@ class _PageState extends State<HomeDashboardPage>
                   children: [
                     Text(
                       Languages.of(context)!.start_date,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: ColorCustom.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -1992,7 +1992,7 @@ class _PageState extends State<HomeDashboardPage>
                   children: [
                     Text(
                       Languages.of(context)!.end_date,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: ColorCustom.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -2042,13 +2042,13 @@ class _PageState extends State<HomeDashboardPage>
   }
 
   DateTime maxTimeEnd() {
-    var end = start.add(Duration(days: 6));
+    var end = start.add(const Duration(days: 6));
     if (start.isSameDate(DateTime.now())) {
       return DateTime.now();
     } else if (end.isAfter(DateTime.now())) {
       return DateTime.now();
     } else {
-      return start.add(Duration(days: 6));
+      return start.add(const Duration(days: 6));
     }
   }
 
@@ -2075,20 +2075,20 @@ class _PageState extends State<HomeDashboardPage>
                 Expanded(
                   child: indexTab == 1
                       ? Container(
-                          margin: EdgeInsets.only(top: 20, left: 20),
+                          margin: const EdgeInsets.only(top: 20, left: 20),
                           decoration: BoxDecoration(
                             border: Border.all(color: ColorCustom.greyBG2),
                             color: ColorCustom.greyBG2,
-                            borderRadius: BorderRadius.all(
+                            borderRadius: const BorderRadius.all(
                               Radius.circular(15.0),
                             ),
                           ),
                           child: Row(
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 width: 10,
                               ),
-                              Icon(
+                              const Icon(
                                 Icons.calendar_today,
                                 size: 20,
                                 color: Colors.grey,
@@ -2097,7 +2097,7 @@ class _PageState extends State<HomeDashboardPage>
                                 child: TextField(
                                   controller: textGrey,
                                   enabled: false,
-                                  style: TextStyle(color: Colors.grey),
+                                  style: const TextStyle(color: Colors.grey),
                                   decoration: InputDecoration(
                                     disabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
@@ -2110,23 +2110,23 @@ class _PageState extends State<HomeDashboardPage>
                                   ),
                                 ),
                               ),
-                              Icon(
+                              const Icon(
                                 Icons.keyboard_arrow_down,
                                 color: Colors.grey,
                                 size: 25,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 10,
                               ),
                             ],
                           ),
                         )
                       : Container(
-                          margin: EdgeInsets.only(top: 20, left: 20),
+                          margin: const EdgeInsets.only(top: 20, left: 20),
                           decoration: BoxDecoration(
                             border: Border.all(color: ColorCustom.greyBG2),
                             color: ColorCustom.greyBG2,
-                            borderRadius: BorderRadius.all(
+                            borderRadius: const BorderRadius.all(
                               Radius.circular(15.0),
                             ),
                           ),
@@ -2136,10 +2136,10 @@ class _PageState extends State<HomeDashboardPage>
                             },
                             child: Row(
                               children: [
-                                SizedBox(
+                                const SizedBox(
                                   width: 10,
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.calendar_today,
                                   size: 20,
                                   color: Colors.black,
@@ -2148,7 +2148,7 @@ class _PageState extends State<HomeDashboardPage>
                                   child: TextField(
                                     controller: textEditingController,
                                     enabled: false,
-                                    style: TextStyle(color: Colors.black),
+                                    style: const TextStyle(color: Colors.black),
                                     decoration: InputDecoration(
                                       disabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
@@ -2161,12 +2161,12 @@ class _PageState extends State<HomeDashboardPage>
                                     ),
                                   ),
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.keyboard_arrow_down,
                                   color: Colors.grey,
                                   size: 25,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 10,
                                 ),
                               ],
@@ -2206,14 +2206,14 @@ class _PageState extends State<HomeDashboardPage>
                         showDia(context);
                       }
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.filter_list,
                       size: 30,
                     ),
                     style: ElevatedButton.styleFrom(
-                      primary: indexTab == 0 ? ColorCustom.blue : Colors.grey,
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.all(5),
+                      backgroundColor: indexTab == 0 ? ColorCustom.blue : Colors.grey,
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(5),
                     ),
                   ),
                 ),

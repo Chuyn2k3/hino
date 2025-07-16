@@ -462,7 +462,7 @@ class _PageState extends State<HomeCarFilterPage> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: ColorCustom.blue,
+                  backgroundColor: ColorCustom.blue,
                   padding: EdgeInsets.all(15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5), // <-- Radius

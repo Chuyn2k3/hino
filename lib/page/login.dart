@@ -57,7 +57,7 @@ class _PageState extends State<LoginPage> {
   loginApi(BuildContext context) {
     isLoading = true;
     refresh();
-    var uuid = Uuid();
+    var uuid = const Uuid();
     var platform = "";
     if (Platform.isAndroid) {
       // Android-specific code
@@ -110,7 +110,7 @@ class _PageState extends State<LoginPage> {
   }
 
   postToken(BuildContext context) {
-    var uuid = Uuid();
+    var uuid = const Uuid();
     var platform = "";
     if (Platform.isAndroid) {
       // Android-specific code
@@ -186,7 +186,7 @@ class _PageState extends State<LoginPage> {
         child: Stack(
           children: [
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
@@ -200,12 +200,12 @@ class _PageState extends State<LoginPage> {
                 children: [
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.all(20),
+                      margin: const EdgeInsets.all(20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            margin: EdgeInsets.only(bottom: 40),
+                            margin: const EdgeInsets.only(bottom: 40),
                             child: Image.asset(
                               "assets/images/logo_login.png",
                             ),
@@ -218,9 +218,9 @@ class _PageState extends State<LoginPage> {
                                     controller: usernameController,
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
-                                      suffixIcon: Icon(Icons.person_outline),
+                                      suffixIcon: const Icon(Icons.person_outline),
                                       hintText: Languages.of(context)!.username,
-                                      hintStyle: TextStyle(fontSize: 16),
+                                      hintStyle: const TextStyle(fontSize: 16),
                                       // fillColor: colorSearchBg,
                                     ),
                                   ),
@@ -229,7 +229,7 @@ class _PageState extends State<LoginPage> {
                               ),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           Row(
@@ -241,9 +241,9 @@ class _PageState extends State<LoginPage> {
                                     obscureText: true,
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
-                                      suffixIcon: Icon(Icons.lock_outline),
+                                      suffixIcon: const Icon(Icons.lock_outline),
                                       hintText: Languages.of(context)!.password,
-                                      hintStyle: TextStyle(fontSize: 16),
+                                      hintStyle: const TextStyle(fontSize: 16),
                                       // fillColor: colorSearchBg,
                                     ),
                                   ),
@@ -252,15 +252,15 @@ class _PageState extends State<LoginPage> {
                               ),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 40,
                           ),
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                primary: ColorCustom.blue,
-                                padding: EdgeInsets.all(15),
+                                backgroundColor: ColorCustom.blue,
+                                padding: const EdgeInsets.all(15),
                                 shape: RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.circular(5), // <-- Radius
@@ -271,23 +271,23 @@ class _PageState extends State<LoginPage> {
                               },
                               child: Text(
                                 Languages.of(context)!.signin,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.white, fontSize: 18),
                               ),
                             ),
                           ),
                           Container(
-                            margin: EdgeInsets.only(top: 20),
+                            margin: const EdgeInsets.only(top: 20),
                             alignment: Alignment.centerRight,
                             child: InkWell(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) =>
-                                        ForgotPasswordPage()));
+                                        const ForgotPasswordPage()));
                               },
                               child: Text(
                                 Languages.of(context)!.forgot_password,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.black, fontSize: 16),
                               ),
                             ),
@@ -296,23 +296,23 @@ class _PageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  Text(
+                  const Text(
                     "All Rights Reserved. © Onelink Technology Co., Ltd.",
                     style: TextStyle(color: Colors.black, fontSize: 10),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   )
                 ],
               ),
             ),
             Container(
-              margin: EdgeInsets.all(10),
+              margin: const EdgeInsets.all(10),
               child: InkWell(
                 onTap: (){
                   setLang();
                 },
-                child: Icon(
+                child: const Icon(
                   Icons.language,
                   size: 35,
                   color: ColorCustom.blue,
@@ -321,7 +321,7 @@ class _PageState extends State<LoginPage> {
               alignment: Alignment.topRight,
             ),
             isLoading
-                ? Center(
+                ? const Center(
                     child: CircularProgressIndicator(),
                   )
                 : Container()

@@ -902,7 +902,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                           size: 30,
                         ),
                         style: ElevatedButton.styleFrom(
-                          primary: Colors.grey,
+                          backgroundColor: Colors.grey,
                           shape: CircleBorder(),
                           padding: EdgeInsets.all(10),
                         ),

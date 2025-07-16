@@ -148,10 +148,22 @@ class _PageState extends State<HomePage> {
     }
   }
 
-  checkNotiSetting() async {
+  void checkNotiSetting() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isNotiSetting = prefs.getBool('noti') ?? false;
+    await FirebaseMessaging.instance.requestPermission();
 
+    // ⚠️ Với Android 13+ cần xin POST_NOTIFICATIONS
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
+        var status = await Permission.notification.request();
+        if (!status.isGranted) {
+          print("Notification permission denied");
+          return;
+        }
+      }
+    }
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("isNoti " + isNotiSetting.toString());
       alertNoti(message);
@@ -199,13 +211,18 @@ class _PageState extends State<HomePage> {
       // iOS-specific code
       platform = "FLEET-IOS";
     }
-    firebaseMessaging.getToken(vapidKey: Api.firebase_key).then((value) => {
-          if (value != null)
-            {
-              token = value,
-              if (isNotiSetting) {postToken(context)}
-            }
-        });
+    try {
+      final value =
+          await FirebaseMessaging.instance.getToken(vapidKey: Api.firebase_key);
+      if (value != null) {
+        token = value;
+        if (isNotiSetting) {
+          postToken(context);
+        }
+      }
+    } catch (e, st) {
+      print("🔥 Lỗi khi lấy token từ Firebase: $e\n$st");
+    }
   }
 
   // alertNoti(RemoteMessage message) {
@@ -305,6 +322,7 @@ class _PageState extends State<HomePage> {
         final minVersion = response['result']['version'];
         final info = await PackageInfo.fromPlatform();
         final currentVersion = info.version;
+        print("current version $currentVersion");
         if (_compareVersion(currentVersion, minVersion) < 0) {
           _showForceUpdateDialog();
         }
@@ -425,6 +443,7 @@ class _PageState extends State<HomePage> {
   }
 
   refresh() {
+    if (!mounted) return;
     setState(() {});
   }
 
