@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hino/feature/home/home.dart';
 import 'package:hino/page/home.dart';
 import 'package:hino/page/home_noti_map.dart';
 import 'package:hino/page/login.dart';
@@ -41,8 +42,10 @@ alertNoti(RemoteMessage message) {
     if (message.notification != null && message.notification?.body != null) {
       notiController.sink.add(noti_count);
       if (unix != message.data["unix"]) {
-        Utils.sendNotification(message.notification!.title??"",
-            message.notification!.body??"", message.notification!.title??"");
+        Utils.sendNotification(
+            message.notification!.title ?? "",
+            message.notification!.body ?? "",
+            message.notification!.title ?? "");
       } else {
         unix = message.data["unix"];
       }
@@ -229,6 +232,7 @@ class MyAppState extends State<StatefulWidget> {
 
     return MaterialApp(
       navigatorKey: MyApp.navigatorKey,
+      //showPerformanceOverlay: true,
       // onGenerateInitialRoutes: onGenerateInitialRoutes,
       supportedLocales: const [Locale('en', ''), Locale('vi', '')],
       localizationsDelegates: const [

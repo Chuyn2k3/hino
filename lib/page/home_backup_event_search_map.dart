@@ -13,6 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:group_button/group_button.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home/home.dart';
+import 'package:hino/feature/home_noti/home_noti.dart';
+import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/main.dart';
 import 'package:hino/model/EventHolder.dart';
 import 'package:hino/model/factory.dart';
@@ -90,7 +93,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
 
   bool isLoad = false;
   bool isForward = true;
-  Set<Marker> markers2 = Set();
+  Set<Marker> markers2 = {};
   Vehicle? vehicle;
   ui.Image? imageOri;
 
@@ -114,9 +117,9 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
     var kStartPosition =
         LatLng(widget.list[0].data[15]!, widget.list[0].data[16]!);
     kSantoDomingo = CameraPosition(target: kStartPosition, zoom: 15);
-    kMarkerId = MarkerId('MarkerId1');
-    kMarkerIdStart = MarkerId('start');
-    kMarkerIdStop = MarkerId('stop');
+    kMarkerId = const MarkerId('MarkerId1');
+    kMarkerIdStart = const MarkerId('start');
+    kMarkerIdStop = const MarkerId('stop');
 
     int i = 0;
     for (Trip h in widget.list) {
@@ -307,7 +310,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
         onTap: () {
           controller.future.then((value) =>
               {value.moveCamera(CameraUpdate.newLatLngZoom(e.latlng, 16))});
-          Timer(Duration(milliseconds: 200), () {
+          Timer(const Duration(milliseconds: 200), () {
             isFocus = true;
           });
 
@@ -355,7 +358,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
     TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
     textPainter.text = TextSpan(
       text: "  " + v.info!.vehicle_name! + "  ",
-      style: TextStyle(
+      style: const TextStyle(
           fontSize: 40.0, color: Colors.black, backgroundColor: Colors.white),
     );
 
@@ -512,7 +515,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
       expand: true,
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => HomeNotiPage(),
+      builder: (context) => const HomeNotiPage(),
     );
   }
 
@@ -522,11 +525,11 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
       expand: true,
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => HomeNewsPage(),
+      builder: (context) => const HomeNewsPage(),
     );
   }
 
-  Set<Marker> markersFactory = Set();
+  Set<Marker> markersFactory = {};
 
   addPinFactory() async {
     markersFactory.clear();
@@ -546,7 +549,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
   }
 
   Factory? factoryClick;
-  final PolylineId polylineId = PolylineId("polyline_id_factory");
+  final PolylineId polylineId = const PolylineId("polyline_id_factory");
 
   markerFactoryClick(Factory fac) {
     factoryClick = fac;
@@ -585,16 +588,16 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
   }
 
   Set<Circle>? circles;
-  Set<Circle> circlesDef = Set.from([
-    Circle(
+  Set<Circle> circlesDef = {
+    const Circle(
       circleId: CircleId(""),
       center: LatLng(0, 0),
       radius: 0,
     )
-  ]);
+  };
 
   setRadius(LatLng latLng, String id, double radiusA) {
-    circles = Set.from([
+    circles = {
       Circle(
         fillColor: ColorCustom.blue.withOpacity(0.3),
         strokeWidth: 0,
@@ -602,7 +605,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
         center: latLng,
         radius: radiusA,
       )
-    ]);
+    };
   }
 
   Future<BitmapDescriptor> getPinFactory(Factory f) async {
@@ -625,7 +628,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
     IMG.Image img = IMG.decodeImage(data)!;
     IMG.Image resized =
         IMG.copyResize(img, width: img.width * 2, height: img.height * 2);
-    resizedData = IMG.encodePng(resized) as Uint8List;
+    resizedData = IMG.encodePng(resized);
     return resizedData;
   }
 
@@ -639,7 +642,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
 
   bool isPlay = true;
 
-  Set<Marker> markersSet = Set();
+  Set<Marker> markersSet = {};
   int speed = 1;
   double zoom = 0;
   ValueNotifier<bool> isDialOpen = ValueNotifier(false);
@@ -672,7 +675,7 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                       mapType: mode,
                       initialCameraPosition: kSantoDomingo,
                       trafficEnabled: traffic,
-                      circles: this.circles != null ? circles! : circlesDef,
+                      circles: circles != null ? circles! : circlesDef,
                       polylines: Set<Polyline>.of(_mapPolylines.values),
                       // onMapCreated: (gController) => controller.complete(
                       //     gController),
@@ -698,20 +701,17 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                     isLoad
                         ? Container(
                             alignment: Alignment.center,
-                            child: CircularProgressIndicator(),
+                            child: const CircularProgressIndicator(),
                           )
                         : Container(),
                     Container(
                       alignment: Alignment.bottomLeft,
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
                       child: SpeedDial(
                         activeChild: SvgPicture.asset(
                           "assets/images/Fix Icon Hino19.svg",
                         ),
                         renderOverlay: false,
-                        child: SvgPicture.asset(
-                          "assets/images/Fix Icon Hino20.svg",
-                        ),
                         // icon: Icons.handyman,
                         backgroundColor: Colors.white,
                         foregroundColor: ColorCustom.blue,
@@ -849,11 +849,14 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                             ),
                           ),
                         ],
+                        child: SvgPicture.asset(
+                          "assets/images/Fix Icon Hino20.svg",
+                        ),
                       ),
                     ),
                     Container(
                       alignment: Alignment.bottomRight,
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -862,6 +865,8 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                             onPressed: () {
                               showNoti();
                             },
+                            backgroundColor: Colors.white,
+                            heroTag: "1",
                             child: noti_count > 0
                                 ? SvgPicture.asset(
                                     "assets/images/Fix Icon Hino21.svg",
@@ -869,42 +874,40 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                                 : SvgPicture.asset(
                                     "assets/images/Fix Icon Hino22.svg",
                                   ),
-                            backgroundColor: Colors.white,
-                            heroTag: "1",
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
                       alignment: Alignment.topRight,
                       child: FloatingActionButton(
                         backgroundColor: Colors.white,
                         onPressed: () {
                           showNews();
                         },
-                        child: Icon(
+                        heroTag: "3",
+                        child: const Icon(
                           Icons.email,
                           color: Colors.grey,
                         ),
-                        heroTag: "3",
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.all(10),
+                      margin: const EdgeInsets.all(10),
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: Icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey,
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(10),
+                        ),
+                        child: const Icon(
                           Icons.arrow_back,
                           color: Colors.white,
                           size: 30,
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(10),
                         ),
                       ),
                     )
@@ -950,22 +953,24 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
               ),
 
               Container(
-                  margin: EdgeInsets.only(left: 20, right: 20),
+                  margin: const EdgeInsets.only(left: 20, right: 20),
                   child: Row(
                     children: [
                       Text(
                         Utils.convertDatePlayback(displayDateStart),
-                        style: TextStyle(color: Colors.black, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 12),
                       ),
                       Expanded(child: Container()),
                       Text(
                         Utils.convertDatePlayback(displayDateEnd),
-                        style: TextStyle(color: Colors.black, fontSize: 12),
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 12),
                       ),
                     ],
                   )),
               Container(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1012,11 +1017,11 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                               newLocationUpdate(kLocations[index]);
                               setState(() {});
                             },
-                            child: Icon(Icons.skip_previous),
                             style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(5),
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(5),
                             ),
+                            child: const Icon(Icons.skip_previous),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -1027,13 +1032,13 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                               }
                               setState(() {});
                             },
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(5),
+                            ),
                             child: Icon(
                               isPlay ? Icons.stop : Icons.play_arrow,
                               size: 40,
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(5),
                             ),
                           ),
                           ElevatedButton(
@@ -1051,11 +1056,11 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                               newLocationUpdate(kLocations[index]);
                               setState(() {});
                             },
-                            child: Icon(Icons.skip_next),
                             style: ElevatedButton.styleFrom(
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(5),
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(5),
                             ),
+                            child: const Icon(Icons.skip_next),
                           ),
                         ],
                       ),
@@ -1080,16 +1085,17 @@ class _PageState extends State<HomeBackupEventSearchMapPage> {
                           // newLocationUpdate(kLocations[index]);
                           setState(() {});
                         },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                              width: 1.0, color: ColorCustom.blue),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(1),
+                        ),
                         child: Text(
                           speed.toString() + "x",
                           textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: ColorCustom.blue, fontSize: 16),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(width: 1.0, color: ColorCustom.blue),
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(1),
+                          style: const TextStyle(
+                              color: ColorCustom.blue, fontSize: 16),
                         ),
                       ),
                     ),

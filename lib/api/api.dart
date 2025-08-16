@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hino/feature/home/home.dart';
 import 'package:hino/model/profile.dart';
 import 'package:hino/model/upload.dart';
 import 'package:hino/page/home.dart';
@@ -100,6 +101,7 @@ class Api {
           "os": os,
           // 'user_id': "38"
         };
+        print(requestHeaders);
         print(url);
         response = await http.get(Uri.parse(url), headers: requestHeaders);
         print(response.body);

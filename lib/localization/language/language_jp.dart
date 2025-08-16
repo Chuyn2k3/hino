@@ -1,7 +1,6 @@
 import 'languages.dart';
 
 class LanguageJp extends Languages {
-
   String get appName => "HINO";
 
   @override
@@ -82,207 +81,219 @@ class LanguageJp extends Languages {
   String get rpm_green => "E/G回転数オーバーグリーンゾーン";
 
   @override
-  String get search=> "検索";
+  String get search => "検索";
   @override
-  String get sort=> "選別";
+  String get sort => "選別";
   @override
-  String get filter=> "フィルター";
+  String get filter => "フィルター";
   @override
-  String get vehicle_list=> "車両リスト";
+  String get vehicle_list => "車両リスト";
   @override
-  String get geofence_des=> "ジオフェンスの説明";
+  String get geofence_des => "ジオフェンスの説明";
   @override
-  String get geofence_location=> "位置";
+  String get geofence_location => "位置";
   @override
-  String get geofence_unit=> "総車両";
+  String get geofence_unit => "総車両";
   @override
-  String get driver_title=> "ドライバー";
+  String get driver_title => "ドライバー";
   @override
-  String get driver=> "ドライバー名";
+  String get driver => "ドライバー名";
   @override
-  String get location_title=> "位置";
+  String get location_title => "位置";
   @override
-  String get last_update=> "最後の更新";
+  String get last_update => "最後の更新";
   @override
-  String get location=> "位置";
+  String get location => "位置";
   @override
   String get specific_location => "特定の場所";
   @override
-  String get station=> "駅";
+  String get station => "駅";
   @override
-  String get status_vehicle=> "スターテス";
+  String get status_vehicle => "スターテス";
   @override
-  String get mile=> "ODO";
+  String get mile => "ODO";
   @override
-  String get distance=> "ODO (Today)";
+  String get distance => "ODO (Today)";
   @override
-  String get fuel=> "燃料タンク残量";
+  String get fuel => "燃料タンク残量";
   @override
-  String get km=> "km";
+  String get km => "km";
   @override
-  String get gps=> "GPS信号";
+  String get gps => "GPS信号";
   @override
-  String get gsm=> "3G回線";
+  String get gsm => "3G回線";
   @override
-  String get dtc_engine=> "E/Gチェックランプ";
+  String get dtc_engine => "E/Gチェックランプ";
   @override
-  String get on=> "On";
+  String get on => "On";
   @override
-  String get off=> "Off";
+  String get off => "Off";
   @override
-  String get unidentified_driver=> "ドライバー情報がありません";
+  String get unidentified_driver => "ドライバー情報がありません";
   @override
-  String get license=> "ナンバープレート";
+  String get license => "ナンバープレート";
 
   @override
-  String get vehicle_title=> "車両";
+  String get vehicle_title => "車両";
   @override
-  String get plate_no=> "ナンバープレート";
+  String get plate_no => "ナンバープレート";
   @override
-  String get vin_no=> "VIN No.";
+  String get vin_no => "VIN No.";
   @override
-  String get model=> "車型";
+  String get model => "車型";
   @override
-  String get maintenance=> "メンテナンス";
+  String get maintenance => "メンテナンス";
   @override
-  String get insurance=> "保険";
+  String get insurance => "保険";
   @override
-  String get tires_service=> "タイヤサービス";
+  String get tires_service => "タイヤサービス";
   @override
-  String get next_service=> "次回メンテナンス";
+  String get next_service => "次回メンテナンス";
 
   @override
-  String get event_log=> "ロガーデータ";
+  String get event_log => "ロガーデータ";
   @override
-  String get tracking_history=> "車両軌跡";
+  String get tracking_history => "車両軌跡";
   @override
-  String get cctv_playback=> "再生";
+  String get cctv_playback => "再生";
   @override
-  String get camera_playback=> "Picture Playback";
+  String get camera_playback => "Picture Playback";
   @override
-  String get search_by=> "で検索";
+  String get search_by => "で検索";
   @override
-  String get date_range=> "日付範囲";
+  String get date_range => "日付範囲";
   @override
-  String get time_range=> "時間範囲";
+  String get time_range => "時間範囲";
   @override
-  String get vehicle_name=> "車両名";
+  String get vehicle_name => "車両名";
   @override
-  String get please_select=> "";
+  String get please_select => "";
   @override
-  String get lite=> "L";
+  String get lite => "L";
   @override
-  String get km_l=> "km/L";
+  String get km_l => "km/L";
   @override
-  String get event_driving=> "走行中";
+  String get event_driving => "走行中";
   @override
-  String get event_ign_off=> "Ign. OFF";
+  String get event_stopping => "停車中";
   @override
-  String get event_date_time=> "Start Date/End Date";
+  String get event_ign_off => "Ign. OFF";
   @override
-  String get event_duration=> "期間";
+  String get event_date_time => "Start Date/End Date";
   @override
-  String get event_obd_start=> "ODOの開始";
+  String get event_duration => "期間";
   @override
-  String get event_obd_end=> "終了ODO";
+  String get event_obd_start => "ODOの開始";
   @override
-  String get event_distance=> "距離";
+  String get event_obd_end => "終了ODO";
   @override
-  String get event_fuel=> "燃料消費量";
+  String get event_distance => "距離";
   @override
-  String get event_fuel_consumption=> "燃費";
+  String get event_fuel => "燃料消費量";
   @override
-  String get event_driver=> "ドライバー";
+  String get event_fuel_consumption => "燃費";
   @override
-  String get more=> "More";
+  String get event_driver => "ドライバー";
   @override
-  String get less=> "Less";
+  String get more => "More";
   @override
-  String get expire_card=> "有効期限カード";
+  String get less => "Less";
   @override
-  String get driver_distance=> "総走行距離";
+  String get expire_card => "有効期限カード";
   @override
-  String get driver_duration=> "働時間";
+  String get driver_distance => "総走行距離";
+  @override
+  String get driver_duration => "働時間";
 
   @override
-  String get username=> "ユーザー名";
+  String get username => "ユーザー名";
   @override
-  String get password=> "パスワード";
+  String get password => "パスワード";
   @override
-  String get signin=> "ログインする";
+  String get signin => "ログインする";
   @override
-  String get forgot_password=> "パスワードをお忘れですか?";
+  String get forgot_password => "パスワードをお忘れですか?";
   @override
-  String get dlt_regulation=> "DLT規制 (回数)";
+  String get dlt_regulation => "DLT規制 (回数)";
   @override
-  String get driving_behavior=> "運転挙動 (回)";
+  String get driving_behavior => "運転挙動 (回)";
   @override
-  String get unit_times=> "回";
+  String get unit_times => "回";
   @override
-  String get noti_event=> "イベント";
+  String get noti_event => "イベント";
   @override
-  String get noti_vehicle=> "車両";
+  String get noti_vehicle => "車両";
   @override
-  String get noti_driver=> "ドライバー";
+  String get noti_driver => "ドライバー";
   @override
-  String get noti_date=> "日にち";
+  String get noti_date => "日にち";
   @override
-  String get noti_location_title=> "位置";
+  String get noti_location_title => "位置";
   @override
-  String get noti_location=> "位置";
+  String get noti_location => "位置";
   @override
-  String get sign_out=> "ログアウト";
+  String get sign_out => "ログアウト";
   @override
-  String get notification=> "通知";
+  String get notification => "通知";
   @override
-  String get email_phone=> "メールまたは電話番号";
+  String get email_phone => "メールまたは電話番号";
   @override
-  String get confirm=> "確認";
+  String get confirm => "確認";
   @override
-  String get otp=> "OTP";
+  String get otp => "OTP";
   @override
-  String get confirm_password=> "パスワードを認証する";
+  String get confirm_password => "パスワードを認証する";
   @override
-  String get reset_filter=> "フィルタをリセット";
+  String get reset_filter => "フィルタをリセット";
   @override
-  String get speed=> "車速";
+  String get speed => "車速";
   @override
-  String get status=> "スターテス";
+  String get status => "スターテス";
   @override
-  String get sort_by=> "Sort by";
+  String get sort_by => "Sort by";
   @override
-  String get unit_descending=> "Unit Descending";
+  String get unit_descending => "Unit Descending";
   @override
-  String get unit_ascending=> "Unit Ascending";
+  String get unit_ascending => "Unit Ascending";
   @override
-  String get alphabet_a_z=> "Alphabet A-Z";
+  String get alphabet_a_z => "Alphabet A-Z";
   @override
-  String get alphabet_z_a=> "Alphabet Z-A";
+  String get alphabet_z_a => "Alphabet Z-A";
   @override
-  String get option=> "オプション";
+  String get option => "オプション";
   @override
-  String get option_total=> "すべて";
+  String get option_total => "すべて";
   @override
-  String get snapshot=> "スナップショット";
+  String get snapshot => "スナップショット";
   @override
-  String get temperatures=> "温度";
+  String get temperatures => "温度";
   @override
-  String get door=> "車のドア";
+  String get door => "車のドア";
   @override
-  String get safety_belt=> "安全ベルト";
+  String get safety_belt => "安全ベルト";
   @override
-  String get mvdr=> "ビデオ";
+  String get mvdr => "ビデオ";
 
   @override
-  String get score_asc=> "Score Ascending";
+  String get score_asc => "Score Ascending";
   @override
-  String get score_dec=> "Score Descending";
+  String get score_dec => "Score Descending";
   @override
-  String get swipe_time=> "Swipe time";
+  String get swipe_time => "Swipe time";
   @override
-  String get loading=> "Please Wait";
+  String get loading => "Please Wait";
   @override
-  String get please_try_again=> "Please try again";
+  String get please_try_again => "Please try again";
   @override
-  String get fuel_km=> "燃費";
+  String get fuel_km => "燃費";
+
+  @override
+  String get track => "追跡";
+  @override
+  String get history => "履歴";
+  @override
+  String get settings => "設定";
+  @override
+  String get unknown => "不明"; // Japanese
+
 }

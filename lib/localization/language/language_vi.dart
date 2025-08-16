@@ -171,6 +171,8 @@ class LanguageVi extends Languages {
   @override
   String get event_driving => "Lái xe";
   @override
+  String get event_stopping => "Dừng đỗ";
+  @override
   String get event_ign_off => "Bỏ qua TẮT";
   @override
   String get event_date_time => "Ngày bắt đầu/Ngày kết thúc";
@@ -189,9 +191,9 @@ class LanguageVi extends Languages {
   @override
   String get event_driver => "Tài xế";
   @override
-  String get more => "Hơn";
+  String get more => "Xem thêm";
   @override
-  String get less => "Kém";
+  String get less => "Thu gọn";
   @override
   String get expire_card => "Thẻ hết hạn";
   @override
@@ -285,4 +287,14 @@ class LanguageVi extends Languages {
   String get please_try_again => "Vui lòng thử lại";
   @override
   String get fuel_km => "Tiêu thụ nhiên liệu";
+
+  @override
+  String get track => "Theo dõi";
+  @override
+  String get history => "Lịch sử";
+  @override
+  String get settings => "Cài đặt";
+
+  @override
+  String get unknown => "Không xác định";
 }

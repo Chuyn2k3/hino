@@ -1,7 +1,6 @@
 import 'languages.dart';
 
 class LanguageEn extends Languages {
-
   String get appName => "HINO";
 
   @override
@@ -83,207 +82,219 @@ class LanguageEn extends Languages {
   String get rpm_green => "RPM Over Green Zone";
 
   @override
-  String get search=> "Search";
+  String get search => "Search";
   @override
-  String get sort=> "Sort";
+  String get sort => "Sort";
   @override
-  String get filter=> "Filter";
+  String get filter => "Filter";
   @override
-  String get vehicle_list=> "Vehicle List";
+  String get vehicle_list => "Vehicle List";
   @override
-  String get geofence_des=> "Geofence Description";
+  String get geofence_des => "Geofence Description";
   @override
-  String get geofence_location=> "Location";
+  String get geofence_location => "Location";
   @override
-  String get geofence_unit=> "Total Vehicle";
+  String get geofence_unit => "Total Vehicle";
   @override
-  String get driver_title=> "Driver";
+  String get driver_title => "Driver";
   @override
-  String get driver=> "Name";
+  String get driver => "Name";
   @override
-  String get location_title=> "Location";
+  String get location_title => "Location";
   @override
-  String get last_update=> "Last update";
+  String get last_update => "Last update";
   @override
-  String get location=> "Location";
+  String get location => "Location";
   @override
   String get specific_location => "Specific location";
   @override
-  String get station=> "Station";
+  String get station => "Station";
   @override
-  String get status_vehicle=> "Status";
+  String get status_vehicle => "Status";
   @override
-  String get mile=> "ODO";
+  String get mile => "ODO";
   @override
-  String get distance=> "ODO (Today)";
+  String get distance => "ODO (Today)";
   @override
-  String get fuel=> "Fuel Tank Level";
+  String get fuel => "Fuel Tank Level";
   @override
-  String get km=> "km";
+  String get km => "km";
   @override
-  String get gps=> "GPS Signal";
+  String get gps => "GPS Signal";
   @override
-  String get gsm=> "GSM Signal";
+  String get gsm => "GSM Signal";
   @override
-  String get dtc_engine=> "E/G Check Lamp";
+  String get dtc_engine => "E/G Check Lamp";
   @override
-  String get on=> "On";
+  String get on => "On";
   @override
-  String get off=> "Off";
+  String get off => "Off";
   @override
-  String get unidentified_driver=> "Unidentified Driver";
+  String get unidentified_driver => "Unidentified Driver";
   @override
-  String get license=> "License";
+  String get license => "License";
 
   @override
-  String get vehicle_title=> "Vehicle";
+  String get vehicle_title => "Vehicle";
   @override
-  String get plate_no=> "Plate No.";
+  String get plate_no => "Plate No.";
   @override
-  String get vin_no=> "VIN No.";
+  String get vin_no => "VIN No.";
   @override
-  String get model=> "Model";
+  String get model => "Model";
   @override
-  String get maintenance=> "Maintenance";
+  String get maintenance => "Maintenance";
   @override
-  String get insurance=> "Insurance";
+  String get insurance => "Insurance";
   @override
-  String get tires_service=> "Tires Service";
+  String get tires_service => "Tires Service";
   @override
-  String get next_service=> "Next service";
+  String get next_service => "Next service";
 
   @override
-  String get event_log=> "Event Log";
+  String get event_log => "Event Log";
   @override
-  String get tracking_history=> "Tracking History";
+  String get tracking_history => "Tracking History";
   @override
-  String get cctv_playback=> "CCTV Playback";
+  String get cctv_playback => "CCTV Playback";
   @override
-  String get camera_playback=> "Picture Playback";
+  String get camera_playback => "Picture Playback";
   @override
-  String get search_by=> "Search By";
+  String get search_by => "Search By";
   @override
-  String get date_range=> "Date Range";
+  String get date_range => "Date Range";
   @override
-  String get time_range=> "Time Range";
+  String get time_range => "Time Range";
   @override
-  String get vehicle_name=> "Vehicle Name";
+  String get vehicle_name => "Vehicle Name";
   @override
-  String get please_select=> "Please Select ";
+  String get please_select => "Please Select ";
   @override
-  String get lite=> "L";
+  String get lite => "L";
   @override
-  String get km_l=> "km/L";
+  String get km_l => "km/L";
   @override
-  String get event_driving=> "Driving";
+  String get event_driving => "Driving";
   @override
-  String get event_ign_off=> "Ign. OFF";
+  String get event_stopping => "Stopping";
   @override
-  String get event_date_time=> "Start Date/End Date";
+  String get event_ign_off => "Ign. OFF";
   @override
-  String get event_duration=> "Duration";
+  String get event_date_time => "Start Date/End Date";
   @override
-  String get event_obd_start=> "Start ODO";
+  String get event_duration => "Duration";
   @override
-  String get event_obd_end=> "End ODO";
+  String get event_obd_start => "Start ODO";
   @override
-  String get event_distance=> "Distance";
+  String get event_obd_end => "End ODO";
   @override
-  String get event_fuel=> "Fuel Usage";
+  String get event_distance => "Distance";
   @override
-  String get event_fuel_consumption=> "Fuel Consumption";
+  String get event_fuel => "Fuel Usage";
   @override
-  String get event_driver=> "Driver";
+  String get event_fuel_consumption => "Fuel Consumption";
   @override
-  String get more=> "More";
+  String get event_driver => "Driver";
   @override
-  String get less=> "Less";
+  String get more => "More";
   @override
-  String get expire_card=> "Expire Card";
+  String get less => "Less";
   @override
-  String get driver_distance=> "Total Distance";
+  String get expire_card => "Expire Card";
   @override
-  String get driver_duration=> "Total Duration";
+  String get driver_distance => "Total Distance";
+  @override
+  String get driver_duration => "Total Duration";
 
   @override
-  String get username=> "Username";
+  String get username => "Username";
   @override
-  String get password=> "Password";
+  String get password => "Password";
   @override
-  String get signin=> "Sign in";
+  String get signin => "Sign in";
   @override
-  String get forgot_password=> "Forgot password?";
+  String get forgot_password => "Forgot password?";
   @override
-  String get dlt_regulation=> "DLT Regulation (Times)";
+  String get dlt_regulation => "DLT Regulation (Times)";
   @override
-  String get driving_behavior=> "Driving Behavior (Times)";
+  String get driving_behavior => "Driving Behavior (Times)";
   @override
-  String get unit_times=> "Times";
+  String get unit_times => "Times";
   @override
-  String get noti_event=> "Event";
+  String get noti_event => "Event";
   @override
-  String get noti_vehicle=> "Vehicle";
+  String get noti_vehicle => "Vehicle";
   @override
-  String get noti_driver=> "Driver";
+  String get noti_driver => "Driver";
   @override
-  String get noti_date=> "Date";
+  String get noti_date => "Date";
   @override
-  String get noti_location_title=> "Location";
+  String get noti_location_title => "Location";
   @override
-  String get noti_location=> "Location";
+  String get noti_location => "Location";
   @override
-  String get sign_out=> "Sign out";
+  String get sign_out => "Sign out";
   @override
-  String get notification=> "Notification";
+  String get notification => "Notification";
   @override
-  String get email_phone=> "Email or Phone number";
+  String get email_phone => "Email or Phone number";
   @override
-  String get confirm=> "Confirm";
+  String get confirm => "Confirm";
   @override
-  String get otp=> "OTP";
+  String get otp => "OTP";
   @override
-  String get confirm_password=> "Confirm Password";
+  String get confirm_password => "Confirm Password";
   @override
-  String get reset_filter=> "Reset Filter";
+  String get reset_filter => "Reset Filter";
   @override
-  String get speed=> "Speed";
+  String get speed => "Speed";
   @override
-  String get status=> "Status";
+  String get status => "Status";
   @override
-  String get sort_by=> "Sort by";
+  String get sort_by => "Sort by";
   @override
-  String get unit_descending=> "Unit Descending";
+  String get unit_descending => "Unit Descending";
   @override
-  String get unit_ascending=> "Unit Ascending";
+  String get unit_ascending => "Unit Ascending";
   @override
-  String get alphabet_a_z=> "Alphabet A-Z";
+  String get alphabet_a_z => "Alphabet A-Z";
   @override
-  String get alphabet_z_a=> "Alphabet Z-A";
+  String get alphabet_z_a => "Alphabet Z-A";
   @override
-  String get option=> "Options";
+  String get option => "Options";
   @override
-  String get option_total=> "All";
+  String get option_total => "All";
   @override
-  String get snapshot=> "Snapshot";
+  String get snapshot => "Snapshot";
   @override
-  String get temperatures=> "Temperatures";
+  String get temperatures => "Temperatures";
   @override
-  String get door=> "Door";
+  String get door => "Door";
   @override
-  String get safety_belt=> "Safety Belt";
+  String get safety_belt => "Safety Belt";
   @override
-  String get mvdr=> "Video";
+  String get mvdr => "Video";
 
   @override
-  String get score_asc=> "Score Ascending";
+  String get score_asc => "Score Ascending";
   @override
-  String get score_dec=> "Score Descending";
+  String get score_dec => "Score Descending";
   @override
-  String get swipe_time=> "Swipe time";
+  String get swipe_time => "Swipe time";
   @override
-  String get loading=> "Please Wait";
+  String get loading => "Please Wait";
   @override
-  String get please_try_again=> "Please try again";
+  String get please_try_again => "Please try again";
   @override
-  String get fuel_km=> "Fuel Consumption";
+  String get fuel_km => "Fuel Consumption";
+
+  @override
+  String get track => "Tracking";
+  @override
+  String get history => "History";
+  @override
+  String get settings => "Settings";
+  @override
+  String get unknown => "Unknown"; // English
+
 }

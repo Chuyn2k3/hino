@@ -71,11 +71,7 @@ class _PageState extends State<HomeDriverDetailPage> {
   getDataDriver(BuildContext context) {
     Api.get(
             context,
-            Api.driver_detail +
-                widget.driver.personalId! +
-                "&start_date=" +
-                Utils.getDateCreate() +
-                "&stop_date=" +
+            "${Api.driver_detail + widget.driver.personalId! + "&start_date=" + Utils.getDateCreate()}&stop_date=" +
                 Utils.getDateCreate())
         .then((value) => {
               if (value != null)
@@ -93,11 +89,7 @@ class _PageState extends State<HomeDriverDetailPage> {
     var detailChart;
     Api.get(
             context,
-            Api.driver_detail +
-                widget.driver.personalId! +
-                "&start_date=" +
-                Utils.getDateBackYear() +
-                "&stop_date=" +
+            "${Api.driver_detail + widget.driver.personalId! + "&start_date=" + Utils.getDateBackYear()}&stop_date=" +
                 Utils.getDateCreate())
         .then((value) => {
               if (value != null)
@@ -147,7 +139,7 @@ class _PageState extends State<HomeDriverDetailPage> {
   launchShare(String info, double lat, double long) async {
     String googleUrl =
         'https://www.google.com/maps/search/?api=1&query=$lat,$long';
-    Share.share(info + '\n' + googleUrl);
+    Share.share('$info\n$googleUrl');
   }
 
   showDetail(String name) {
@@ -175,7 +167,7 @@ class _PageState extends State<HomeDriverDetailPage> {
 
   dialPhone(String phone) {
     if (phone.isNotEmpty) {
-      launch("tel://" + phone);
+      launch("tel://$phone");
     }
   }
 
@@ -183,10 +175,10 @@ class _PageState extends State<HomeDriverDetailPage> {
     var url = "";
     if (widget.driver.driver_phone_no != null &&
         widget.driver.driver_phone_no!.isNotEmpty) {
-      url = "sms:" + widget.driver.driver_phone_no! + "?body=message";
+      url = "sms:${widget.driver.driver_phone_no!}?body=message";
     } else {
-      launch("tel://" + widget.driver.box_phone_no!);
-      url = "sms:" + widget.driver.box_phone_no! + "?body=message";
+      launch("tel://${widget.driver.box_phone_no!}");
+      url = "sms:${widget.driver.box_phone_no!}?body=message";
     }
     launch(url);
   }
@@ -282,28 +274,29 @@ class _PageState extends State<HomeDriverDetailPage> {
             children: [
               BackIOS(),
               Container(
-                margin: EdgeInsets.only(bottom: 10, left: 10, right: 10),
+                margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
                 decoration: BoxDecoration(
                   border: Border.all(color: ColorCustom.greyBG2),
-                  borderRadius: BorderRadius.all(
+                  borderRadius: const BorderRadius.all(
                     Radius.circular(10.0),
                   ),
                 ),
-                padding:
-                    EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
+                padding: const EdgeInsets.only(
+                    top: 10, bottom: 10, left: 10, right: 10),
                 child: Row(
                   children: [
                     Stack(
                       alignment: Alignment.topRight,
                       children: [
-                        widget.driver.photoUrl!.isEmpty
-                            ? Image.asset(
-                                "assets/images/profile_empty.png",
+                        widget.driver.photoUrl != null &&
+                                widget.driver.photoUrl!.isNotEmpty
+                            ? Image.network(
+                                widget.driver.photoUrl!,
                                 width: 60,
                                 height: 60,
                               )
-                            : Image.network(
-                                widget.driver.photoUrl!,
+                            : Image.asset(
+                                "assets/images/profile_empty.png",
                                 width: 60,
                                 height: 60,
                               ),
@@ -314,7 +307,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                         // )
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10,
                     ),
                     Expanded(
@@ -322,12 +315,8 @@ class _PageState extends State<HomeDriverDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.driver.prefix! +
-                                " " +
-                                widget.driver.firstname! +
-                                " " +
-                                widget.driver.lastname!,
-                            style: TextStyle(
+                            "${widget.driver.prefix!} ${widget.driver.firstname!} ${widget.driver.lastname!}",
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold),
@@ -336,7 +325,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                           widget.driver.display_datetime_swipe!.isNotEmpty
                               ? Text(
                                   widget.driver.display_datetime_swipe!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 14,
                                   ),
@@ -350,19 +339,19 @@ class _PageState extends State<HomeDriverDetailPage> {
                         color: ColorCustom.greyBG,
                         borderRadius: BorderRadius.circular(100),
                       ),
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       child: Column(
                         children: [
                           Text(
                             Utils.numberFormatInt(widget.driver.score!),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
                             Languages.of(context)!.score,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold),
@@ -374,11 +363,11 @@ class _PageState extends State<HomeDriverDetailPage> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(color: ColorCustom.greyBG2),
-                  borderRadius: BorderRadius.all(
+                  borderRadius: const BorderRadius.all(
                     Radius.circular(10.0),
                   ),
                 ),
@@ -397,12 +386,12 @@ class _PageState extends State<HomeDriverDetailPage> {
                           width: 40,
                           height: 40,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
                         Text(
                           Languages.of(context)!.driver_title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -416,18 +405,17 @@ class _PageState extends State<HomeDriverDetailPage> {
                               border: Border.all(
                                   width: 8, color: ColorCustom.blue)),
                           child: InkWell(
-                            child: Icon(
+                            child: const Icon(
                               Icons.notifications,
                               color: Colors.white,
                             ),
                             onTap: () {
-                              showDetail(widget.driver.firstname! +
-                                  " " +
-                                  widget.driver.lastname!);
+                              showDetail(
+                                  "${widget.driver.firstname!} ${widget.driver.lastname!}");
                             },
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 5,
                         ),
                         /*InkWell(
@@ -477,7 +465,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                         ),*/
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Row(
@@ -488,19 +476,16 @@ class _PageState extends State<HomeDriverDetailPage> {
                             children: [
                               Text(
                                 Languages.of(context)!.driver_distance,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: ColorCustom.black,
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 driverDetail != null
-                                    ? Utils.numberFormat(
-                                            driverDetail!.distance!) +
-                                        ' ' +
-                                        Languages.of(context)!.km
+                                    ? '${Utils.numberFormat(driverDetail!.distance!)} ${Languages.of(context)!.km}'
                                     : "",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: ColorCustom.black,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -508,18 +493,16 @@ class _PageState extends State<HomeDriverDetailPage> {
                               ),
                               Text(
                                 Languages.of(context)!.driver_duration,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: ColorCustom.black,
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 driverDetail != null
-                                    ? driverDetail!.total_time! +
-                                        ' ' +
-                                        Languages.of(context)!.h
+                                    ? '${driverDetail!.total_time!} ${Languages.of(context)!.h}'
                                     : "",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: ColorCustom.black,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -555,11 +538,11 @@ class _PageState extends State<HomeDriverDetailPage> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(color: ColorCustom.greyBG2),
-                  borderRadius: BorderRadius.all(
+                  borderRadius: const BorderRadius.all(
                     Radius.circular(10.0),
                   ),
                 ),
@@ -579,12 +562,12 @@ class _PageState extends State<HomeDriverDetailPage> {
                           width: 40,
                           height: 40,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
                         Text(
                           Languages.of(context)!.location_title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -612,7 +595,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                                 ),
                               )
                             : Container(),
-                        SizedBox(
+                        const SizedBox(
                           width: 5,
                         ),
                         /*Container(
@@ -639,7 +622,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                         ),*/
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Column(
@@ -647,7 +630,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                       children: [
                         Text(
                           Languages.of(context)!.plate_no,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
                           ),
@@ -657,14 +640,14 @@ class _PageState extends State<HomeDriverDetailPage> {
                             widget.driver.licensePlateNo!.isNotEmpty
                                 ? Text(
                                     widget.driver.licensePlateNo!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   )
                                 : Container(),
-                            SizedBox(
+                            const SizedBox(
                               width: 10,
                             ),
                             widget.driver.vehicle != null &&
@@ -672,7 +655,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                                         .isNotEmpty
                                 ? Text(
                                     widget.driver.vehicle!.info!.licenseprov!,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 16,
                                     ),
@@ -682,7 +665,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                         ),
                         Text(
                           Languages.of(context)!.last_update,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 16,
                           ),
@@ -691,7 +674,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                           widget.driver.vehicle != null
                               ? widget.driver.vehicle!.gps!.display_gpsdate!
                               : "",
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -699,18 +682,14 @@ class _PageState extends State<HomeDriverDetailPage> {
                         ),
                         Text(
                           Languages.of(context)!.location,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          widget.driver.adminLevel3Name! +
-                              " " +
-                              widget.driver.adminLevel2Name! +
-                              " " +
-                              widget.driver.adminLevel1Name!,
-                          style: TextStyle(
+                          "${widget.driver.adminLevel3Name!} ${widget.driver.adminLevel2Name!} ${widget.driver.adminLevel1Name!}",
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -722,11 +701,11 @@ class _PageState extends State<HomeDriverDetailPage> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(color: ColorCustom.greyBG2),
-                  borderRadius: BorderRadius.all(
+                  borderRadius: const BorderRadius.all(
                     Radius.circular(10.0),
                   ),
                 ),
@@ -745,15 +724,12 @@ class _PageState extends State<HomeDriverDetailPage> {
                           height: 40,
                           color: Colors.grey,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
                         Text(
-                          Languages.of(context)!.dashboardGraph2 +
-                              " (" +
-                              ((sumPoint * 100) / 30).toStringAsFixed(0) +
-                              "/100)",
-                          style: TextStyle(
+                          "${Languages.of(context)!.dashboardGraph2} (${((sumPoint * 100) / 30).toStringAsFixed(0)}/100)",
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -761,7 +737,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     // Container(
@@ -814,10 +790,10 @@ class _PageState extends State<HomeDriverDetailPage> {
                               for (int i = 0; i < features.length; i++)
                                 RadarVertex(
                                   radius: 15,
-                                  textOffset: Offset(0, 0),
+                                  textOffset: const Offset(0, 0),
                                   text: Text(
                                     features[i],
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: ColorCustom.black,
                                       fontSize: 10,
                                     ),
@@ -842,33 +818,33 @@ class _PageState extends State<HomeDriverDetailPage> {
                               ),
                             ],
                           ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.fiber_manual_record,
                           size: 15,
                           color: ColorCustom.dashboard_save_avg,
                         ),
                         Text(
                           Languages.of(context)!.avg,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 12,
                           ),
                         ),
-                        Icon(
+                        const Icon(
                           Icons.fiber_manual_record,
                           size: 15,
                           color: ColorCustom.dashboard_save_point,
                         ),
                         Text(
                           Languages.of(context)!.score,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 12,
                           ),
@@ -880,11 +856,11 @@ class _PageState extends State<HomeDriverDetailPage> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(10),
-                margin: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   border: Border.all(color: ColorCustom.greyBG2),
-                  borderRadius: BorderRadius.all(
+                  borderRadius: const BorderRadius.all(
                     Radius.circular(10.0),
                   ),
                 ),
@@ -898,15 +874,12 @@ class _PageState extends State<HomeDriverDetailPage> {
                           height: 40,
                           color: Colors.grey,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
                         Text(
-                          Languages.of(context)!.dashboardGraph3 +
-                              " (" +
-                              ((sumPoint2 * 100) / 30).toStringAsFixed(0) +
-                              "/100)",
-                          style: TextStyle(
+                          "${Languages.of(context)!.dashboardGraph3} (${((sumPoint2 * 100) / 30).toStringAsFixed(0)}/100)",
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -914,7 +887,7 @@ class _PageState extends State<HomeDriverDetailPage> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     // avg2.isEmpty?Container():AspectRatio(
@@ -955,10 +928,10 @@ class _PageState extends State<HomeDriverDetailPage> {
                               for (int i = 0; i < features2.length; i++)
                                 RadarVertex(
                                   radius: 15,
-                                  textOffset: Offset(0, 0),
+                                  textOffset: const Offset(0, 0),
                                   text: Text(
                                     features2[i],
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: ColorCustom.black,
                                       fontSize: 10,
                                     ),
@@ -983,33 +956,33 @@ class _PageState extends State<HomeDriverDetailPage> {
                               ),
                             ],
                           ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.fiber_manual_record,
                           size: 15,
                           color: ColorCustom.dashboard_safe_avg,
                         ),
                         Text(
                           Languages.of(context)!.avg,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 12,
                           ),
                         ),
-                        Icon(
+                        const Icon(
                           Icons.fiber_manual_record,
                           size: 15,
                           color: ColorCustom.dashboard_safe_point,
                         ),
                         Text(
                           Languages.of(context)!.score,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ColorCustom.black,
                             fontSize: 12,
                           ),

@@ -29,6 +29,7 @@ import 'package:hino/utils/utils.dart';
 import 'package:hino/widget/back_ios.dart';
 import 'package:hino/widget/dropbox_general_search.dart';
 import 'package:hino/widget/fancy_fab.dart';
+import 'package:hino/widget/timeline_widget.dart';
 import 'package:intl/intl.dart';
 
 import 'dart:ui' as ui;
@@ -139,18 +140,9 @@ class _PageState extends State<HomeBackupEventSearchPage> {
   getData2(BuildContext context) {
     List list = [];
     vid = Utils.getVehicleByLicense(widget.license)!.info!.vid!.toString();
-    param = "?user_id=" +
-        Api.profile!.userId.toString() +
-        "&vid=" +
-        vid +
-        "&start=" +
-        start +
-        " " +
-        timeStart +
-        "&end=" +
-        end +
-        " " +
-        timeEnd;
+    param =
+        "${"?user_id=" + Api.profile!.userId.toString() + "&vid=" + vid + "&start=" + start + " " + timeStart + "&end=" + end} " +
+            timeEnd;
     Api.get(context, Api.trip + param).then((value) => {
           if (value != null)
             {
@@ -201,7 +193,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
         sum += b.data[9] as int;
       }
     }
-    return Utils.numberFormat(sum) + " " + Languages.of(context)!.km;
+    return "${Utils.numberFormat(sum)} ${Languages.of(context)!.km}";
   }
 
   String calFuel(List<Trip> a) {
@@ -214,7 +206,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
         sum += b.data[10] as int;
       }
     }
-    return Utils.numberFormat(sum) + " " + Languages.of(context)!.lite;
+    return "${Utils.numberFormat(sum)} ${Languages.of(context)!.lite}";
   }
 
   String calFuelCon(List<Trip> a) {
@@ -227,7 +219,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
         sum += b.data[11] as int;
       }
     }
-    return Utils.numberFormat(sum) + " " + Languages.of(context)!.km_l;
+    return "${Utils.numberFormat(sum)} ${Languages.of(context)!.km_l}";
   }
 
   calDuration(String start, String end) {
@@ -240,13 +232,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
 
   String displayDate(
       DateTime start, DateTime end, DateTime timeStart, DateTime timeEnd) {
-    return DateFormat('dd MMM yy', Api.language).format(start) +
-        " " +
-        DateFormat('HH:mm').format(timeStart) +
-        " - " +
-        DateFormat('dd MMM yy', Api.language).format(end) +
-        " " +
-        DateFormat('HH:mm').format(timeEnd);
+    return "${DateFormat('dd MMM yy', Api.language).format(start)} ${DateFormat('HH:mm').format(timeStart)} - ${DateFormat('dd MMM yy', Api.language).format(end)} ${DateFormat('HH:mm').format(timeEnd)}";
   }
 
   List<EventGroup> listEvent = [];
@@ -276,16 +262,16 @@ class _PageState extends State<HomeBackupEventSearchPage> {
     int start = 0;
     int end = 0;
     for (int i = 0; i < data.length; i++) {
-      print(data[i].data[2].toString()+"="+data.length.toString());
-        if (data[i].data[2] == 2000) {
-          var group = EventGroup();
-          group.date = "";
-          end = i;
-          group.trips.addAll(data.sublist(start, end+1));
-          listEvent2.add(group);
-          //print(start.toString() + "--" + end.toString());
-          start = end;
-        }
+      print("${data[i].data[2]}=${data.length}");
+      if (data[i].data[2] == 2000) {
+        var group = EventGroup();
+        group.date = "";
+        end = i;
+        group.trips.addAll(data.sublist(start, end + 1));
+        listEvent2.add(group);
+        //print(start.toString() + "--" + end.toString());
+        start = end;
+      }
     }
     print(listEvent2);
   }
@@ -332,46 +318,46 @@ class _PageState extends State<HomeBackupEventSearchPage> {
             alignment: Alignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     BackIOS(),
                     Container(
-                      margin: EdgeInsets.only(top: 10),
-                      padding: EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         border: Border.all(color: ColorCustom.greyBG2),
                         color: ColorCustom.greyBG2,
-                        borderRadius: BorderRadius.all(
+                        borderRadius: const BorderRadius.all(
                           Radius.circular(15.0),
                         ),
                       ),
                       child: Row(
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 10,
                           ),
-                          Icon(
+                          const Icon(
                             Icons.calendar_today,
                             size: 20,
                             color: Colors.black,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 10,
                           ),
                           Expanded(
                             child: Text(
                               displayDate(widget.start, widget.end,
                                   widget.timeStart, widget.timeEnd),
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 16),
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 16),
                             ),
                           )
                         ],
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     Expanded(
@@ -380,14 +366,14 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                         itemCount: listEvent2.length,
                         itemBuilder: (BuildContext context, int index) {
                           var event = listEvent2[index];
-
+                          print(event.trips);
                           return GestureDetector(
                             onTap: () {},
                             child: Container(
-                              margin: EdgeInsets.only(bottom: 10),
+                              margin: const EdgeInsets.only(bottom: 10),
                               decoration: BoxDecoration(
                                 border: Border.all(color: ColorCustom.greyBG2),
-                                borderRadius: BorderRadius.all(
+                                borderRadius: const BorderRadius.all(
                                   Radius.circular(10.0),
                                 ),
                               ),
@@ -395,12 +381,12 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(10),
                                     child: Column(
                                       children: [
                                         Row(
                                           children: [
-                                            Icon(
+                                            const Icon(
                                               Icons.restore,
                                               size: 20,
                                               color: Colors.grey,
@@ -409,7 +395,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                               child: Text(
                                                 Languages.of(context)!
                                                     .event_log,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 18),
                                               ),
@@ -442,40 +428,63 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                         ),
                                         Row(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.center,
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Image.asset(
-                                              "assets/images/timeline.png",
+                                            SizedBox(
+                                              height: 120,
                                               width: 40,
-                                              height: 80,
+                                              child: TimelineWidget(
+                                                startColor:
+                                                    event.trips[0].data[2] == 1
+                                                        ? Colors.green
+                                                        : event.trips[0]
+                                                                    .data[2] ==
+                                                                2000
+                                                            ? Colors.red
+                                                            : Colors.yellow,
+                                              ),
                                             ),
+                                            // Image.asset(
+                                            //   "assets/images/timeline.png",
+                                            //   width: 40,
+                                            //   height: 80,
+                                            // ),
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    Languages.of(context)!
-                                                        .event_driving,
-                                                    style: TextStyle(
+                                                    event.trips[0].data[2] == 1
+                                                        ? Languages.of(context)!
+                                                            .event_driving
+                                                        : (event.trips[0]
+                                                                    .data[2] ==
+                                                                2000
+                                                            ? Languages.of(context)!
+                                                            .event_stopping
+                                                            : "Không xác định"),
+                                                    style: const TextStyle(
                                                         color: Colors.black,
                                                         fontSize: 14),
                                                   ),
                                                   Text(
                                                     event.trips[0].data[3],
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         color: Colors.black,
                                                         fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   ),
-                                                  SizedBox(
+                                                  const SizedBox(
                                                     height: 10,
                                                   ),
                                                   Text(
                                                     Languages.of(context)!
                                                         .event_ign_off,
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         color: Colors.black,
                                                         fontSize: 14),
                                                   ),
@@ -485,7 +494,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                                             event.trips.length -
                                                                 1]
                                                         .data[3],
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                         color: Colors.black,
                                                         fontSize: 14,
                                                         fontWeight:
@@ -501,79 +510,73 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                   ),
                                   event.isExpand
                                       ? Container(
-                                          padding: EdgeInsets.all(10),
+                                          padding: const EdgeInsets.all(10),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 10,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_date_time,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
                                               Text(
-                                                Utils.convertDateToBaseReal(
-                                                        event.trips[0]
-                                                            .data[21]) +
-                                                    " - " +
-                                                    Utils.convertDateToBaseReal(
-                                                        event
-                                                            .trips[0].data[22]),
-                                                style: TextStyle(
+                                                "${Utils.convertDateToBaseReal(event.trips[0].data[21])} - ${Utils.convertDateToBaseReal(event.trips[0].data[22])}",
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_duration,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
                                               Text(
                                                 calTime(event.trips),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_obd_start,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
                                               Text(
                                                 Utils.numberFormat(
                                                     event.trips[0].data[19]),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_obd_end,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
@@ -582,73 +585,73 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                                     .trips[
                                                         event.trips.length - 1]
                                                     .data[20]),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_distance,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
                                               Text(
                                                 calDistance(event.trips),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_fuel,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
                                               Text(
                                                 calFuel(event.trips),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_fuel_consumption,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
                                               Text(
                                                 calFuelCon(event.trips),
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 5,
                                               ),
                                               Text(
                                                 Languages.of(context)!
                                                     .event_driver,
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14),
                                               ),
@@ -659,7 +662,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                                     ? Languages.of(context)!
                                                         .unidentified_driver
                                                     : event.trips[0].data[4],
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 14,
                                                     fontWeight:
@@ -672,13 +675,13 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                   Container(
                                       alignment: Alignment.center,
                                       width: double.infinity,
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                           color: ColorCustom.greyBG2,
                                           borderRadius: BorderRadius.only(
                                             bottomRight: Radius.circular(10.0),
                                             bottomLeft: Radius.circular(10.0),
                                           )),
-                                      padding: EdgeInsets.all(5),
+                                      padding: const EdgeInsets.all(5),
                                       child: InkWell(
                                         onTap: () {
                                           setState(() {
@@ -699,7 +702,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                                               event.isExpand
                                                   ? Languages.of(context)!.less
                                                   : Languages.of(context)!.more,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: Colors.black,
                                                 fontSize: 16,
                                               ),
@@ -724,7 +727,7 @@ class _PageState extends State<HomeBackupEventSearchPage> {
                   ],
                 ),
               ),
-              isLoad ? CircularProgressIndicator() : Container()
+              isLoad ? const CircularProgressIndicator() : Container()
             ],
           ),
         ),

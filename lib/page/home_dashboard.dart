@@ -11,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/chart_data.dart';
 import 'package:hino/model/dashboard.dart';

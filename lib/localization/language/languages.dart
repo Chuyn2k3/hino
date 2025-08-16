@@ -126,6 +126,7 @@ abstract class Languages {
   String get lite;
   String get km_l;
   String get event_driving;
+  String get event_stopping;
   String get event_ign_off;
   String get event_date_time;
   String get event_duration;
@@ -188,4 +189,9 @@ abstract class Languages {
   String get loading;
   String get please_try_again;
   String get fuel_km;
+
+  String get track;
+  String get history;
+  String get settings;
+  String get unknown;
 }

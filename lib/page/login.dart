@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/localization/locale_constant.dart';
 import 'package:hino/model/profile.dart';
@@ -38,7 +39,7 @@ class _PageState extends State<LoginPage> {
 
   var token = "";
   var isLoading = false;
-
+  var obscureText = true;
   @override
   void initState() {
     // firebaseMessaging
@@ -105,7 +106,10 @@ class _PageState extends State<LoginPage> {
                 }
             }
           else
-            {Utils.showAlertDialog(context, "Sai Tên đăng nhập hoặc Mật khẩu")}
+            {
+              Utils.showAlertDialog(
+                  context, "Sai Tên đăng nhập hoặc Mật khẩu")
+            }
         });
   }
 
@@ -213,19 +217,20 @@ class _PageState extends State<LoginPage> {
                           Row(
                             children: [
                               Expanded(
+                                flex: 3,
                                 child: Container(
                                   child: TextField(
                                     controller: usernameController,
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
-                                      suffixIcon: const Icon(Icons.person_outline),
+                                      suffixIcon:
+                                          const Icon(Icons.person_outline),
                                       hintText: Languages.of(context)!.username,
                                       hintStyle: const TextStyle(fontSize: 16),
                                       // fillColor: colorSearchBg,
                                     ),
                                   ),
                                 ),
-                                flex: 3,
                               ),
                             ],
                           ),
@@ -235,20 +240,28 @@ class _PageState extends State<LoginPage> {
                           Row(
                             children: [
                               Expanded(
-                                child: Container(
-                                  child: TextField(
+                                flex: 3,
+                                child: TextField(
                                     controller: passwordController,
-                                    obscureText: true,
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
-                                      suffixIcon: const Icon(Icons.lock_outline),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          obscureText
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            obscureText = !obscureText;
+                                          });
+                                        },
+                                      ),
                                       hintText: Languages.of(context)!.password,
                                       hintStyle: const TextStyle(fontSize: 16),
                                       // fillColor: colorSearchBg,
                                     ),
-                                  ),
-                                ),
-                                flex: 3,
+                                    obscureText: obscureText),
                               ),
                             ],
                           ),
@@ -308,8 +321,9 @@ class _PageState extends State<LoginPage> {
             ),
             Container(
               margin: const EdgeInsets.all(10),
+              alignment: Alignment.topRight,
               child: InkWell(
-                onTap: (){
+                onTap: () {
                   setLang();
                 },
                 child: const Icon(
@@ -318,7 +332,6 @@ class _PageState extends State<LoginPage> {
                   color: ColorCustom.blue,
                 ),
               ),
-              alignment: Alignment.topRight,
             ),
             isLoading
                 ? const Center(

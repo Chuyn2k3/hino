@@ -1,7 +1,6 @@
 import 'languages.dart';
 
 class LanguageTh extends Languages {
-
   String get appName => "HINO";
 
   @override
@@ -83,206 +82,215 @@ class LanguageTh extends Languages {
   @override
   String get rpm_green => "รอบเครื่องเกินโซนสีเขียว (ครั้ง)";
   @override
-  String get search=> "ค้นหา";
+  String get search => "ค้นหา";
   @override
-  String get sort=> "เรียง";
+  String get sort => "เรียง";
   @override
-  String get filter=> "ตัวกรอง";
+  String get filter => "ตัวกรอง";
   @override
-  String get vehicle_list=> "รายการรถ";
+  String get vehicle_list => "รายการรถ";
   @override
-  String get geofence_des=> "รายละเอียดสถานี";
+  String get geofence_des => "รายละเอียดสถานี";
   @override
-  String get geofence_location=> "ตำแหน่ง";
+  String get geofence_location => "ตำแหน่ง";
   @override
-  String get geofence_unit=> "จำนวนรถทั้งหมดในสถานี";
+  String get geofence_unit => "จำนวนรถทั้งหมดในสถานี";
   @override
-  String get driver_title=> "พนักงานขับรถ";
+  String get driver_title => "พนักงานขับรถ";
   @override
-  String get driver=> "คนขับรถ";
+  String get driver => "คนขับรถ";
   @override
-  String get location_title=> "พิกัดรถ";
+  String get location_title => "พิกัดรถ";
   @override
-  String get last_update=> "อัพเดตล่าสุด";
+  String get last_update => "อัพเดตล่าสุด";
   @override
-  String get location=> "ตำแหน่ง";
+  String get location => "ตำแหน่ง";
   @override
   String get specific_location => "สถานที่เฉพาะ";
   @override
-  String get station=> "สถานี";
+  String get station => "สถานี";
   @override
-  String get status_vehicle=> "สถานะรถ";
+  String get status_vehicle => "สถานะรถ";
   @override
-  String get mile=> "เลขไมล์ปัจจุบัน";
+  String get mile => "เลขไมล์ปัจจุบัน";
   @override
-  String get distance=> "ระยะทางสะสม (วันนี้)";
+  String get distance => "ระยะทางสะสม (วันนี้)";
   @override
-  String get fuel=> "ปริมาณน้ำมันในถัง";
+  String get fuel => "ปริมาณน้ำมันในถัง";
   @override
-  String get km=> "กม.";
+  String get km => "กม.";
   @override
-  String get gps=> "สัญญาณจีพีเอส";
+  String get gps => "สัญญาณจีพีเอส";
   @override
-  String get gsm=> "สัญญาณจีเอสเอ็ม";
+  String get gsm => "สัญญาณจีเอสเอ็ม";
   @override
-  String get dtc_engine=> "ไฟสถานะเครื่องยนต์ผิดปกติ";
+  String get dtc_engine => "ไฟสถานะเครื่องยนต์ผิดปกติ";
   @override
-  String get on=> "เปิด";
+  String get on => "เปิด";
   @override
-  String get off=> "ปิด";
+  String get off => "ปิด";
   @override
-  String get unidentified_driver=> "ไม่ระบุผู้ขับขี่";
+  String get unidentified_driver => "ไม่ระบุผู้ขับขี่";
   @override
-  String get license=> "ทะเบียน";
+  String get license => "ทะเบียน";
   @override
-  String get vehicle_title=> "ข้อมูลรถ";
+  String get vehicle_title => "ข้อมูลรถ";
   @override
-  String get plate_no=> "ทะเบียน";
+  String get plate_no => "ทะเบียน";
   @override
-  String get vin_no=> "เลขตัวถัง";
+  String get vin_no => "เลขตัวถัง";
   @override
-  String get model=> "รุ่น";
+  String get model => "รุ่น";
   @override
-  String get maintenance=> "การซ่อมบำรุง";
+  String get maintenance => "การซ่อมบำรุง";
   @override
-  String get insurance=> "ประกันภัย";
+  String get insurance => "ประกันภัย";
   @override
-  String get tires_service=> "เปลี่ยนยาง";
+  String get tires_service => "เปลี่ยนยาง";
   @override
-  String get next_service=> "บริการครั้งถัดไป";
+  String get next_service => "บริการครั้งถัดไป";
 
   @override
-  String get event_log=> "เหตุการณ์ย้อนหลัง";
+  String get event_log => "เหตุการณ์ย้อนหลัง";
   @override
-  String get tracking_history=> "ข้อมูลย้อนหลัง";
+  String get tracking_history => "ข้อมูลย้อนหลัง";
   @override
-  String get cctv_playback=> "วิดีโอย้อนหลัง";
+  String get cctv_playback => "วิดีโอย้อนหลัง";
   @override
-  String get camera_playback=> "กล้องถ่ายรูปย้อนหลัง";
+  String get camera_playback => "กล้องถ่ายรูปย้อนหลัง";
   @override
-  String get search_by=> "ค้นหาด้วย";
+  String get search_by => "ค้นหาด้วย";
   @override
-  String get date_range=> "วันที่";
+  String get date_range => "วันที่";
   @override
-  String get time_range=> "เวลา";
+  String get time_range => "เวลา";
   @override
-  String get vehicle_name=> "ชื่อรถ";
+  String get vehicle_name => "ชื่อรถ";
   @override
-  String get please_select=> "กรุณาเลือก";
+  String get please_select => "กรุณาเลือก";
   @override
-  String get lite=> "ลิตร";
+  String get lite => "ลิตร";
   @override
-  String get km_l=> "กม./ล.";
+  String get km_l => "กม./ล.";
   @override
-  String get event_driving=> "ขับขี่";
+  String get event_driving => "ขับขี่";
   @override
-  String get event_ign_off=> "ดับเครื่อง";
+  String get event_stopping => "หยุดรถ";
   @override
-  String get event_date_time=> "วัน/เวลา";
+  String get event_ign_off => "ดับเครื่อง";
   @override
-  String get event_duration=> "ระยะเวลาในการขับขี่";
+  String get event_date_time => "วัน/เวลา";
   @override
-  String get event_obd_start=> "เลขไมล์เริ่มต้น";
+  String get event_duration => "ระยะเวลาในการขับขี่";
   @override
-  String get event_obd_end=> "เลขไมล์สิ้นสุด";
+  String get event_obd_start => "เลขไมล์เริ่มต้น";
   @override
-  String get event_distance=> "ระยะทางสะสม";
+  String get event_obd_end => "เลขไมล์สิ้นสุด";
   @override
-  String get event_fuel=> "อัตราการใช้น้ำมัน";
+  String get event_distance => "ระยะทางสะสม";
   @override
-  String get event_fuel_consumption=> "อัตราสิ้นเปลือง";
+  String get event_fuel => "อัตราการใช้น้ำมัน";
   @override
-  String get event_driver=> "ชื่อคนขับรถ";
+  String get event_fuel_consumption => "อัตราสิ้นเปลือง";
   @override
-  String get more=> "เพิ่มเติม";
+  String get event_driver => "ชื่อคนขับรถ";
   @override
-  String get less=> "น้อยลง";
+  String get more => "เพิ่มเติม";
   @override
-  String get expire_card=> "บัตรหมดอายุ";
+  String get less => "น้อยลง";
   @override
-  String get driver_distance=> "ระยะทางทั้งหมด";
+  String get expire_card => "บัตรหมดอายุ";
   @override
-  String get driver_duration=> "เวลาขับขี่ทั้งหมด";
+  String get driver_distance => "ระยะทางทั้งหมด";
   @override
-  String get username=> "ผู้ใช้งาน";
+  String get driver_duration => "เวลาขับขี่ทั้งหมด";
   @override
-  String get password=> "รหัสผ่าน";
+  String get username => "ผู้ใช้งาน";
   @override
-  String get signin=> "เข้าสู่ระบบ";
+  String get password => "รหัสผ่าน";
   @override
-  String get forgot_password=> "ลืมรหัสผ่าน?";
+  String get signin => "เข้าสู่ระบบ";
   @override
-  String get dlt_regulation=> "ผิดกฏหมายขนส่ง (ครั้ง)";
+  String get forgot_password => "ลืมรหัสผ่าน?";
   @override
-  String get driving_behavior=> "พฤติกรรมการขับขี่ (ครั้ง)";
+  String get dlt_regulation => "ผิดกฏหมายขนส่ง (ครั้ง)";
   @override
-  String get unit_times=> "ครั้ง";
+  String get driving_behavior => "พฤติกรรมการขับขี่ (ครั้ง)";
   @override
-  String get noti_event=> "เหตุการณ๋";
+  String get unit_times => "ครั้ง";
   @override
-  String get noti_vehicle=> "รถ";
+  String get noti_event => "เหตุการณ๋";
   @override
-  String get noti_driver=> "คนขับรถ";
+  String get noti_vehicle => "รถ";
   @override
-  String get noti_date=> "วัน/เวลา";
+  String get noti_driver => "คนขับรถ";
   @override
-  String get noti_location_title=> "สถานที่";
+  String get noti_date => "วัน/เวลา";
   @override
-  String get noti_location=> "ตำแหน่ง";
+  String get noti_location_title => "สถานที่";
   @override
-  String get sign_out=> "ออกจากระบบ";
+  String get noti_location => "ตำแหน่ง";
   @override
-  String get notification=> "การแจ้งเตือน";
+  String get sign_out => "ออกจากระบบ";
   @override
-  String get email_phone=> "อีเมล หรือ เบอร์โทรศัพท๋";
+  String get notification => "การแจ้งเตือน";
   @override
-  String get confirm=> "ยืนยัน";
+  String get email_phone => "อีเมล หรือ เบอร์โทรศัพท๋";
   @override
-  String get otp=> "OTP";
+  String get confirm => "ยืนยัน";
   @override
-  String get confirm_password=> "ยืนยันรหัสผ่าน";
+  String get otp => "OTP";
   @override
-  String get reset_filter=> "รีเซ็ตตัวกรอง";
+  String get confirm_password => "ยืนยันรหัสผ่าน";
   @override
-  String get speed=> "ความเร็ว";
+  String get reset_filter => "รีเซ็ตตัวกรอง";
   @override
-  String get status=> "สถานะ";
+  String get speed => "ความเร็ว";
   @override
-  String get sort_by=> "เรียงตาม";
+  String get status => "สถานะ";
   @override
-  String get unit_descending=> "ปริมาณรถมาก - น้อย";
+  String get sort_by => "เรียงตาม";
   @override
-  String get unit_ascending=> "ปริมาณรถน้อย - มาก";
+  String get unit_descending => "ปริมาณรถมาก - น้อย";
   @override
-  String get alphabet_a_z=> "ตัวอักษร A-Z";
+  String get unit_ascending => "ปริมาณรถน้อย - มาก";
   @override
-  String get alphabet_z_a=> "ตัวอักษร Z-A";
+  String get alphabet_a_z => "ตัวอักษร A-Z";
   @override
-  String get option=> "อุปกรณ์เสริม";
+  String get alphabet_z_a => "ตัวอักษร Z-A";
   @override
-  String get option_total=> "ดูทั้งหมด";
+  String get option => "อุปกรณ์เสริม";
   @override
-  String get snapshot=> "กล้องถ่ายรูป";
+  String get option_total => "ดูทั้งหมด";
   @override
-  String get temperatures=> "อุณหภูมิห้องเย็น";
+  String get snapshot => "กล้องถ่ายรูป";
   @override
-  String get door=> "ประตู";
+  String get temperatures => "อุณหภูมิห้องเย็น";
   @override
-  String get safety_belt=> "เข็มขัดนิรภัย";
+  String get door => "ประตู";
   @override
-  String get mvdr=> "วิดีโอ";
+  String get safety_belt => "เข็มขัดนิรภัย";
   @override
-  String get score_asc=> "คะแนน น้อย - มาก";
+  String get mvdr => "วิดีโอ";
   @override
-  String get score_dec=> "คะแนน มาก - น้อย";
+  String get score_asc => "คะแนน น้อย - มาก";
   @override
-  String get swipe_time=> "เวลารูดบัตรล่าสุด";
+  String get score_dec => "คะแนน มาก - น้อย";
   @override
-  String get loading=> "กรุณารอสักครู่";
+  String get swipe_time => "เวลารูดบัตรล่าสุด";
   @override
-  String get please_try_again=> "กรุณาลองใหม่อีกครั้ง";
+  String get loading => "กรุณารอสักครู่";
   @override
-  String get fuel_km=> "อัตราการใช้น้ำมัน";
+  String get please_try_again => "กรุณาลองใหม่อีกครั้ง";
+  @override
+  String get fuel_km => "อัตราการใช้น้ำมัน";
 
-
+  @override
+  String get track => "ติดตาม";
+  @override
+  String get history => "ประวัติ";
+  @override
+  String get settings => "ตั้งค่า";
+  @override
+  String get unknown => "ไม่ทราบ"; // Thai
 }
