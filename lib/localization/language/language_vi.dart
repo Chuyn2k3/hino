@@ -297,4 +297,6 @@ class LanguageVi extends Languages {
 
   @override
   String get unknown => "Không xác định";
+  @override
+  String get no_data=>"Không có dữ liệu";
 }

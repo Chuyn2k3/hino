@@ -1,63 +1,31 @@
-import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:group_button/group_button.dart';
+import 'package:intl/intl.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/localization/language/languages.dart';
-import 'package:hino/model/dropdown.dart';
 import 'package:hino/model/event_group.dart';
 import 'package:hino/model/history.dart';
-import 'package:hino/model/member.dart';
 import 'package:hino/model/trip.dart';
-import 'package:hino/model/truck.dart';
 import 'package:hino/page/home_backup_event_search_map.dart';
-import 'package:hino/page/home_backup_event_search_video.dart';
-import 'package:hino/page/home_car_filter.dart';
-import 'package:hino/page/home_detail.dart';
-import 'package:hino/utils/ScreenArguments.dart';
+import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
-import 'package:hino/utils/responsive.dart';
+import 'package:hino/utils/custom_app_bar.dart';
 import 'package:hino/utils/utils.dart';
-import 'package:hino/widget/back_ios.dart';
-import 'package:hino/widget/dropbox_general_search.dart';
-import 'package:hino/widget/fancy_fab.dart';
 import 'package:hino/widget/timeline_widget.dart';
-import 'package:intl/intl.dart';
-
-import 'dart:ui' as ui;
-
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'home_car_sort.dart';
-
 class HomeBackupEventSearchPage extends StatefulWidget {
-  const HomeBackupEventSearchPage(
-      {Key? key,
-      required this.start,
-      required this.end,
-      required this.imei,
-      required this.license,
-      required this.timeStart,
-      required this.timeEnd})
-      : super(key: key);
+  const HomeBackupEventSearchPage({
+    Key? key,
+    required this.start,
+    required this.end,
+    required this.imei,
+    required this.license,
+    required this.timeStart,
+    required this.timeEnd,
+  }) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
   final DateTime start;
   final DateTime end;
   final String imei;
@@ -66,168 +34,118 @@ class HomeBackupEventSearchPage extends StatefulWidget {
   final String license;
 
   @override
-  _PageState createState() => _PageState();
+  _HomeBackupEventSearchPageState createState() =>
+      _HomeBackupEventSearchPageState();
 }
 
-class _PageState extends State<HomeBackupEventSearchPage> {
-  var start;
-
-  var timeStart;
-
-  var end;
-
-  var timeEnd;
+class _HomeBackupEventSearchPageState extends State<HomeBackupEventSearchPage> {
+  String? start;
+  String? timeStart;
+  String? end;
+  String? timeEnd;
   int difference = 0;
-
-  // int indexStart = 0;
-  // int indexEnd = 0;
+  bool isLoad = true;
+  List<History> listHistory = [];
+  List<Trip> data = [];
+  List<EventGroup> listEvent2 = [];
+  String param = "";
+  String vid = "";
 
   @override
   void initState() {
+    super.initState();
     start = DateFormat('yyyy-MM-dd').format(widget.start);
     timeStart = DateFormat('HH:mm:ss').format(widget.timeStart);
     end = DateFormat('yyyy-MM-dd').format(widget.end);
     timeEnd = DateFormat('HH:mm:ss').format(widget.timeEnd);
-
-    // getData(context);
     getData2(context);
-    super.initState();
   }
 
-  List<History> listHistory = [];
-
-  getData(BuildContext context) {
-    var param = jsonEncode(<dynamic, dynamic>{
-      "start_date": start + " " + timeStart,
-      "end_date": end + " " + timeEnd,
-      "imei": widget.imei,
-      "order_by": "Ascending",
-      "LastEvaluatedKey": {},
-      "NextTableName": "",
-    });
-
-    Api.post(context, Api.history, param).then((value) => {
-          if (value != null)
-            {
-              if (value.containsKey("result"))
-                {
-                  listHistory = List.from(value['result']['vehicles'])
-                      .map((a) => History.fromJson(a))
-                      .toList(),
-                  group(),
-                  isLoad = false,
-                  calDuration(listHistory[0].gpsdate!,
-                      listHistory[listHistory.length - 1].gpsdate!),
-                  refresh()
-                }
-              else
-                {
-                  isLoad = false,
-                  refresh(),
-                  Utils.showAlertDialog(context, "Không tìm thấy thông tin"),
-                }
-            }
-          else
-            {}
-        });
-  }
-
-  List<Trip> data = [];
-
-  String param = "";
-  String vid = "";
-
-  getData2(BuildContext context) {
-    List list = [];
-    vid = Utils.getVehicleByLicense(widget.license)!.info!.vid!.toString();
+  Future<void> getData2(BuildContext context) async {
+    final vehicle = Utils.getVehicleByLicense(widget.license);
+    vid = vehicle?.info?.vid?.toString() ?? "";
     param =
-        "${"?user_id=" + Api.profile!.userId.toString() + "&vid=" + vid + "&start=" + start + " " + timeStart + "&end=" + end} " +
-            timeEnd;
-    Api.get(context, Api.trip + param).then((value) => {
-          if (value != null)
-            {
-              list = value["result"],
-              setData(list),
-              if (list.length <= 1)
-                {
-                  Utils.showAlertDialogEmpty(context),
-                }
-            }
-          else
-            {isLoad = false, Utils.showAlertDialogEmpty(context), refresh()}
-        });
+        "?user_id=${Api.profile!.userId}&vid=$vid&start=$start $timeStart&end=$end $timeEnd";
+    final value = await Api.get(context, Api.trip + param);
+    if (value != null && value["result"] != null) {
+      final list = value["result"] as List;
+      setData(list);
+      if (list.length <= 1) {
+        Utils.showAlertDialogEmpty(context);
+      }
+    } else {
+      setState(() => isLoad = false);
+      Utils.showAlertDialogEmpty(context);
+    }
   }
 
-  setData(List a) {
+  void setData(List<dynamic> list) {
     isLoad = false;
-    for (var b in a) {
-      if (b[13].isNotEmpty) {
-        var t = Trip();
-        t.data = b;
-        data.add(t);
+    data.clear();
+    for (var item in list) {
+      if (item[13].isNotEmpty) {
+        final trip = Trip()..data = item;
+        data.add(trip);
       }
     }
     group2();
-    refresh();
+    setState(() {});
   }
 
-  String calTime(List<Trip> a) {
-    DateTime aa = DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(a[0].data[0]);
-    DateTime bb = DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(a[0].data[1]);
-    var h = bb.difference(aa);
-    var m = bb.difference(aa).inMinutes;
-    var d = Duration(minutes: m);
-    List<String> parts = d.toString().split(':');
-    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
-    // return h.inMinutes.toStringAsFixed(0) + " ชม.";
-    // return DateFormat('HH:mm').format(date);
-  }
-
-  String calDistance(List<Trip> a) {
-    double sum = 0;
-    for (int i = 0; i < a.length - 1; i++) {
-      Trip b = a[i];
-      if (b.data[9] is double) {
-        sum += b.data[9] as double;
-      } else {
-        sum += b.data[9] as int;
+  void group2() {
+    listEvent2.clear();
+    int start = 0;
+    for (int i = 0; i < data.length; i++) {
+      if (data[i].data[2] == 2000) {
+        final group = EventGroup()..date = "";
+        group.trips.addAll(data.sublist(start, i + 1));
+        listEvent2.add(group);
+        start = i + 1;
       }
+    }
+  }
+
+  String calTime(List<Trip> trips) {
+    final startTime =
+        DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(trips[0].data[0]);
+    final endTime =
+        DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(trips[0].data[1]);
+    final duration = endTime.difference(startTime);
+    final parts = duration.toString().split(':');
+    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+  }
+
+  String calDistance(List<Trip> trips) {
+    double sum = 0;
+    for (int i = 0; i < trips.length - 1; i++) {
+      sum += (trips[i].data[9] is double
+              ? trips[i].data[9]
+              : trips[i].data[9] as int)
+          .toDouble();
     }
     return "${Utils.numberFormat(sum)} ${Languages.of(context)!.km}";
   }
 
-  String calFuel(List<Trip> a) {
+  String calFuel(List<Trip> trips) {
     double sum = 0;
-    for (int i = 0; i < a.length - 1; i++) {
-      Trip b = a[i];
-      if (b.data[10] is double) {
-        sum += b.data[10] as double;
-      } else {
-        sum += b.data[10] as int;
-      }
+    for (int i = 0; i < trips.length - 1; i++) {
+      sum += (trips[i].data[10] is double
+              ? trips[i].data[10]
+              : trips[i].data[10] as int)
+          .toDouble();
     }
     return "${Utils.numberFormat(sum)} ${Languages.of(context)!.lite}";
   }
 
-  String calFuelCon(List<Trip> a) {
+  String calFuelCon(List<Trip> trips) {
     double sum = 0;
-    for (int i = 0; i < a.length - 1; i++) {
-      Trip b = a[i];
-      if (b.data[11] is double) {
-        sum += b.data[11] as double;
-      } else {
-        sum += b.data[11] as int;
-      }
+    for (int i = 0; i < trips.length - 1; i++) {
+      sum += (trips[i].data[11] is double
+              ? trips[i].data[11]
+              : trips[i].data[11] as int)
+          .toDouble();
     }
     return "${Utils.numberFormat(sum)} ${Languages.of(context)!.km_l}";
-  }
-
-  calDuration(String start, String end) {
-    DateTime aa = DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(start);
-    DateTime bb = DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(end);
-    var h = bb.difference(aa);
-    var m = bb.difference(aa).inMinutes;
-    difference = h.inHours;
   }
 
   String displayDate(
@@ -235,55 +153,8 @@ class _PageState extends State<HomeBackupEventSearchPage> {
     return "${DateFormat('dd MMM yy', Api.language).format(start)} ${DateFormat('HH:mm').format(timeStart)} - ${DateFormat('dd MMM yy', Api.language).format(end)} ${DateFormat('HH:mm').format(timeEnd)}";
   }
 
-  List<EventGroup> listEvent = [];
-
-  group() {
-    var groupByDate =
-        groupBy(listHistory, (History obj) => obj.gpsdate!.substring(0, 10));
-    groupByDate.forEach((date, list) {
-      // Header
-      // print('${date}:');
-      var group = new EventGroup();
-      group.date = date;
-
-      // Group
-      list.forEach((listItem) {
-        // List item
-        group.history.add(listItem);
-        // print('${listItem.gpsdate}, ${listItem.location!.admin_level3_name}');
-      });
-      listEvent.add(group);
-    });
-  }
-
-  List<EventGroup> listEvent2 = [];
-
-  group2() {
-    int start = 0;
-    int end = 0;
-    for (int i = 0; i < data.length; i++) {
-      print("${data[i].data[2]}=${data.length}");
-      if (data[i].data[2] == 2000) {
-        var group = EventGroup();
-        group.date = "";
-        end = i;
-        group.trips.addAll(data.sublist(start, end + 1));
-        listEvent2.add(group);
-        //print(start.toString() + "--" + end.toString());
-        start = end;
-      }
-    }
-    print(listEvent2);
-  }
-
-  bool isLoad = true;
-
-  refresh() {
-    setState(() {});
-  }
-
-  launchMap(double lat, double long) async {
-    String googleUrl =
+  Future<void> launchMap(double lat, double long) async {
+    final googleUrl =
         'https://www.google.com/maps/search/?api=1&query=$lat,$long';
     if (await canLaunch(googleUrl)) {
       await launch(googleUrl);
@@ -292,446 +163,425 @@ class _PageState extends State<HomeBackupEventSearchPage> {
     }
   }
 
-  distanceCal(double start, double stop) {
-    return Utils.numberFormat(stop - start);
-  }
-
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      backgroundColor: Colors.black,
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _goToMe,
-      //   label: Text('My location'),
-      //   icon: Icon(Icons.near_me),
-      // ),
-      body: SafeArea(
-        child: Container(
-          color: Colors.white,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BackIOS(),
-                    Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: ColorCustom.greyBG2),
-                        color: ColorCustom.greyBG2,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(15.0),
+    final screenWidth = MediaQuery.of(context).size.width;
+    return BaseScaffold(
+      appBar: CustomAppbar.basic(
+        onTap: () => Navigator.pop(context),
+      ),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Date
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorCustom.blue,
+                        ColorCustom.blue.withOpacity(0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today,
+                          color: Colors.white, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          displayDate(widget.start, widget.end,
+                              widget.timeStart, widget.timeEnd),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 10,
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // List
+                Expanded(
+                  child: listEvent2.isEmpty && !isLoad
+                      ? Center(
+                          child: Text(
+                            Languages.of(context)!.no_data,
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.grey),
                           ),
-                          const Icon(
-                            Icons.calendar_today,
-                            size: 20,
-                            color: Colors.black,
-                          ),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                            child: Text(
-                              displayDate(widget.start, widget.end,
-                                  widget.timeStart, widget.timeEnd),
-                              style: const TextStyle(
-                                  color: Colors.black, fontSize: 16),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: false,
-                        itemCount: listEvent2.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          var event = listEvent2[index];
-                          print(event.trips);
-                          return GestureDetector(
-                            onTap: () {},
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: ColorCustom.greyBG2),
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(10.0),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: listEvent2.length,
+                          itemBuilder: (context, index) {
+                            final event = listEvent2[index];
+                            return Card(
+                              color: Colors.white,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    16), // Increased border radius for modern look
+                              ),
+                              elevation: 2, // Softer shadow
+                              clipBehavior: Clip
+                                  .antiAlias, // Ensures content doesn't overflow rounded corners
+                              child: InkWell(
+                                // Add tap feedback for the entire card
+                                onTap: () {
+                                  setState(
+                                      () => event.isExpand = !event.isExpand);
+                                },
+                                splashColor: Colors.blueAccent.withOpacity(0.1),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Header row with event type and map button
+                                      Row(
+                                        children: [
+                                          // Event type icon with color coding
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: event.trips[0].data[2] == 1
+                                                  ? Colors.green
+                                                      .withOpacity(0.1)
+                                                  : event.trips[0].data[2] ==
+                                                          2000
+                                                      ? Colors.red
+                                                          .withOpacity(0.1)
+                                                      : Colors.grey
+                                                          .withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              event.trips[0].data[2] == 1
+                                                  ? Icons.directions_car
+                                                  : event.trips[0].data[2] ==
+                                                          2000
+                                                      ? Icons.stop_circle
+                                                      : Icons.help,
+                                              color: event.trips[0].data[2] == 1
+                                                  ? Colors.green
+                                                  : event.trips[0].data[2] ==
+                                                          2000
+                                                      ? Colors.red
+                                                      : Colors.grey,
+                                              size: 28,
+                                              semanticLabel: event
+                                                          .trips[0].data[2] ==
+                                                      1
+                                                  ? Languages.of(context)!
+                                                      .event_driving
+                                                  : event.trips[0].data[2] ==
+                                                          2000
+                                                      ? Languages.of(context)!
+                                                          .event_stopping
+                                                      : Languages.of(context)!
+                                                          .unknown,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              event.trips[0].data[2] == 1
+                                                  ? Languages.of(context)!
+                                                      .event_driving
+                                                  : event.trips[0].data[2] ==
+                                                          2000
+                                                      ? Languages.of(context)!
+                                                          .event_stopping
+                                                      : Languages.of(context)!
+                                                          .unknown,
+                                              style: const TextStyle(
+                                                fontSize:
+                                                    18, // Larger font for title
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.black87,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          // Map button with tooltip
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.map,
+                                              color: Colors.blueAccent,
+                                              size: 24,
+                                            ),
+                                            onPressed: () {
+                                              final s = event.trips[0].data[0];
+                                              final e = event
+                                                  .trips[event.trips.length - 1]
+                                                  .data[1];
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      HomeBackupEventSearchMapPage(
+                                                    list: event.trips,
+                                                    vid: vid,
+                                                    timeStart: s,
+                                                    timeEnd: e,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      // Timeline + Location
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 30,
+                                            height: 100,
+                                            child: TimelineWidget(
+                                              startColor:
+                                                  event.trips[0].data[2] == 1
+                                                      ? Colors.green
+                                                      : event.trips[0]
+                                                                  .data[2] ==
+                                                              2000
+                                                          ? Colors.red
+                                                          : Colors.grey,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  event.trips[0].data[3],
+                                                  style: const TextStyle(
+                                                    fontSize:
+                                                        16, // Slightly larger for location
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.black87,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  event.trips.last.data[3],
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      // Expand details with animation
+                                      AnimatedCrossFade(
+                                        duration: const Duration(
+                                            milliseconds:
+                                                400), // Smoother transition
+                                        crossFadeState: event.isExpand
+                                            ? CrossFadeState.showFirst
+                                            : CrossFadeState.showSecond,
+                                        firstChild: GridView(
+                                          shrinkWrap: true,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount:
+                                                screenWidth > 600 ? 3 : 2,
+                                            childAspectRatio:
+                                                screenWidth > 600 ? 4 : 3,
+                                            crossAxisSpacing: 12,
+                                            mainAxisSpacing: 12,
+                                          ),
+                                          children: [
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_date_time,
+                                              "${Utils.convertDateToBaseReal(event.trips[0].data[21])} - ${Utils.convertDateToBaseReal(event.trips[0].data[22])}",
+                                              icon: Icons.calendar_today,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_duration,
+                                              calTime(event.trips),
+                                              icon: Icons.timer,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_obd_start,
+                                              Utils.numberFormat(
+                                                  event.trips[0].data[19]),
+                                              icon: Icons.speed,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_obd_end,
+                                              Utils.numberFormat(
+                                                  event.trips.last.data[20]),
+                                              icon: Icons.speed,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_distance,
+                                              calDistance(event.trips),
+                                              icon: Icons.straighten,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!.event_fuel,
+                                              calFuel(event.trips),
+                                              icon: Icons.local_gas_station,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_fuel_consumption,
+                                              calFuelCon(event.trips),
+                                              icon: Icons.water_drop,
+                                            ),
+                                            _infoTile(
+                                              Languages.of(context)!
+                                                  .event_driver,
+                                              (event.trips[0].data[4] as String)
+                                                      .isEmpty
+                                                  ? Languages.of(context)!
+                                                      .unidentified_driver
+                                                  : event.trips[0].data[4],
+                                              icon: Icons.person,
+                                            ),
+                                          ],
+                                        ),
+                                        secondChild: const SizedBox.shrink(),
+                                      ),
+                                      // Expand button with modern design
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: OutlinedButton.icon(
+                                          onPressed: () {
+                                            setState(() => event.isExpand =
+                                                !event.isExpand);
+                                          },
+                                          icon: Icon(
+                                            event.isExpand
+                                                ? Icons.expand_less
+                                                : Icons.expand_more,
+                                            color: Colors.blueAccent,
+                                          ),
+                                          label: Text(
+                                            event.isExpand
+                                                ? Languages.of(context)!.less
+                                                : Languages.of(context)!.more,
+                                            style: const TextStyle(
+                                                color: Colors.blueAccent),
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(
+                                                color: Colors.blueAccent
+                                                    .withOpacity(0.5)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.restore,
-                                              size: 20,
-                                              color: Colors.grey,
-                                            ),
-                                            Expanded(
-                                              child: Text(
-                                                Languages.of(context)!
-                                                    .event_log,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 18),
-                                              ),
-                                            ),
-                                            InkWell(
-                                              child: Image.asset(
-                                                "assets/images/google-maps.png",
-                                                width: 30,
-                                                height: 30,
-                                              ),
-                                              onTap: () {
-                                                var s = event.trips[0].data[0];
-                                                var e = event
-                                                    .trips[
-                                                        event.trips.length - 1]
-                                                    .data[1];
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            HomeBackupEventSearchMapPage(
-                                                              list: event.trips,
-                                                              vid: vid,
-                                                              timeStart: s,
-                                                              timeEnd: e,
-                                                            )));
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              height: 120,
-                                              width: 40,
-                                              child: TimelineWidget(
-                                                startColor:
-                                                    event.trips[0].data[2] == 1
-                                                        ? Colors.green
-                                                        : event.trips[0]
-                                                                    .data[2] ==
-                                                                2000
-                                                            ? Colors.red
-                                                            : Colors.yellow,
-                                              ),
-                                            ),
-                                            // Image.asset(
-                                            //   "assets/images/timeline.png",
-                                            //   width: 40,
-                                            //   height: 80,
-                                            // ),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    event.trips[0].data[2] == 1
-                                                        ? Languages.of(context)!
-                                                            .event_driving
-                                                        : (event.trips[0]
-                                                                    .data[2] ==
-                                                                2000
-                                                            ? Languages.of(context)!
-                                                            .event_stopping
-                                                            : "Không xác định"),
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 14),
-                                                  ),
-                                                  Text(
-                                                    event.trips[0].data[3],
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Text(
-                                                    Languages.of(context)!
-                                                        .event_ign_off,
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 14),
-                                                  ),
-                                                  Text(
-                                                    event
-                                                        .trips[
-                                                            event.trips.length -
-                                                                1]
-                                                        .data[3],
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  event.isExpand
-                                      ? Container(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(
-                                                height: 10,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_date_time,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                "${Utils.convertDateToBaseReal(event.trips[0].data[21])} - ${Utils.convertDateToBaseReal(event.trips[0].data[22])}",
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_duration,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                calTime(event.trips),
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_obd_start,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                Utils.numberFormat(
-                                                    event.trips[0].data[19]),
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_obd_end,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                Utils.numberFormat(event
-                                                    .trips[
-                                                        event.trips.length - 1]
-                                                    .data[20]),
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_distance,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                calDistance(event.trips),
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_fuel,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                calFuel(event.trips),
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_fuel_consumption,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                calFuelCon(event.trips),
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                Languages.of(context)!
-                                                    .event_driver,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14),
-                                              ),
-                                              Text(
-                                                (event.trips[0].data[4]
-                                                            as String)
-                                                        .isEmpty
-                                                    ? Languages.of(context)!
-                                                        .unidentified_driver
-                                                    : event.trips[0].data[4],
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : Container(),
-                                  Container(
-                                      alignment: Alignment.center,
-                                      width: double.infinity,
-                                      decoration: const BoxDecoration(
-                                          color: ColorCustom.greyBG2,
-                                          borderRadius: BorderRadius.only(
-                                            bottomRight: Radius.circular(10.0),
-                                            bottomLeft: Radius.circular(10.0),
-                                          )),
-                                      padding: const EdgeInsets.all(5),
-                                      child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            if (event.isExpand) {
-                                              event.isExpand = false;
-                                            } else {
-                                              event.isExpand = true;
-                                            }
-                                          });
-                                        },
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              event.isExpand
-                                                  ? Languages.of(context)!.less
-                                                  : Languages.of(context)!.more,
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            Icon(
-                                              event.isExpand
-                                                  ? Icons.expand_less
-                                                  : Icons.expand_more,
-                                              size: 20,
-                                              color: Colors.black,
-                                            )
-                                          ],
-                                        ),
-                                      )),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                            );
+                          },
+                        ),
                 ),
+              ],
+            ),
+          ),
+          if (isLoad)
+            Container(
+              color: Colors.black.withOpacity(0.2),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
-              isLoad ? const CircularProgressIndicator() : Container()
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoTile(String label, String value, {IconData? icon}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (icon != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 8, top: 2),
+            child: Icon(
+              icon,
+              size: 18,
+              color: Colors.grey[600],
+            ),
+          ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }

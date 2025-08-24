@@ -292,5 +292,7 @@ class LanguageTh extends Languages {
   @override
   String get settings => "ตั้งค่า";
   @override
+  String get no_data => "ไม่มีข้อมูล";
+  @override
   String get unknown => "ไม่ทราบ"; // Thai
 }

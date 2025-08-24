@@ -294,6 +294,8 @@ class LanguageJp extends Languages {
   @override
   String get settings => "設定";
   @override
+  String get no_data => "データがありません";
+  @override
   String get unknown => "不明"; // Japanese
 
 }

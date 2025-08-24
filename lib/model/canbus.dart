@@ -1,8 +1,4 @@
-import 'dart:ffi';
-
 class Canbus {
-
-
   int? accPedal;
   String? clutchSwitch;
   int? cooltemp;

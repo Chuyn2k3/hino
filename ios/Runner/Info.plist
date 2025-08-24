@@ -51,6 +51,13 @@
 	<string>This app need access to your gallery to save screenshots</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app need access to your gallery to save screenshots</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Ứng dụng cần dùng NFC để đọc/ghi thẻ lái xe.</string>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>NDEF</string>
+		<string>TAG</string> <!-- cần cho ISO15693 -->
+	</array>
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

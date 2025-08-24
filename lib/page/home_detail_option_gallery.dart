@@ -1,28 +1,9 @@
-import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hino/api/api.dart';
 import 'package:hino/model/option_snapshot.dart';
-import 'package:hino/model/truck.dart';
-import 'package:hino/model/vehicle.dart';
-import 'package:hino/model/vehicle_detail.dart';
-import 'package:hino/utils/color_custom.dart';
-import 'package:hino/utils/responsive.dart';
-import 'package:hino/utils/timeago.dart';
-import 'package:hino/utils/utils.dart';
-import 'package:hino/widget/back_ios.dart';
-import 'package:hino/widget/fancy_fab.dart';
-
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'dart:ui' as ui;
-
-import 'package:url_launcher/url_launcher.dart';
 
 class HomeDetailOptionGalleryPage extends StatefulWidget {
   const HomeDetailOptionGalleryPage({Key? key, required this.optionSnapshots}) : super(key: key);

@@ -1,8 +1,3 @@
-import 'safety.dart';
-
-import 'dashboard_data.dart';
-import 'eco.dart';
-
 class DashboardRealtime {
   int? total;
   int? unitParking;

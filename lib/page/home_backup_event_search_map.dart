@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -8,39 +7,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:group_button/group_button.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/feature/home/home.dart';
 import 'package:hino/feature/home_noti/home_noti.dart';
 import 'package:hino/feature/home_realtime/home_realtime_page.dart';
-import 'package:hino/main.dart';
 import 'package:hino/model/EventHolder.dart';
 import 'package:hino/model/factory.dart';
-import 'package:hino/model/history.dart';
 import 'package:hino/model/trip.dart';
-import 'package:hino/model/truck.dart';
 import 'package:hino/model/vehicle.dart';
-import 'package:hino/page/home_detail.dart';
-import 'package:hino/page/home_realtime.dart';
-import 'package:hino/utils/ScreenArguments.dart';
 import 'package:hino/utils/color_custom.dart';
-import 'package:hino/utils/responsive.dart';
 import 'package:hino/utils/utils.dart';
-import 'package:hino/widget/back_ios.dart';
-import 'package:hino/widget/fancy_fab.dart';
-
 import 'dart:ui' as ui;
-
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:image/image.dart' as IMG;
 
-import 'home.dart';
 import 'home_news.dart';
-import 'home_noti.dart';
 import 'info.dart';
 
 class HomeBackupEventSearchMapPage extends StatefulWidget {

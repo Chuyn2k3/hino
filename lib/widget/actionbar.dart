@@ -29,8 +29,8 @@ class _PageState extends State<ActionBar> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(color: ColorCustom.white),
+      padding: const EdgeInsets.all(10),
+      decoration: const BoxDecoration(color: ColorCustom.white),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -46,9 +46,9 @@ class _PageState extends State<ActionBar> {
           //   ),
           // ),
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             child: Text(widget.title,
-                style: TextStyle(
+                style: const TextStyle(
                     color: ColorCustom.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 20)),

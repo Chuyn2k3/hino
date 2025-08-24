@@ -1,10 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/utils/color_custom.dart';
 
 class BackIOS extends StatefulWidget {
-  BackIOS({Key? key, }) : super(key: key);
+  BackIOS({
+    Key? key,
+  }) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -28,10 +29,10 @@ class _PageState extends State<BackIOS> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return  Container(
+    return Container(
       padding: EdgeInsets.all(10),
       child: InkWell(
-        onTap: (){
+        onTap: () {
           Navigator.pop(context);
         },
         child: Row(
@@ -41,13 +42,13 @@ class _PageState extends State<BackIOS> {
               size: 30,
               color: ColorCustom.blue,
             ),
-            Text(Languages.of(context)!.backBtn,
-              style: TextStyle(
-                color: ColorCustom.blue,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
+            // Text(Languages.of(context)!.backBtn,
+            //   style: TextStyle(
+            //     color: ColorCustom.blue,
+            //     fontWeight: FontWeight.bold,
+            //     fontSize: 16,
+            //   ),
+            // ),
           ],
         ),
       ),

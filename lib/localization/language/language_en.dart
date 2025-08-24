@@ -295,6 +295,8 @@ class LanguageEn extends Languages {
   @override
   String get settings => "Settings";
   @override
+  String get no_data => "No data";
+  @override
   String get unknown => "Unknown"; // English
 
 }

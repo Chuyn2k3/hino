@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hino/localization/language/language_jp.dart';
 import 'package:hino/localization/language/language_vi.dart';
-
 import 'language/language_en.dart';
-import 'language/language_th.dart';
 import 'language/languages.dart';
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<Languages> {

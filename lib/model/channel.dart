@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:fijkplayer/fijkplayer.dart';
 
 class Channel {

@@ -163,31 +163,61 @@ class Utils {
     }
   }
 
-  static showAlertDialog(BuildContext context, String message) {
-    // set up the button
-    Widget okButton = ElevatedButton(
-      child: Text("OK"),
-      onPressed: () {
-        Navigator.pop(context);
-      },
-    );
+static showAlertDialog(BuildContext context, String message,
+    {String title = "Thông báo"}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // chỉ đóng bằng nút OK
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.black54,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorCustom.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "OK",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      content: Text(message),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
 
   static String numberFormat(double number) {
     var formatter = NumberFormat('#,###,##0.0');
@@ -709,33 +739,69 @@ class Utils {
     }
   }
 
-  static showAlertDialogEmpty(BuildContext context) {
-    // set up the button
-    Widget okButton = ElevatedButton(
-      child: Text("Go back"),
-      onPressed: () {
-        Navigator.pop(context);
-        Navigator.pop(context);
-      },
-    );
+static showAlertDialogEmpty(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // chỉ đóng bằng nút Go back
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        titlePadding: const EdgeInsets.only(top: 24, bottom: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        title: Column(
+          children: const [
+            Icon(Icons.info_outline, size: 48, color: Colors.orange),
+            SizedBox(height: 12),
+            Text(
+              "No data found",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        content: const Text(
+          "Please try again",
+          style: TextStyle(fontSize: 15, color: Colors.black54),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorCustom.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Go back",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("No data found"),
-      content: Text("Please Try Again"),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
 
   static String channelId = "1000";
   static String channelName = "FLUTTER_NOTIFICATION_CHANNEL";

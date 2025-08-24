@@ -15,6 +15,7 @@ import 'package:hino/api/api.dart';
 import 'package:hino/feature/home_driver/home_driver.dart';
 import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/feature/home_settings/home_settings.dart';
+import 'package:hino/feature/nfc/nfc_screen.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/banner.dart';
 import 'package:hino/model/marker_icon.dart';
@@ -30,7 +31,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
-
 
 final String uuid = const Uuid().v1();
 String platform = "", token = "", os = "";
@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
     const HomeBackupPage(),
     const HomeDriverPage(),
     const HomeSettingsPage(),
+    //const Iso15693LicensePage()
   ];
 
   @override
@@ -84,7 +85,9 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     final profileString = prefs.getString('profile') ?? '';
     if (profileString.isEmpty) {
-      Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+      }
       return;
     }
     final profile = Profile.fromJson(json.decode(profileString));
@@ -190,17 +193,26 @@ class _HomePageState extends State<HomePage> {
       builder: (_) => WillPopScope(
         onWillPop: () async => false,
         child: AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text("Cập nhật ứng dụng"),
-          content: const Text("Vui lòng cập nhật phiên bản mới nhất để tiếp tục."),
+          content:
+              const Text("Vui lòng cập nhật phiên bản mới nhất để tiếp tục."),
           actions: [
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                backgroundColor: ColorCustom.blue,
+              ),
               onPressed: () {
                 final url = Platform.isAndroid
                     ? "https://play.google.com/store/apps/details?id=com.hinogpsfleetmanagerapp"
                     : "https://apps.apple.com/us/app/hino-gps/id6670476079";
                 launchUrl(Uri.parse(url));
               },
-              child: const Text("Cập nhật"),
+              child:
+                  const Text("Cập nhật", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -214,7 +226,8 @@ class _HomePageState extends State<HomePage> {
       for (final c in colors) {
         final path = 'assets/images/$c${i + 1}.png';
         getBytesFromAsset(path, 250).then((bytes) {
-          listIcon.add(MarkerIcon(BitmapDescriptor.fromBytes(bytes), path, bytes));
+          listIcon
+              .add(MarkerIcon(BitmapDescriptor.fromBytes(bytes), path, bytes));
         });
       }
     }
@@ -227,15 +240,16 @@ class _HomePageState extends State<HomePage> {
       targetWidth: width,
     );
     final frame = await codec.getNextFrame();
-    final byteData = await frame.image.toByteData(format: ui.ImageByteFormat.png);
+    final byteData =
+        await frame.image.toByteData(format: ui.ImageByteFormat.png);
     return byteData!.buffer.asUint8List();
   }
 
   @override
   void dispose() {
-    super.dispose();
     isActive = false;
     notiController.close();
+    super.dispose();
   }
 
   @override
@@ -245,41 +259,88 @@ class _HomePageState extends State<HomePage> {
       _currentIndex = 0;
     }
     final lang = Languages.of(context)!;
+
     return Scaffold(
-      backgroundColor: ColorCustom.black,
-      body: SafeArea(
-        child: listBanner.isEmpty && Api.profile == null
-            ? _buildEmptyState()
-            : Column(
-                children: [
-                  Expanded(child: _pages[_currentIndex]),
-                  BottomNavigationBar(
-                    type: BottomNavigationBarType.fixed,
-                    currentIndex: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i),
-                    selectedItemColor: ColorCustom.blue,
-                    unselectedItemColor: ColorCustom.greyButton,
-                    items: [
-                      _navItem(lang.track, "Fix Icon Hino25.svg"),
-                      _navItem(lang.history, "icon_history.svg"),
-                      _navItem(lang.event_driver, "Fix Icon Hino33.svg"),
-                      _navItem(lang.settings, "Fix Icon Hino15.svg", size: 30),
-                    ],
-                  ),
-                ],
-              ),
+      extendBody: true,
+      backgroundColor: Colors.white,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+          ),
+        ),
+        child: SafeArea(
+          top:false,
+          bottom: false,
+          child: listBanner.isEmpty && Api.profile == null
+              ? _buildEmptyState()
+              : _pages[_currentIndex],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomNav(lang),
+    );
+  }
+
+  Widget _buildBottomNav(Languages lang) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            child: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              onTap: (i) => setState(() => _currentIndex = i),
+              selectedItemColor: ColorCustom.blue,
+              unselectedItemColor: const Color(0xFF94A3B8),
+              backgroundColor: Colors.white,
+              elevation: 0,
+              items: [
+                _navItem(lang.track, "Fix Icon Hino25.svg"),
+                _navItem(lang.history, "icon_history.svg"),
+                _navItem(lang.event_driver, "Fix Icon Hino33.svg"),
+                _navItem(lang.settings, "Fix Icon Hino15.svg", size: 30),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  BottomNavigationBarItem _navItem(String label, String asset,
-      {double? size}) {
+  BottomNavigationBarItem _navItem(String label, String asset, {double? size}) {
     return BottomNavigationBarItem(
-      icon: SvgPicture.asset("assets/images/$asset", width: size),
-      activeIcon: SvgPicture.asset(
-        "assets/images/$asset",
-        width: size,
-        color: ColorCustom.blue,
+      icon: SvgPicture.asset("assets/images/$asset",
+          width: size ?? 24, color: const Color(0xFF94A3B8)),
+      activeIcon: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: ColorCustom.blue.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: SvgPicture.asset("assets/images/$asset",
+            width: size ?? 24, color: ColorCustom.blue),
       ),
       label: label,
     );
@@ -290,12 +351,16 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Image.asset('assets/images/logo_login.png'),
-          )),
-          const Text("All Rights Reserved. © Onelink Technology Co., Ltd.",
-              style: TextStyle(color: Colors.black, fontSize: 10)),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Image.asset('assets/images/logo_login.png'),
+            ),
+          ),
+          const Text(
+            "All Rights Reserved. © Onelink Technology Co., Ltd.",
+            style: TextStyle(color: Colors.black54, fontSize: 10),
+          ),
           const SizedBox(height: 10),
         ],
       ),
