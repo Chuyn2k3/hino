@@ -12,6 +12,8 @@ import 'package:hino/utils/utils.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../utils/text_converter.dart';
+
 class HomeDriverPage extends StatefulWidget {
   const HomeDriverPage({super.key});
 
@@ -24,6 +26,9 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   String _lastUpdate = '';
   bool _isSearching = false;
   final TextEditingController _searchCtrl = TextEditingController();
+  Set<String> _writingNfcDrivers =
+      {}; // Track which drivers are currently writing NFC
+  bool _isReadingNfc = false; // Track NFC read operation
 
   @override
   void initState() {
@@ -88,6 +93,441 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     );
   }
 
+  Future<void> _writeNfcCard(Driver driver) async {
+    String licenseNumber = driver.personalId ?? "";
+    String driverName =
+        ((driver.firstname ?? "") + " " + (driver.lastname ?? "")).trim();
+    String driverId = driver.personalId ?? driver.firstname ?? "";
+    String nfcDriverName = TextConverter.toNfcFormat(driverName);
+    String nfcLicenseNumber = TextConverter.toNfcFormat(licenseNumber);
+    // Validate data first
+    if (nfcDriverName.isEmpty || nfcLicenseNumber.isEmpty) {
+      _showErrorDialog("Dữ liệu không hợp lệ",
+          "Thông tin tài xế không đầy đủ hoặc chứa ký tự không hợp lệ.");
+      return;
+    }
+
+    // Show NFC writing dialog
+    _showNfcWritingDialog(driver, driverId, licenseNumber, driverName);
+  }
+
+  void _showNfcWritingDialog(
+      Driver driver, String driverId, String licenseNumber, String driverName) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.nfc,
+                  size: 64,
+                  color: ColorCustom.blue,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Ghi thẻ NFC",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "Tài xế: ${driver.firstname ?? ''} ${driver.lastname ?? ''}",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "GPLX: ${driver.personalId ?? 'N/A'}",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.touch_app,
+                          color: Colors.blue.shade600, size: 32),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Vui lòng đặt mặt trước của thẻ vào vị trí nfc của máy",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.blue.shade600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _writingNfcDrivers.remove(driverId);
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "Hủy",
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      setState(() {
+        _writingNfcDrivers.remove(driverId);
+      });
+    });
+
+    setState(() {
+      _writingNfcDrivers.add(driverId);
+    });
+
+    _startNfcWriting(driverId, licenseNumber, driverName);
+  }
+
+  Future<void> _startNfcWriting(
+      String driverId, String licenseNumber, String driverName) async {
+    try {
+      await NfcHelper.writeCard(
+        data: DriverCardData(
+          licenseNumber: licenseNumber,
+          driverName: driverName,
+        ),
+        onStatus: (status) {
+          Navigator.of(context).pop(); // Close dialog
+          _showSuccessDialog("Ghi NFC thành công!",
+              "Thẻ NFC đã được ghi thông tin tài xế $driverName");
+          // Update dialog with status
+        },
+        onError: (error) {
+          Navigator.of(context).pop(); // Close dialog
+          _showErrorDialog("Lỗi ghi NFC", error);
+        },
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close dialog
+      _showErrorDialog("Lỗi ghi NFC", e.toString());
+    }
+  }
+
+  Future<void> _readNfcCard() async {
+    _showNfcReadingDialog();
+  }
+
+  void _showNfcReadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.nfc,
+                  size: 64,
+                  color: ColorCustom.blue,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Đọc thẻ NFC",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.touch_app,
+                          color: Colors.blue.shade600, size: 32),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Vui lòng chạm thẻ vào máy",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.blue.shade600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isReadingNfc = false;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "Hủy",
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      setState(() {
+        _isReadingNfc = false;
+      });
+    });
+
+    setState(() {
+      _isReadingNfc = true;
+    });
+
+    _startNfcReading();
+  }
+
+  Future<void> _startNfcReading() async {
+    try {
+      await NfcHelper.readCard(
+        onCardRead: (data) {
+          Navigator.of(context).pop(); // Close reading dialog
+          _showCardInfoDialog(data);
+        },
+        onError: (error) {
+          Navigator.of(context).pop(); // Close reading dialog
+          _showErrorDialog("Lỗi đọc NFC", error);
+        },
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close reading dialog
+      _showErrorDialog("Lỗi đọc NFC", e.toString());
+    }
+  }
+
+  void _showCardInfoDialog(DriverCardData cardData) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.credit_card, color: ColorCustom.blue, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Thông tin thẻ NFC",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Tên tài xế:",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        cardData.driverName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Số GPLX:",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        cardData.licenseNumber,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorCustom.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      "Đóng",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const SizedBox(width: 12),
+              Text(title, style: TextStyle(color: Colors.green.shade700)),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("OK", style: TextStyle(color: ColorCustom.blue)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 28),
+              const SizedBox(width: 12),
+              Text(title, style: TextStyle(color: Colors.red.shade700)),
+            ],
+          ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("OK", style: TextStyle(color: ColorCustom.blue)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildScoreBadge(Driver d) {
     final lang = Languages.of(context)!;
     return Container(
@@ -134,40 +574,75 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
 
     return BaseScaffold(
       appBar: CustomAppbar.basic(
-        flexibleSpace: Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Align(
-            alignment: Alignment.bottomLeft,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (_) => const AddDriverPage(), // màn thêm tài xế
-                //   ),
-                // );
-              },
-              icon: const Icon(Icons.person_add, size: 18, color: Colors.white),
-              label: const Text(
-                "Thêm tài xế",
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorCustom.blue,
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-              ),
-            ),
-          ),
-        ),
+        flexibleSpace: !_isSearching
+            ? Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          // Thêm màn thêm tài xế nếu cần
+                        },
+                        icon: const Icon(Icons.person_add,
+                            size: 18, color: Colors.white),
+                        label: const Text(
+                          "Thêm tài xế",
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorCustom.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: _isReadingNfc ? null : _readNfcCard,
+                        icon: _isReadingNfc
+                            ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.nfc,
+                                size: 18, color: Colors.white),
+                        label: Text(
+                          _isReadingNfc ? "Đang đọc..." : "Đọc thẻ",
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isReadingNfc
+                              ? Colors.grey.shade400
+                              : Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : null,
         isLeading: false,
         widgetTitle: !_isSearching
-            ? Text(lang.unit_driver,
-                style: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.w600))
+            ? SizedBox()
+            // Text(lang.unit_driver,
+            //         style: const TextStyle(
+            //             color: Colors.black, fontWeight: FontWeight.w600))
             : TextField(
                 controller: _searchCtrl,
                 onChanged: _search,
@@ -179,24 +654,15 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                       const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: Colors.grey, // màu viền mặc định
-                      width: 1,
-                    ),
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: Colors.grey, // viền khi chưa focus
-                      width: 1,
-                    ),
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: Colors.blue, // viền khi focus
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
                   ),
                   prefixIcon: const Icon(Icons.search, size: 20),
                 ),
@@ -278,7 +744,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           SizedBox(height: 16),
           Expanded(
             child: _drivers.isEmpty
-                ? _buildShimmerList() // 🔥 show shimmer khi chưa có data
+                ? _buildShimmerList()
                 : _filtered.isEmpty
                     ? Center(
                         child: Text(lang.please_try_again,
@@ -288,6 +754,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                         itemCount: _filtered.length,
                         itemBuilder: (context, index) {
                           final d = _filtered[index];
+                          String driverId = d.personalId ?? d.firstname ?? "";
+                          bool isWritingNfc =
+                              _writingNfcDrivers.contains(driverId);
+
                           return InkWell(
                             onTap: () => _openDetail(d),
                             child: Container(
@@ -334,13 +804,11 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          '${d.prefix ?? ''} ${d.firstname ?? ''} ${d.lastname ?? ''}',
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
+                                            '${d.prefix ?? ''} ${d.firstname ?? ''} ${d.lastname ?? ''}',
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87)),
                                         const SizedBox(height: 4),
                                         Utils.swipeCard(d, context),
                                         if (d.display_datetime_swipe
@@ -350,23 +818,20 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                             padding:
                                                 const EdgeInsets.only(top: 2),
                                             child: Text(
-                                              d.display_datetime_swipe!,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black54),
-                                            ),
+                                                d.display_datetime_swipe!,
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.black54)),
                                           ),
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
                                             if ((d.vehicleName?.isNotEmpty ??
                                                 false))
-                                              Text(
-                                                d.vehicleName!,
-                                                style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Colors.black87),
-                                              ),
+                                              Text(d.vehicleName!,
+                                                  style: const TextStyle(
+                                                      fontSize: 13,
+                                                      color: Colors.black87)),
                                             if (d.vehicle?.info?.licenseprov
                                                     ?.isNotEmpty ??
                                                 false)
@@ -385,90 +850,57 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                       ],
                                     ),
                                   ),
-                                  // Thay cái này:
-// _buildScoreBadge(d),
-
-// Bằng nút Update:
                                   Column(
                                     children: [
-                                      // Nút Xem
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  HomeDriverDetailPage(
-                                                      driver: d),
-                                            ),
-                                          );
-                                        },
+                                      // ElevatedButton(
+                                      //   onPressed: () => _openDetail(d),
+                                      //   style: ElevatedButton.styleFrom(
+                                      //     backgroundColor: ColorCustom.blue,
+                                      //     foregroundColor: Colors.white,
+                                      //     padding: const EdgeInsets.symmetric(
+                                      //         horizontal: 10, vertical: 8),
+                                      //     shape: RoundedRectangleBorder(
+                                      //         borderRadius:
+                                      //             BorderRadius.circular(20)),
+                                      //   ),
+                                      //   child: const Text("Xem",
+                                      //       style: TextStyle(
+                                      //           fontSize: 12,
+                                      //           fontWeight: FontWeight.w600)),
+                                      // ),
+                                      // const SizedBox(height: 6),
+                                      ElevatedButton.icon(
+                                        onPressed: isWritingNfc
+                                            ? null
+                                            : () => _writeNfcCard(d),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: ColorCustom.blue,
+                                          backgroundColor: isWritingNfc
+                                              ? Colors.grey.shade400
+                                              : ColorCustom.blue,
                                           foregroundColor: Colors.white,
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 8),
+                                              horizontal: 8, vertical: 8),
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(20)),
                                         ),
-                                        child: const Text(
-                                          "Xem",
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-
-                                      // Nút Ghi (NFC)
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          if (!await NfcHelper.isAvailable()) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                  content: Text(
-                                                      "NFC không khả dụng")),
-                                            );
-                                            return;
-                                          }
-                                          final payload =
-                                              NfcHelper.buildPayload(
-                                            license: d.card_id ??
-                                                "", // lấy từ model Driver
-                                            name:
-                                                d.firstname ?? "${d.lastname}",
-                                            extraData: '',
-                                          );
-
-                                          await NfcHelper.writeIso15693(
-                                              payload);
-
-                                          // Sau khi ghi, bạn có thể gọi API để báo đã ghi xong
-                                          // await Api.post(
-                                          //   context,
-                                          //   Api.saveDriverNfc,
-                                          //   body: {
-                                          //     "driverId": d.id,
-                                          //     "status": "nfc_written",
-                                          //   },
-                                          // );
-
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                                content: Text(
-                                                    "Đã ghi NFC cho tài xế")),
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: ColorCustom.blue,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                        child: const Text("Ghi",
+                                        icon: isWritingNfc
+                                            ? SizedBox(
+                                                width: 12,
+                                                height: 12,
+                                                child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                                Color>(
+                                                            Colors.white)))
+                                            : Icon(Icons.nfc, size: 14),
+                                        label: Text(
+                                            isWritingNfc
+                                                ? "Đang ghi..."
+                                                : "Ghi thẻ",
                                             style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 11,
                                                 fontWeight: FontWeight.w600)),
                                       ),
                                     ],
@@ -485,10 +917,12 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     );
   }
 
+  bool isAscii(String str) => str.codeUnits.every((c) => c <= 127);
+
   Widget _buildShimmerList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: 6, // số lượng shimmer hiển thị
+      itemCount: 6,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: Colors.grey.shade300,
@@ -504,13 +938,11 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                ),
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(40))),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -525,13 +957,11 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                   ),
                 ),
                 Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20))),
               ],
             ),
           ),

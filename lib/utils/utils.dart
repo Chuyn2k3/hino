@@ -163,61 +163,60 @@ class Utils {
     }
   }
 
-static showAlertDialog(BuildContext context, String message,
-    {String title = "Thông báo"}) {
-  showDialog(
-    context: context,
-    barrierDismissible: false, // chỉ đóng bằng nút OK
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+  static showAlertDialog(BuildContext context, String message,
+      {String title = "Thông báo"}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // chỉ đóng bằng nút OK
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
-          textAlign: TextAlign.center,
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorCustom.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black54,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorCustom.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "OK",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  "OK",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+          ],
+        );
+      },
+    );
+  }
 
   static String numberFormat(double number) {
     var formatter = NumberFormat('#,###,##0.0');
@@ -476,17 +475,24 @@ static showAlertDialog(BuildContext context, String message,
     switch (driver.statusSwipeCard) {
       case 0:
         return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               Icons.credit_card,
               size: 20,
               color: Colors.red,
             ),
-            Text(
-              Languages.of(context)!.no_swipe_card,
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 14,
+            SizedBox(
+              width: 4,
+            ),
+            Expanded(
+              child: Text(
+                Languages.of(context)!.no_swipe_card,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 14,
+                ),
+                maxLines: 2,
               ),
             ),
           ],
@@ -497,17 +503,24 @@ static showAlertDialog(BuildContext context, String message,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.credit_card,
                   size: 20,
                   color: Colors.green,
                 ),
-                Text(
-                  Languages.of(context)!.swipe_card,
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
+                SizedBox(
+                  width: 4,
+                ),
+                Expanded(
+                  child: Text(
+                    Languages.of(context)!.swipe_card,
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
                   ),
                 ),
               ],
@@ -516,34 +529,48 @@ static showAlertDialog(BuildContext context, String message,
         );
       case 2:
         return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               Icons.credit_card,
               size: 20,
               color: Colors.orange,
             ),
-            Text(
-              Languages.of(context)!.wrong_license,
-              style: TextStyle(
-                color: Colors.orange,
-                fontSize: 14,
+            SizedBox(
+              width: 4,
+            ),
+            Expanded(
+              child: Text(
+                Languages.of(context)!.wrong_license,
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 14,
+                ),
+                maxLines: 2,
               ),
             ),
           ],
         );
       case 3:
         return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               Icons.credit_card,
               size: 20,
               color: Colors.grey,
             ),
-            Text(
-              Languages.of(context)!.expire_card,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
+            SizedBox(
+              width: 4,
+            ),
+            Expanded(
+              child: Text(
+                Languages.of(context)!.expire_card,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+                maxLines: 2,
               ),
             ),
           ],
@@ -739,69 +766,69 @@ static showAlertDialog(BuildContext context, String message,
     }
   }
 
-static showAlertDialogEmpty(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: false, // chỉ đóng bằng nút Go back
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        titlePadding: const EdgeInsets.only(top: 24, bottom: 8),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        title: Column(
-          children: const [
-            Icon(Icons.info_outline, size: 48, color: Colors.orange),
-            SizedBox(height: 12),
-            Text(
-              "No data found",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+  static showAlertDialogEmpty(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // chỉ đóng bằng nút Go back
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          titlePadding: const EdgeInsets.only(top: 24, bottom: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          title: Column(
+            children: const [
+              Icon(Icons.info_outline, size: 48, color: Colors.orange),
+              SizedBox(height: 12),
+              Text(
+                "No data found",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
+            ],
+          ),
+          content: const Text(
+            "Please try again",
+            style: TextStyle(fontSize: 15, color: Colors.black54),
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorCustom.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Go back",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           ],
-        ),
-        content: const Text(
-          "Please try again",
-          style: TextStyle(fontSize: 15, color: Colors.black54),
-          textAlign: TextAlign.center,
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorCustom.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-              child: const Text(
-                "Go back",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+        );
+      },
+    );
+  }
 
   static String channelId = "1000";
   static String channelName = "FLUTTER_NOTIFICATION_CHANNEL";

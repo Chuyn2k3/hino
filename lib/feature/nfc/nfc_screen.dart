@@ -1097,8 +1097,8 @@ class _NFCDriverCardScreenState extends State<NFCDriverCardScreen> {
       }
 
       return DriverCardData(
-        licenseNumber: licenseNumber,
-        driverName: driverName,
+        licenseNumber: licenseNumber.trim(),
+        driverName: driverName.trim(),
       );
     } catch (e) {
       print('Error parsing card data: $e');
