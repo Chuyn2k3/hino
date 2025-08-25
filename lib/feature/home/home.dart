@@ -62,8 +62,8 @@ class _HomePageState extends State<HomePage> {
     const HomeRealtimePage(),
     const HomeBackupPage(),
     const HomeDriverPage(),
-    const HomeSettingsPage(),
-    //const Iso15693LicensePage()
+    //const HomeSettingsPage(),
+    NFCDriverCardScreen()
   ];
 
   @override
@@ -272,7 +272,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         child: SafeArea(
-          top:false,
+          top: false,
           bottom: false,
           child: listBanner.isEmpty && Api.profile == null
               ? _buildEmptyState()

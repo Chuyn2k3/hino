@@ -1,4 +1,4 @@
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 
 class CustomPicker extends CommonPickerModel {
   String digits(int value, int length) {
@@ -58,19 +58,9 @@ class CustomPicker extends CommonPickerModel {
   @override
   DateTime finalTime() {
     return currentTime.isUtc
-        ? DateTime.utc(
-        currentTime.year,
-        currentTime.month,
-        currentTime.day,
-        currentLeftIndex(),
-        currentMiddleIndex(),
-        currentRightIndex())
-        : DateTime(
-        currentTime.year,
-        currentTime.month,
-        currentTime.day,
-        currentLeftIndex(),
-        currentMiddleIndex(),
-        currentRightIndex());
+        ? DateTime.utc(currentTime.year, currentTime.month, currentTime.day,
+            currentLeftIndex(), currentMiddleIndex(), currentRightIndex())
+        : DateTime(currentTime.year, currentTime.month, currentTime.day,
+            currentLeftIndex(), currentMiddleIndex(), currentRightIndex());
   }
 }
