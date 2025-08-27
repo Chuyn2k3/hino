@@ -8,7 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart' as cm;
+import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart'
+    as cm;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/feature/home/home.dart';
@@ -354,10 +355,11 @@ class _PageState extends State<HomeRealtimePage> {
           final bool showLicense = currentZoom >= 8.0;
 
           return Marker(
+            rotation: v.gps?.course ?? 0.0,
             markerId: MarkerId(v.info!.licenseplate!),
             position: cluster.location,
             onTap: () => _markerVehicleClick(v),
-            anchor: const Offset(0.5, 1),
+            anchor: const Offset(0.5, 0.5),
             icon: await _createMarkerWithLicense(
               v,
               showLicense: showLicense,
@@ -675,118 +677,118 @@ class _PageState extends State<HomeRealtimePage> {
   }
 
   Widget _buildDetailView() {
-  if (!isShowDetail || vehicleClick == null) return const SizedBox.shrink();
+    if (!isShowDetail || vehicleClick == null) return const SizedBox.shrink();
 
-  return InkWell(
-    onTap: () {
-      isDialOpen.value = false;
-      showBarModalBottomSheet(
-        expand: true,
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (context) => HomeDetailPage(vehicle: vehicleClick ?? Vehicle()),
-      );
-    },
-    child: Container(
-      margin: const EdgeInsets.only(
-        bottom: kBottomNavigationBarHeight * 2.5,
-        left: 16,
-        right: 16,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Container(
-          //   width: 40,
-          //   height: 4,
-          //   margin: const EdgeInsets.only(bottom: 10),
-          //   decoration: BoxDecoration(
-          //     color: Colors.grey.shade400,
-          //     borderRadius: BorderRadius.circular(2),
-          //   ),
-          // ),
-          Row(
-            children: [
-              // icon trạng thái xe
-              Utils.statusCarImage(
-                vehicleClick!.gps!.io_name!,
-                vehicleClick!.gps!.speed,
-              ),
-              const SizedBox(width: 12),
-
-              // thông tin xe
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      vehicleClick!.info!.vehicle_name ?? "-",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: ColorCustom.black,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      vehicleClick!.info!.licenseprov ?? "",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
+    return InkWell(
+      onTap: () {
+        isDialOpen.value = false;
+        showBarModalBottomSheet(
+          expand: true,
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder: (context) =>
+              HomeDetailPage(vehicle: vehicleClick ?? Vehicle()),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(
+          bottom: kBottomNavigationBarHeight * 2.5,
+          left: 16,
+          right: 16,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Container(
+            //   width: 40,
+            //   height: 4,
+            //   margin: const EdgeInsets.only(bottom: 10),
+            //   decoration: BoxDecoration(
+            //     color: Colors.grey.shade400,
+            //     borderRadius: BorderRadius.circular(2),
+            //   ),
+            // ),
+            Row(
+              children: [
+                // icon trạng thái xe
+                Utils.statusCarImage(
+                  vehicleClick!.gps!.io_name!,
+                  vehicleClick!.gps!.speed,
                 ),
-              ),
+                const SizedBox(width: 12),
 
-              // tốc độ hiển thị trong circle
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: ColorCustom.blue.withOpacity(0.08),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      vehicleClick!.gps!.speed.toStringAsFixed(0),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: ColorCustom.blue,
+                // thông tin xe
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        vehicleClick!.info!.vehicle_name ?? "-",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: ColorCustom.black,
+                        ),
                       ),
-                    ),
-                    Text(
-                      Languages.of(context)!.km_h,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
+                      const SizedBox(height: 2),
+                      Text(
+                        vehicleClick!.info!.licenseprov ?? "",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+
+                // tốc độ hiển thị trong circle
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: ColorCustom.blue.withOpacity(0.08),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        vehicleClick!.gps!.speed.toStringAsFixed(0),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: ColorCustom.blue,
+                        ),
+                      ),
+                      Text(
+                        Languages.of(context)!.km_h,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildBackButton() {
     return Container(

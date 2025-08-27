@@ -750,7 +750,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                         child: Text(lang.please_try_again,
                             style: const TextStyle(color: Colors.grey)))
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.only(
+                            bottom: kBottomNavigationBarHeight,
+                            left: 16,
+                            right: 16),
                         itemCount: _filtered.length,
                         itemBuilder: (context, index) {
                           final d = _filtered[index];

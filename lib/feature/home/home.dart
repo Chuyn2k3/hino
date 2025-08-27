@@ -62,8 +62,8 @@ class _HomePageState extends State<HomePage> {
     const HomeRealtimePage(),
     const HomeBackupPage(),
     const HomeDriverPage(),
-    //const HomeSettingsPage(),
-    NFCDriverCardScreen()
+    const HomeSettingsPage(),
+    //lNFCDriverCardScreen()
   ];
 
   @override
