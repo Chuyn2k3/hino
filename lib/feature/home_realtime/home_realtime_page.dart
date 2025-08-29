@@ -108,10 +108,35 @@ class _PageState extends State<HomeRealtimePage> {
     if (listVehicle.isEmpty) {
       _loadInitialData();
     } else {
+      _preloadMarkerIcons();
       _updatePinRefresh();
     }
 
     _startApiTimer();
+  }
+
+  Future<void> _preloadMarkerIcons() async {
+    for (Vehicle v in listVehicle) {
+      if (v.info?.licenseplate == null) continue;
+      final iconKey = '${v.info!.licenseplate}_icon';
+      final licenseKey = '${v.info!.licenseplate}_license';
+      if (!_markerIconCache.containsKey(iconKey)) {
+        _markerIconCache[iconKey] =
+            BitmapDescriptor.fromBytes(_getMapIconByte(v));
+      }
+      if (!_markerIconCache.containsKey(licenseKey)) {
+        final markerWidget = VehicleMarkerWidget(
+          iconBytes: _getMapIconByte(v),
+          licensePlate: v.info!.licenseplate!,
+        );
+        _markerIconCache[licenseKey] = await _getBitmapDescriptorFromWidget(
+          licenseKey,
+          markerWidget,
+          context: context,
+          targetSize: const Size(200, 180),
+        );
+      }
+    }
   }
 
   void _startApiTimer() {
@@ -147,6 +172,28 @@ class _PageState extends State<HomeRealtimePage> {
     }
   }
 
+  // Future<void> _fetchAndUpdateData() async {
+  //   if (_isApiLoading || !mounted) return;
+  //
+  //   _isApiLoading = true;
+  //   try {
+  //     final value = await Api.get(context, Api.realtime);
+  //     if (value != null && mounted) {
+  //       List<Vehicle> newList = List.from(value['vehicles'])
+  //           .map((a) => Vehicle.fromJson(a))
+  //           .toList();
+  //
+  //       if (!_isVehicleListEqual(newList, _lastVehicleList)) {
+  //         listVehicle = newList;
+  //         _lastVehicleList = List.from(newList);
+  //         _updatePinRefresh();
+  //         _safeSetState();
+  //       }
+  //     }
+  //   } finally {
+  //     _isApiLoading = false;
+  //   }
+  // }
   Future<void> _fetchAndUpdateData() async {
     if (_isApiLoading || !mounted) return;
 
@@ -156,6 +203,7 @@ class _PageState extends State<HomeRealtimePage> {
       if (value != null && mounted) {
         List<Vehicle> newList = List.from(value['vehicles'])
             .map((a) => Vehicle.fromJson(a))
+            .where((v) => v.info != null && v.gps != null)
             .toList();
 
         if (!_isVehicleListEqual(newList, _lastVehicleList)) {
@@ -300,6 +348,44 @@ class _PageState extends State<HomeRealtimePage> {
   }
 
   /// 2️⃣ Tạo marker hiển thị icon hoặc biển số
+  // Future<BitmapDescriptor> _createMarkerWithLicense(
+  //   Vehicle v, {
+  //   required bool showLicense,
+  //   required BuildContext context,
+  // }) async {
+  //   if (v.info == null || v.info!.licenseplate == null) {
+  //     return BitmapDescriptor.fromBytes(_getMapIconByte(v));
+  //   }
+  //
+  //   final String cacheKey =
+  //       '${v.info!.licenseplate}_${showLicense ? "license" : "icon"}';
+  //   if (_markerIconCache.containsKey(cacheKey)) {
+  //     return _markerIconCache[cacheKey]!;
+  //   }
+  //
+  //   if (!showLicense) {
+  //     final marker = BitmapDescriptor.fromBytes(_getMapIconByte(v));
+  //     _addToCache(cacheKey, marker);
+  //     return marker;
+  //   }
+  //
+  //   final Uint8List iconBytes = _getMapIconByte(v);
+  //   final String licenseText = v.info!.licenseplate!;
+  //
+  //   final markerWidget = VehicleMarkerWidget(
+  //     iconBytes: iconBytes,
+  //     licensePlate: licenseText,
+  //   );
+  //
+  //   final marker = await _getBitmapDescriptorFromWidget(
+  //     cacheKey,
+  //     markerWidget,
+  //     context: context,
+  //     targetSize: const Size(200, 180),
+  //   );
+  //
+  //   return marker;
+  // }
   Future<BitmapDescriptor> _createMarkerWithLicense(
     Vehicle v, {
     required bool showLicense,
@@ -315,37 +401,84 @@ class _PageState extends State<HomeRealtimePage> {
       return _markerIconCache[cacheKey]!;
     }
 
-    if (!showLicense) {
-      final marker = BitmapDescriptor.fromBytes(_getMapIconByte(v));
-      _addToCache(cacheKey, marker);
-      return marker;
-    }
+    final marker = showLicense
+        ? await _getBitmapDescriptorFromWidget(
+            cacheKey,
+            VehicleMarkerWidget(
+              iconBytes: _getMapIconByte(v),
+              licensePlate: v.info!.licenseplate!,
+            ),
+            context: context,
+            targetSize: const Size(200, 180),
+          )
+        : BitmapDescriptor.fromBytes(_getMapIconByte(v));
 
-    final Uint8List iconBytes = _getMapIconByte(v);
-    final String licenseText = v.info!.licenseplate!;
-
-    final markerWidget = VehicleMarkerWidget(
-      iconBytes: iconBytes,
-      licensePlate: licenseText,
-    );
-
-    final marker = await _getBitmapDescriptorFromWidget(
-      cacheKey,
-      markerWidget,
-      context: context,
-      targetSize: const Size(350, 320),
-    );
-
+    _addToCache(cacheKey, marker);
     return marker;
   }
 
   /// 3️⃣ Hàm builder cho marker
+  // Future<Marker> Function(cm.Cluster<Place>) get _markerBuilder =>
+  //     (cluster) async {
+  //       if (cluster.items.length == 1) {
+  //         final v = cluster.items.first.vehicle!;
+  //         double currentZoom = 5.5;
+  //
+  //         if (mapController != null) {
+  //           try {
+  //             currentZoom = await mapController!.getZoomLevel();
+  //           } catch (_) {}
+  //         }
+  //
+  //         final bool showLicense = currentZoom >= 8.0;
+  //
+  //         return Marker(
+  //           rotation: v.gps?.course ?? 0.0,
+  //           markerId: MarkerId(v.info!.licenseplate!),
+  //           position: cluster.location,
+  //           onTap: () => _markerVehicleClick(v),
+  //           anchor: const Offset(0.5, 0.5),
+  //           icon: await _createMarkerWithLicense(
+  //             v,
+  //             showLicense: showLicense,
+  //             context: context,
+  //           ),
+  //         );
+  //       } else {
+  //         return Marker(
+  //           markerId: MarkerId(cluster.getId()),
+  //           position: cluster.location,
+  //           anchor: const Offset(0.5, 0.5),
+  //           icon: await _getMarkerBitmap(
+  //             cluster,
+  //             cluster.isMultiple ? 125 : 75,
+  //             text: cluster.isMultiple ? cluster.count.toString() : null,
+  //           ),
+  //         );
+  //       }
+  //     };
+
   Future<Marker> Function(cm.Cluster<Place>) get _markerBuilder =>
       (cluster) async {
+        if (cluster.items.isEmpty || cluster.items.first.vehicle == null) {
+          return Marker(
+            markerId: MarkerId(cluster.getId()),
+            position: cluster.location,
+            icon: await _getMarkerBitmap(cluster, 75),
+          );
+        }
+
         if (cluster.items.length == 1) {
           final v = cluster.items.first.vehicle!;
-          double currentZoom = 5.5;
+          if (v.info == null || v.gps == null) {
+            return Marker(
+              markerId: MarkerId(cluster.getId()),
+              position: cluster.location,
+              icon: await _getMarkerBitmap(cluster, 75),
+            );
+          }
 
+          double currentZoom = 5.5;
           if (mapController != null) {
             try {
               currentZoom = await mapController!.getZoomLevel();
@@ -355,7 +488,7 @@ class _PageState extends State<HomeRealtimePage> {
           final bool showLicense = currentZoom >= 8.0;
 
           return Marker(
-            rotation: v.gps?.course ?? 0.0,
+            rotation: v.gps!.course ?? 0.0,
             markerId: MarkerId(v.info!.licenseplate!),
             position: cluster.location,
             onTap: () => _markerVehicleClick(v),
@@ -379,6 +512,7 @@ class _PageState extends State<HomeRealtimePage> {
           );
         }
       };
+
   void _addToCache(String key, BitmapDescriptor marker) {
     if (_markerIconCache.length >= _maxCacheSize) {
       _markerIconCache
@@ -448,10 +582,37 @@ class _PageState extends State<HomeRealtimePage> {
     });
   }
 
+  // void _updatePinRefresh() async {
+  //   if (!mounted) return;
+  //   listVehicleMarker.clear();
+  //
+  //   for (Vehicle v in listVehicle) {
+  //     if (isShowDetail &&
+  //         vehicleClick != null &&
+  //         vehicleClick!.info!.vid == v.info!.vid!) {
+  //       vehicleClick = v;
+  //       _setRadius(
+  //           LatLng(v.gps!.lat!, v.gps!.lng!), v.info!.vid!.toString(), 80);
+  //       mapController?.animateCamera(
+  //           CameraUpdate.newLatLngZoom(LatLng(v.gps!.lat!, v.gps!.lng!), 16));
+  //       kLocations.add(LatLng(v.gps!.lat!, v.gps!.lng!));
+  //       _setLine();
+  //     }
+  //     listVehicleMarker
+  //         .add(Place(latLng: LatLng(v.gps!.lat!, v.gps!.lng!), vehicle: v));
+  //   }
+  //
+  //   // markers.clear();
+  //   // _manager.setItems([]);
+  //   // await Future.delayed(const Duration(milliseconds: 50)); // Delay nhỏ
+  //   _manager.setItems(listVehicleMarker);
+  //   // if (mounted) {
+  //   //   setState(() {});
+  //   // }
+  // }
   void _updatePinRefresh() async {
     if (!mounted) return;
-    listVehicleMarker.clear();
-
+    final List<Place> updatedMarkers = [];
     for (Vehicle v in listVehicle) {
       if (isShowDetail &&
           vehicleClick != null &&
@@ -464,17 +625,10 @@ class _PageState extends State<HomeRealtimePage> {
         kLocations.add(LatLng(v.gps!.lat!, v.gps!.lng!));
         _setLine();
       }
-      listVehicleMarker
+      updatedMarkers
           .add(Place(latLng: LatLng(v.gps!.lat!, v.gps!.lng!), vehicle: v));
     }
-
-    // markers.clear();
-    // _manager.setItems([]);
-    // await Future.delayed(const Duration(milliseconds: 50)); // Delay nhỏ
-    _manager.setItems(listVehicleMarker);
-    // if (mounted) {
-    //   setState(() {});
-    // }
+    _manager.setItems(updatedMarkers);
   }
 
   void _setRadius(LatLng latLng, String id, double radiusA) {
@@ -1353,10 +1507,34 @@ class _PageState extends State<HomeRealtimePage> {
     );
   }
 
+  bool _lastLicenseState = false;
+
+  void _onCameraMove(CameraPosition value) {
+    _lastMapPosition = value.target;
+    double zoom = value.zoom;
+    bool shouldShowLicense = zoom >= 8.0;
+
+    if (_zoomDebounce?.isActive ?? false) _zoomDebounce!.cancel();
+    _zoomDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (shouldShowLicense != _lastLicenseState) {
+        setState(() {
+          isLicense = shouldShowLicense;
+          _lastLicenseState = shouldShowLicense;
+        });
+        _updatePinRefresh();
+      }
+      _manager.onCameraMove(value);
+    });
+  }
+
   @override
   void dispose() {
     _apiTimer?.cancel();
     _debounce?.cancel();
+    _zoomDebounce?.cancel();
+    _searchDebounce?.cancel();
+    _markerIconCache.clear(); // Xóa cache khi dispose
+    mapController?.dispose();
     super.dispose();
   }
 
@@ -1397,24 +1575,25 @@ class _PageState extends State<HomeRealtimePage> {
                     mapController = controller;
                     _manager.setMapId(controller.mapId);
                   },
-                  onCameraMove: (value) {
-                    _lastMapPosition = value.target;
-                    double zoom = value.zoom;
-                    bool shouldShowLicense = zoom >= 8.0;
-
-                    if (_zoomDebounce?.isActive ?? false)
-                      _zoomDebounce!.cancel();
-                    _zoomDebounce =
-                        Timer(const Duration(milliseconds: 300), () {
-                      if (shouldShowLicense != isLicense) {
-                        setState(() {
-                          isLicense = shouldShowLicense;
-                        });
-                        _updatePinRefresh();
-                      }
-                      _manager.onCameraMove(value);
-                    });
-                  },
+                  onCameraMove: _onCameraMove,
+                  //     (value) {
+                  //   _lastMapPosition = value.target;
+                  //   double zoom = value.zoom;
+                  //   bool shouldShowLicense = zoom >= 8.0;
+                  //
+                  //   if (_zoomDebounce?.isActive ?? false)
+                  //     _zoomDebounce!.cancel();
+                  //   _zoomDebounce =
+                  //       Timer(const Duration(milliseconds: 500), () {
+                  //     if (shouldShowLicense != isLicense) {
+                  //       setState(() {
+                  //         isLicense = shouldShowLicense;
+                  //       });
+                  //       _updatePinRefresh();
+                  //     }
+                  //     _manager.onCameraMove(value);
+                  //   });
+                  // },
                   onCameraIdle: () {
                     _manager.updateMap();
                   },
