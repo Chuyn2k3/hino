@@ -14,6 +14,8 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		A766D35C2E6926B10044A42F /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A766D35A2E6922E70044A42F /* CoreNFC.framework */; };
+		A766D35F2E6936110044A42F /* Iso15693Plugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A766D35E2E6936100044A42F /* Iso15693Plugin.swift */; };
 		A7F96E2D2E1ACD0F00E19446 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = A7F96E232E1ACD0F00E19446 /* GeneratedPluginRegistrant.m */; };
 		A7F96E2E2E1ACD0F00E19446 /* AppDelegate_bk.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F96E202E1ACD0F00E19446 /* AppDelegate_bk.swift */; };
 		A7F96E2F2E1ACD0F00E19446 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F96E1F2E1ACD0F00E19446 /* AppDelegate.swift */; };
@@ -22,19 +24,6 @@
 		A7F96E332E1ACD0F00E19446 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A7F96E292E1ACD0F00E19446 /* Main.storyboard */; };
 		A7F96E342E1ACD0F00E19446 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A7F96E242E1ACD0F00E19446 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
@@ -53,6 +42,8 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A766D35A2E6922E70044A42F /* CoreNFC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreNFC.framework; path = System/Library/Frameworks/CoreNFC.framework; sourceTree = SDKROOT; };
+		A766D35E2E6936100044A42F /* Iso15693Plugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Iso15693Plugin.swift; sourceTree = "<group>"; };
 		A7F96E1F2E1ACD0F00E19446 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A7F96E202E1ACD0F00E19446 /* AppDelegate_bk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate_bk.swift; sourceTree = "<group>"; };
 		A7F96E212E1ACD0F00E19446 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -75,6 +66,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6F50A61E52A7C7E20242DB91 /* Pods_Runner.framework in Frameworks */,
+				A766D35C2E6926B10044A42F /* CoreNFC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +76,7 @@
 		6B9943BD894F456622ED2608 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A766D35A2E6922E70044A42F /* CoreNFC.framework */,
 				B4D89BD0F9C941E3847867B6 /* Pods_Runner.framework */,
 			);
 			name = Frameworks;
@@ -150,6 +143,7 @@
 		A7F96E2C2E1ACD0F00E19446 /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				A766D35E2E6936100044A42F /* Iso15693Plugin.swift */,
 				A7F96E1F2E1ACD0F00E19446 /* AppDelegate.swift */,
 				A7F96E202E1ACD0F00E19446 /* AppDelegate_bk.swift */,
 				A7F96E212E1ACD0F00E19446 /* Assets.xcassets */,
@@ -177,7 +171,6 @@
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
-				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				D9B8C5D7D2F377B6F44E4B7C /* [CP] Copy Pods Resources */,
 			);
@@ -320,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				A766D35F2E6936110044A42F /* Iso15693Plugin.swift in Sources */,
 				A7F96E2D2E1ACD0F00E19446 /* GeneratedPluginRegistrant.m in Sources */,
 				A7F96E2E2E1ACD0F00E19446 /* AppDelegate_bk.swift in Sources */,
 				A7F96E2F2E1ACD0F00E19446 /* AppDelegate.swift in Sources */,
@@ -426,16 +420,16 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = 24JTRGFS23;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.4;
+				MARKETING_VERSION = 3.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hino.gps.new;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -569,16 +563,16 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = 24JTRGFS23;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.4;
+				MARKETING_VERSION = 3.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hino.gps.new;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -604,16 +598,16 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = 24JTRGFS23;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.4;
+				MARKETING_VERSION = 3.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.hino.gps.new;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

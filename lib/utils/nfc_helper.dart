@@ -1,14 +1,21 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:hino/utils/iso15693_channel.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/platform_tags.dart';
 
 class DriverCardData {
   String licenseNumber;
   String driverName;
+  String userId;
 
-  DriverCardData({this.licenseNumber = '', this.driverName = ''});
+  DriverCardData({
+    this.licenseNumber = '',
+    this.driverName = '',
+    this.userId = '',
+  });
 }
 
 typedef OnCardRead = void Function(DriverCardData data);
@@ -20,41 +27,53 @@ class NfcHelper {
   static Future<bool> isNfcAvailable() async {
     bool available = await NfcManager.instance.isAvailable();
     if (Platform.isIOS && available) {
-      // Kiểm tra thêm nếu cần (ví dụ: phiên bản iOS)
       print('NFC available on iOS');
     }
     return available;
   }
 
-  /// Parse dữ liệu thẻ thành model
-  static DriverCardData parseCardData(Uint8List rawData) {
+  static DriverCardData parseCardData(BuildContext context, Uint8List rawData) {
     try {
       if (rawData.length < 60) {
-        throw Exception('Dữ liệu thẻ không đủ 60 byte cố định');
+        // DebugHelper.show(context, "❌ Dữ liệu không đủ 60 byte");
+        throw Exception(rawData.length);
       }
 
+      //DebugHelper.show(context, "RawData: ${rawData.take(20).toList()}...");
+
+      // --- GPLX ---
+      // --- GPLX ---
       String licenseNumber =
           utf8.decode(rawData.sublist(0, 15), allowMalformed: true).trim();
+      // DebugHelper.show(context, "GPLX: $licenseNumber");
 
-      int licenseChecksum = 0;
-      for (int i = 0; i < 15; i++) licenseChecksum ^= rawData[i];
-      if (licenseChecksum != rawData[15]) {
-        print('Cảnh báo: Mã kiểm tra GPLX không khớp');
-      }
+      int licenseChecksum = calcChecksum(rawData, 0, 14);
+      // DebugHelper.show(
+      //   context,
+      //   "GPLX checksum = $licenseChecksum (trên thẻ: ${rawData[15]})",
+      // );
 
+// --- Tên ---
       String driverName =
           utf8.decode(rawData.sublist(16, 59), allowMalformed: true).trim();
+      //    DebugHelper.show(context, "Tên: $driverName");
 
-      int nameChecksum = 0;
-      for (int i = 16; i < 59; i++) nameChecksum ^= rawData[i];
-      if (nameChecksum != rawData[59]) {
-        print('Cảnh báo: Mã kiểm tra họ tên không khớp');
+      int nameChecksum = calcChecksum(rawData, 16, 58);
+      // DebugHelper.show(
+      //   context,
+      //   "Tên checksum = $nameChecksum (trên thẻ: ${rawData[59]})",
+      // );
+      String userId = "";
+      if (rawData.length > 60) {
+        userId = utf8.decode(rawData.sublist(60), allowMalformed: true).trim();
       }
-
       return DriverCardData(
-          licenseNumber: licenseNumber, driverName: driverName);
+        licenseNumber: licenseNumber,
+        driverName: driverName,
+        userId: userId,
+      );
     } catch (e) {
-      print('Error parsing card data: $e');
+      //  DebugHelper.show(context, "❌ Parse error: $e");
       return DriverCardData(licenseNumber: 'Unknown', driverName: 'Unknown');
     }
   }
@@ -63,64 +82,78 @@ class NfcHelper {
   // static Uint8List encodeCardData(DriverCardData data, {int fixedSize = 64}) {
   //   Uint8List buffer = Uint8List(fixedSize);
   //   buffer.fillRange(0, fixedSize, 0);
-  //
+
   //   try {
-  //     String license = data.licenseNumber.padRight(15, ' ').substring(0, 15);
-  //     List<int> licenseBytes = utf8.encode(license);
-  //     for (int i = 0; i < 15; i++) buffer[i] = licenseBytes[i];
-  //
+  //     List<int> licenseBytes = utf8.encode(data.licenseNumber);
+  //     int licenseLength = licenseBytes.length > 15 ? 15 : licenseBytes.length;
+  //     for (int i = 0; i < licenseLength; i++) {
+  //       buffer[i] = licenseBytes[i];
+  //     }
+
   //     int licenseChecksum = 0;
-  //     for (int i = 0; i < 15; i++) licenseChecksum ^= buffer[i];
+  //     for (int i = 0; i < 15; i++) {
+  //       licenseChecksum ^= buffer[i];
+  //     }
   //     buffer[15] = licenseChecksum;
-  //
-  //     String name = data.driverName.padRight(43, ' ').substring(0, 43);
-  //     List<int> nameBytes = utf8.encode(name);
-  //     for (int i = 0; i < 43; i++) buffer[16 + i] = nameBytes[i];
-  //
+
+  //     List<int> nameBytes = utf8.encode(data.driverName);
+  //     int nameLength = nameBytes.length > 43 ? 43 : nameBytes.length;
+  //     for (int i = 0; i < nameLength; i++) {
+  //       buffer[16 + i] = nameBytes[i];
+  //     }
+
   //     int nameChecksum = 0;
-  //     for (int i = 16; i < 59; i++) nameChecksum ^= buffer[i];
+  //     for (int i = 16; i < 59; i++) {
+  //       nameChecksum ^= buffer[i];
+  //     }
   //     buffer[59] = nameChecksum;
   //   } catch (e) {
-  //     print('Error encoding card data: $e');
+  //     print('Lỗi khi mã hóa dữ liệu thẻ: $e');
   //   }
-  //
+
   //   return buffer;
   // }
-  /// Chuyển DriverCardData thành Uint8List để ghi thẻ
-  static Uint8List encodeCardData(DriverCardData data, {int fixedSize = 64}) {
+  static Uint8List encodeCardData(
+    DriverCardData data, {
+    int fixedSize = 64,
+    Uint8List? manufacturerId,
+  }) {
     Uint8List buffer = Uint8List(fixedSize);
-    buffer.fillRange(0, fixedSize, 0); // Khởi tạo với các byte rỗng
+    buffer.fillRange(0, fixedSize, 0);
 
     try {
-      // Mã hóa số giấy phép (tối đa 15 byte)
+      // --- GPLX (15 byte + checksum) ---
       List<int> licenseBytes = utf8.encode(data.licenseNumber);
-      int licenseLength = licenseBytes.length > 15 ? 15 : licenseBytes.length;
-      for (int i = 0; i < licenseLength; i++) {
-        buffer[i] = licenseBytes[i];
-      }
-      // Các byte còn lại đã là số không do khởi tạo buffer
-
-      // Tính mã kiểm tra cho số giấy phép
-      int licenseChecksum = 0;
       for (int i = 0; i < 15; i++) {
-        licenseChecksum ^= buffer[i];
+        if (i < licenseBytes.length) {
+          buffer[i] = licenseBytes[i];
+        } else {
+          buffer[i] = 0x00; // pad bằng null byte
+        }
       }
-      buffer[15] = licenseChecksum;
+      buffer[15] = calcChecksum(buffer, 0, 14);
 
-      // Mã hóa họ tên (tối đa 43 byte)
+      // --- Họ tên (43 byte + checksum) ---
       List<int> nameBytes = utf8.encode(data.driverName);
-      int nameLength = nameBytes.length > 43 ? 43 : nameBytes.length;
-      for (int i = 0; i < nameLength; i++) {
-        buffer[16 + i] = nameBytes[i];
+      for (int i = 0; i < 43; i++) {
+        if (i < nameBytes.length) {
+          buffer[16 + i] = nameBytes[i];
+        } else {
+          buffer[16 + i] = 0x00; // pad bằng null byte
+        }
       }
-      // Các byte còn lại đã là số không do khởi tạo buffer
+      buffer[59] = calcChecksum(buffer, 16, 58);
 
-      // Tính mã kiểm tra cho họ tên
-      int nameChecksum = 0;
-      for (int i = 16; i < 59; i++) {
-        nameChecksum ^= buffer[i];
+      // --- 4 byte cuối (manufacturerId) ---
+      if (data.userId.isNotEmpty) {
+        String userIdStr = "HMV_${data.userId}";
+        List<int> userIdBytes = utf8.encode(userIdStr);
+        for (int i = 0;
+            i < userIdBytes.length && (60 + i) < buffer.length;
+            i++) {
+          buffer[60 + i] = userIdBytes[i];
+        }
       }
-      buffer[59] = nameChecksum;
     } catch (e) {
       print('Lỗi khi mã hóa dữ liệu thẻ: $e');
     }
@@ -128,80 +161,42 @@ class NfcHelper {
     return buffer;
   }
 
+  /// Hàm tính checksum (tổng modulo 256)
+  static int calcChecksum(Uint8List buffer, int start, int end) {
+    int sum = 0;
+    for (int i = start; i <= end; i++) {
+      sum += buffer[i];
+    }
+    return sum & 0xFF; // chỉ lấy 1 byte thấp
+  }
+
   /// Lấy dung lượng thẻ ISO15693
-  static Future<int> getCardCapacity(NfcV nfcV) async {
+  static Future<int> getCardCapacity(dynamic tag) async {
     try {
-      final command = Uint8List.fromList([0x22, 0x2B, ...nfcV.identifier]);
-      final response = await nfcV.transceive(data: command);
+      Uint8List identifier;
+      if (Platform.isAndroid) {
+        final nfcV = tag as NfcV;
+        identifier = nfcV.identifier;
+      } else {
+        identifier = Uint8List.fromList(
+            List<int>.from(tag.data['iso15693']['identifier']));
+      }
+      final command = Uint8List.fromList([0x22, 0x2B, ...identifier]);
+      final response = await tag.transceive(data: command);
       if (response.length >= 15) {
         int blockSize = response[12] + 1;
         int numberOfBlocks = response[13] + 1;
         return blockSize * numberOfBlocks;
       }
-      return 64; // fallback
+      return 64; // Giá trị dự phòng
     } catch (e) {
       print('Error getting card capacity: $e');
       return 64;
     }
   }
 
-  /// Quét NFC và đọc dữ liệu thẻ
-  // static Future<void> readCard({
-  //   required OnCardRead onCardRead,
-  //   OnError? onError,
-  //   OnStatus? onStatus,
-  // }) async {
-  //   try {
-  //     NfcManager.instance.startSession(
-  //       onDiscovered: (NfcTag tag) async {
-  //         try {
-  //           NfcV? nfcV = NfcV.from(tag);
-  //           if (nfcV == null && tag.data['nfcv'] != null) {
-  //             final nfcvData = tag.data['nfcv'];
-  //             nfcV = NfcV(
-  //               tag: tag,
-  //               identifier:
-  //                   Uint8List.fromList(List<int>.from(nfcvData['identifier'])),
-  //               dsfId: nfcvData['dsfId'] ?? 0,
-  //               responseFlags: nfcvData['responseFlags'] ?? 0,
-  //               maxTransceiveLength: nfcvData['maxTransceiveLength'] ?? 0,
-  //             );
-  //           }
-  //
-  //           if (nfcV == null) {
-  //             onError?.call('Thẻ không phải ISO15693');
-  //             NfcManager.instance.stopSession(errorMessage: 'Thẻ không hợp lệ');
-  //             return;
-  //           }
-  //
-  //           int capacity = await getCardCapacity(nfcV);
-  //           int blockSize = 4;
-  //           int numberOfBlocks = (capacity / blockSize).ceil();
-  //
-  //           List<int> allData = [];
-  //           for (int i = 0; i < numberOfBlocks; i++) {
-  //             final command =
-  //                 Uint8List.fromList([0x22, 0x20, ...nfcV.identifier, i]);
-  //             final blockData = await nfcV.transceive(data: command);
-  //             if (blockData.length > 1) allData.addAll(blockData.skip(1));
-  //           }
-  //
-  //           Uint8List fixedData = Uint8List.fromList(allData.take(60).toList());
-  //           DriverCardData cardData = parseCardData(fixedData);
-  //           print("gplx ${cardData.licenseNumber.length}");
-  //           onCardRead(cardData);
-  //           NfcManager.instance.stopSession();
-  //         } catch (e) {
-  //           onError?.call('Chưa đọc được thẻ, vui lòng đặt lại thẻ');
-  //           NfcManager.instance.stopSession(errorMessage: 'Lỗi đọc thẻ');
-  //         }
-  //       },
-  //     );
-  //   } catch (e) {
-  //     onError?.call('Chưa đọc được thẻ, vui lòng đặt lại thẻ');
-  //   }
-  // }
   static Future<void> readCard({
+    required BuildContext context,
     required OnCardRead onCardRead,
     OnError? onError,
     OnStatus? onStatus,
@@ -211,91 +206,64 @@ class NfcHelper {
         pollingOptions: {NfcPollingOption.iso15693},
         onDiscovered: (NfcTag tag) async {
           try {
-            final message = 'Tag detected: ${tag.data}';
-            print(message);
+            List<int> allData = [];
 
-            dynamic nfcV;
             if (Platform.isAndroid) {
-              nfcV = NfcV.from(tag);
-              if (nfcV == null && tag.data['nfcv'] != null) {
-                final nfcvData = tag.data['nfcv'];
-                nfcV = NfcV(
-                  tag: tag,
-                  identifier: Uint8List.fromList(
-                      List<int>.from(nfcvData['identifier'])),
-                  dsfId: nfcvData['dsfId'] ?? 0,
-                  responseFlags: nfcvData['responseFlags'] ?? 0,
-                  maxTransceiveLength: nfcvData['maxTransceiveLength'] ?? 0,
-                );
-              }
-            } else if (Platform.isIOS) {
-              // iOS: Use tag.data for ISO15693, as nfc_manager abstracts Core NFC
-              if (!tag.data.containsKey('iso15693')) {
-                final message = 'Thẻ không phải ISO15693';
-                print(message);
-
-                onError?.call(message);
-                NfcManager.instance
+              final nfcV = NfcV.from(tag);
+              if (nfcV == null) {
+                onError?.call('Thẻ không phải ISO15693');
+                await NfcManager.instance
                     .stopSession(errorMessage: 'Thẻ không hợp lệ');
                 return;
               }
-              nfcV = tag;
-            }
 
-            if (nfcV == null) {
-              final message = 'Thẻ không phải ISO15693';
-              print(message);
+              int blockSize = 4;
+              int capacity = await getCardCapacity(nfcV);
+              int numberOfBlocks = (capacity / blockSize).ceil();
 
-              onError?.call(message);
-              NfcManager.instance.stopSession(errorMessage: 'Thẻ không hợp lệ');
-              return;
-            }
-
-            int capacity = await getCardCapacity(nfcV);
-            int blockSize = 4;
-            int numberOfBlocks = (capacity / blockSize).ceil();
-
-            List<int> allData = [];
-            for (int i = 0; i < numberOfBlocks; i++) {
-              final command =
-                  Uint8List.fromList([0x22, 0x20, ...nfcV.identifier, i]);
-              late Uint8List blockData;
-              if (Platform.isIOS) {
-                // iOS: Custom command not supported, fallback to transceive or platform channel
-                final message =
-                    'iOS: Custom read command not supported. Using default transceive.';
-                print(message);
-
-                blockData = await nfcV.transceive(data: command);
-              } else {
-                blockData = await nfcV.transceive(data: command);
+              for (int i = 0; i < numberOfBlocks; i++) {
+                final command =
+                    Uint8List.fromList([0x22, 0x20, ...nfcV.identifier, i]);
+                final blockData = await nfcV.transceive(data: command);
+                if (blockData.length > 1) allData.addAll(blockData.skip(1));
+                onStatus?.call('Đang đọc khối ${i + 1}/$numberOfBlocks');
               }
-              if (blockData.length > 1) allData.addAll(blockData.skip(1));
+            } else if (Platform.isIOS) {
+              //  DebugHelper.show(context, tag.toString());
+              final isoTag = Iso15693.from(tag);
+              if (isoTag == null) {
+                onError?.call('Thẻ không phải ISO15693');
+                await NfcManager.instance
+                    .stopSession(errorMessage: 'Thẻ không hợp lệ');
+                return;
+              }
+
+              int numberOfBlocks = 15; // 60 byte cố định / 4 byte
+              for (int i = 0; i < numberOfBlocks; i++) {
+                final blockData = await isoTag.readSingleBlock(
+                    requestFlags: {Iso15693RequestFlag.highDataRate},
+                    blockNumber: i);
+                allData.addAll(blockData);
+                onStatus?.call('Đang đọc khối ${i + 1}/$numberOfBlocks');
+              }
             }
 
             Uint8List fixedData = Uint8List.fromList(allData.take(60).toList());
-            DriverCardData cardData = parseCardData(fixedData);
-            final successMessage =
-                'Đọc thành công: GPLX ${cardData.licenseNumber}, Tên ${cardData.driverName}';
-            print(successMessage);
+            final cardData = parseCardData(context, fixedData);
 
             onCardRead(cardData);
-            NfcManager.instance.stopSession();
+            await NfcManager.instance.stopSession();
           } catch (e, stackTrace) {
-            final message = 'Lỗi đọc thẻ: $e\n$stackTrace';
-            print(message);
-
-            onError?.call('Chưa đọc được thẻ, vui lòng đặt lại thẻ: $e');
-            NfcManager.instance.stopSession(errorMessage: 'Lỗi đọc thẻ: $e');
+            print('Lỗi đọc thẻ: $e\n$stackTrace');
+            onError?.call('Chưa đọc được thẻ, vui lòng thử lại');
+            await NfcManager.instance.stopSession(errorMessage: 'Lỗi đọc thẻ');
           }
         },
         alertMessage: 'Đặt thẻ gần thiết bị để đọc',
       );
     } catch (e, stackTrace) {
-      final message = 'Lỗi khởi động phiên NFC: $e\n$stackTrace';
-      print(message);
-
-      onError?.call('Chưa đọc được thẻ, vui lòng đặt lại thẻ: $e');
+      print('Lỗi khởi động NFC: $e\n$stackTrace');
+      onError?.call('Chưa đọc được thẻ');
     }
   }
 
@@ -306,37 +274,59 @@ class NfcHelper {
   //   OnStatus? onStatus,
   // }) async {
   //   try {
-  //     NfcManager.instance.startSession(
+  //     await NfcManager.instance.startSession(
+  //       pollingOptions: {NfcPollingOption.iso15693},
   //       onDiscovered: (NfcTag tag) async {
   //         try {
-  //           NfcV? nfcV = NfcV.from(tag);
-  //           if (nfcV == null && tag.data['nfcv'] != null) {
-  //             final nfcvData = tag.data['nfcv'];
-  //             nfcV = NfcV(
-  //               tag: tag,
-  //               identifier:
-  //                   Uint8List.fromList(List<int>.from(nfcvData['identifier'])),
-  //               dsfId: nfcvData['dsfId'] ?? 0,
-  //               responseFlags: nfcvData['responseFlags'] ?? 0,
-  //               maxTransceiveLength: nfcvData['maxTransceiveLength'] ?? 0,
-  //             );
+  //           print('Tag detected: ${tag.data}');
+
+  //           dynamic nfcTag;
+  //           Uint8List identifier;
+  //           if (Platform.isAndroid) {
+  //             nfcTag = NfcV.from(tag);
+  //             if (nfcTag == null && tag.data['nfcv'] != null) {
+  //               final nfcvData = tag.data['nfcv'];
+  //               nfcTag = NfcV(
+  //                 tag: tag,
+  //                 identifier: Uint8List.fromList(
+  //                     List<int>.from(nfcvData['identifier'])),
+  //                 dsfId: nfcvData['dsfId'] ?? 0,
+  //                 responseFlags: nfcvData['responseFlags'] ?? 0,
+  //                 maxTransceiveLength: nfcvData['maxTransceiveLength'] ?? 0,
+  //               );
+  //             }
+  //             if (nfcTag == null) {
+  //               final message = 'Thẻ không phải ISO15693';
+  //               print(message);
+  //               onError?.call(message);
+  //               NfcManager.instance
+  //                   .stopSession(errorMessage: 'Thẻ không hợp lệ');
+  //               return;
+  //             }
+  //             identifier = nfcTag.identifier;
+  //           } else {
+  //             if (!tag.data.containsKey('iso15693')) {
+  //               final message = 'Thẻ không phải ISO15693';
+  //               print(message);
+  //               onError?.call(message);
+  //               NfcManager.instance
+  //                   .stopSession(errorMessage: 'Thẻ không hợp lệ');
+  //               return;
+  //             }
+  //             nfcTag = tag;
+  //             identifier = Uint8List.fromList(
+  //                 List<int>.from(tag.data['iso15693']['identifier']));
   //           }
-  //
-  //           if (nfcV == null) {
-  //             onError?.call('Thẻ không phải ISO15693');
-  //             NfcManager.instance.stopSession(errorMessage: 'Thẻ không hợp lệ');
-  //             return;
-  //           }
-  //
-  //           int capacity = await getCardCapacity(nfcV);
+
+  //           int capacity = await getCardCapacity(nfcTag);
   //           int blockSize = 4;
   //           int numberOfBlocks = (capacity / blockSize).ceil();
-  //
+
   //           Uint8List fixedData = encodeCardData(data);
   //           Uint8List dynamicData = Uint8List(capacity - 60);
   //           Uint8List dataToWrite =
   //               Uint8List.fromList([...fixedData, ...dynamicData]);
-  //
+
   //           int successfulBlocks = 0;
   //           for (int i = 0; i < numberOfBlocks; i++) {
   //             int start = i * blockSize;
@@ -344,26 +334,38 @@ class NfcHelper {
   //                 ? dataToWrite.length
   //                 : start + blockSize;
   //             Uint8List blockData = dataToWrite.sublist(start, end);
-  //
-  //             final writeCommand = Uint8List.fromList(
-  //                 [0x22, 0x21, ...nfcV.identifier, i, ...blockData]);
-  //             final response = await nfcV.transceive(data: writeCommand);
-  //             if (response.isNotEmpty && response[0] == 0x00)
-  //               successfulBlocks++;
-  //             //onStatus?.call('Đang ghi block ${i + 1}/$numberOfBlocks');
+
+  //             try {
+  //               final writeCommand = Uint8List.fromList(
+  //                   [0x22, 0x21, ...identifier, i, ...blockData]);
+  //               final response = await nfcTag.transceive(data: writeCommand);
+  //               if (response.isNotEmpty && response[0] == 0x00) {
+  //                 successfulBlocks++;
+  //               }
+  //               onStatus?.call('Đang ghi khối ${i + 1}/$numberOfBlocks');
+  //             } catch (e) {
+  //               print('Lỗi ghi khối $i: $e');
+  //               continue; // Tiếp tục với khối tiếp theo nếu có lỗi
+  //             }
   //           }
-  //
-  //           onStatus?.call('Ghi xong $successfulBlocks/$numberOfBlocks blocks');
+
+  //           final message = 'Ghi xong $successfulBlocks/$numberOfBlocks khối';
+  //           print(message);
+  //           onStatus?.call(message);
   //           NfcManager.instance.stopSession();
-  //         } catch (e) {
-  //           onError?.call('Chưa đọc được thẻ, vui lòng đặt lại thẻ');
-  //           NfcManager.instance.stopSession(errorMessage: 'Lỗi ghi thẻ');
+  //         } catch (e, stackTrace) {
+  //           final message = 'Lỗi ghi thẻ: $e\n$stackTrace';
+  //           print(message);
+  //           onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ: $e');
+  //           NfcManager.instance.stopSession(errorMessage: 'Lỗi ghi thẻ: $e');
   //         }
   //       },
   //       alertMessage: 'Đặt thẻ gần thiết bị và KHÔNG di chuyển',
   //     );
-  //   } catch (e) {
-  //     onError?.call('Chưa đọc được thẻ, vui lòng đặt lại thẻ');
+  //   } catch (e, stackTrace) {
+  //     final message = 'Lỗi khởi động phiên NFC: $e\n$stackTrace';
+  //     print(message);
+  //     onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ: $e');
   //   }
   // }
   static Future<void> writeCard({
@@ -376,15 +378,17 @@ class NfcHelper {
         pollingOptions: {NfcPollingOption.iso15693},
         onDiscovered: (NfcTag tag) async {
           try {
-            final message = 'Tag detected: ${tag.data}';
-            print(message);
+            print('Tag detected: ${tag.data}');
 
-            dynamic nfcV;
+            dynamic nfcTag;
+            Uint8List identifier;
+
             if (Platform.isAndroid) {
-              nfcV = NfcV.from(tag);
-              if (nfcV == null && tag.data['nfcv'] != null) {
+              // Android: vẫn dùng NfcV + transceive
+              nfcTag = NfcV.from(tag);
+              if (nfcTag == null && tag.data['nfcv'] != null) {
                 final nfcvData = tag.data['nfcv'];
-                nfcV = NfcV(
+                nfcTag = NfcV(
                   tag: tag,
                   identifier: Uint8List.fromList(
                       List<int>.from(nfcvData['identifier'])),
@@ -393,29 +397,32 @@ class NfcHelper {
                   maxTransceiveLength: nfcvData['maxTransceiveLength'] ?? 0,
                 );
               }
-            } else if (Platform.isIOS) {
-              if (!tag.data.containsKey('iso15693')) {
+              if (nfcTag == null) {
                 final message = 'Thẻ không phải ISO15693';
                 print(message);
-
                 onError?.call(message);
                 NfcManager.instance
                     .stopSession(errorMessage: 'Thẻ không hợp lệ');
                 return;
               }
-              nfcV = tag;
+              identifier = nfcTag.identifier;
+            } else {
+              // iOS: dùng Iso15693 wrapper
+              final isoTag = Iso15693.from(tag);
+              if (isoTag == null) {
+                final message = 'Thẻ không phải ISO15693';
+                print(message);
+                onError?.call(message);
+                await NfcManager.instance
+                    .stopSession(errorMessage: 'Thẻ không hợp lệ');
+                return;
+              }
+              nfcTag = isoTag;
+              identifier = Uint8List.fromList(
+                  List<int>.from(tag.data['iso15693']['identifier']));
             }
 
-            if (nfcV == null) {
-              final message = 'Thẻ không phải ISO15693';
-              print(message);
-
-              onError?.call(message);
-              NfcManager.instance.stopSession(errorMessage: 'Thẻ không hợp lệ');
-              return;
-            }
-
-            int capacity = await getCardCapacity(nfcV);
+            int capacity = await getCardCapacity(nfcTag);
             int blockSize = 4;
             int numberOfBlocks = (capacity / blockSize).ceil();
 
@@ -425,6 +432,7 @@ class NfcHelper {
                 Uint8List.fromList([...fixedData, ...dynamicData]);
 
             int successfulBlocks = 0;
+
             for (int i = 0; i < numberOfBlocks; i++) {
               int start = i * blockSize;
               int end = (start + blockSize > dataToWrite.length)
@@ -432,37 +440,39 @@ class NfcHelper {
                   : start + blockSize;
               Uint8List blockData = dataToWrite.sublist(start, end);
 
-              late Uint8List response;
-              if (Platform.isIOS) {
-                // iOS: Custom write command not supported, fallback to transceive
-                final message =
-                    'iOS: Custom write command not supported. Using default transceive.';
-                print(message);
-
-                response = await nfcV.transceive(
-                    data: Uint8List.fromList(
-                        [0x22, 0x21, ...nfcV.identifier, i, ...blockData]));
-              } else {
-                response = await nfcV.transceive(
-                    data: Uint8List.fromList(
-                        [0x22, 0x21, ...nfcV.identifier, i, ...blockData]));
+              try {
+                if (Platform.isAndroid) {
+                  // Android: raw transceive
+                  final writeCommand = Uint8List.fromList(
+                      [0x22, 0x21, ...identifier, i, ...blockData]);
+                  final response = await nfcTag.transceive(data: writeCommand);
+                  if (response.isNotEmpty && response[0] == 0x00) {
+                    successfulBlocks++;
+                  }
+                } else {
+                  // iOS: dùng writeSingleBlock
+                  await nfcTag.writeSingleBlock(
+                    requestFlags: {Iso15693RequestFlag.highDataRate},
+                    blockNumber: i,
+                    dataBlock: blockData,
+                  );
+                  successfulBlocks++;
+                }
+                onStatus?.call('Đang ghi khối ${i + 1}/$numberOfBlocks');
+              } catch (e) {
+                print('Lỗi ghi khối $i: $e');
               }
-              if (response.isNotEmpty && response[0] == 0x00)
-                successfulBlocks++;
             }
 
-            final messages =
-                'Ghi xong $successfulBlocks/$numberOfBlocks blocks';
-            print(messages);
-
-            onStatus?.call(messages);
+            final message = 'Ghi xong $successfulBlocks/$numberOfBlocks khối';
+            print(message);
+            onStatus?.call(message);
             NfcManager.instance.stopSession();
           } catch (e, stackTrace) {
             final message = 'Lỗi ghi thẻ: $e\n$stackTrace';
             print(message);
-
-            onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ: $e');
-            NfcManager.instance.stopSession(errorMessage: 'Lỗi ghi thẻ: $e');
+            onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ');
+            NfcManager.instance.stopSession(errorMessage: 'Lỗi ghi thẻ');
           }
         },
         alertMessage: 'Đặt thẻ gần thiết bị và KHÔNG di chuyển',
@@ -470,8 +480,15 @@ class NfcHelper {
     } catch (e, stackTrace) {
       final message = 'Lỗi khởi động phiên NFC: $e\n$stackTrace';
       print(message);
-
-      onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ: $e');
+      onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ');
     }
+  }
+}
+
+class DebugHelper {
+  static void show(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: Duration(seconds: 3)),
+    );
   }
 }

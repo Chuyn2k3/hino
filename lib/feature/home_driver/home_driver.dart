@@ -1,15 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/driver.dart';
+import 'package:hino/model/profile.dart';
 import 'package:hino/page/home_driver_detail.dart';
 import 'package:hino/page/home_driver_sort.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
 import 'package:hino/utils/custom_app_bar.dart';
+import 'package:hino/utils/iso15693_channel.dart';
 import 'package:hino/utils/nfc_helper.dart';
 import 'package:hino/utils/utils.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../utils/text_converter.dart';
@@ -29,11 +34,19 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   Set<String> _writingNfcDrivers =
       {}; // Track which drivers are currently writing NFC
   bool _isReadingNfc = false; // Track NFC read operation
-
+  bool _isNfcAvailable = false;
   @override
   void initState() {
     super.initState();
+    _checkNfcAvailability();
     _fetchDrivers();
+  }
+
+  Future<void> _checkNfcAvailability() async {
+    bool available = await NfcHelper.isNfcAvailable();
+    setState(() {
+      _isNfcAvailable = available;
+    });
   }
 
   Future<void> _fetchDrivers() async {
@@ -47,6 +60,17 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
       _lastUpdate = Utils.getDateTimeCreate();
       setState(() {});
     }
+  }
+
+  Future<String?> getSavedUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('profile');
+    if (jsonString == null) return null;
+
+    final Map<String, dynamic> jsonData = jsonDecode(jsonString);
+    final profile = Profile.fromJson(jsonData);
+
+    return profile.userId?.toString();
   }
 
   void _search(String q) {
@@ -94,11 +118,23 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   }
 
   Future<void> _writeNfcCard(Driver driver) async {
+    if (!_isNfcAvailable) {
+      _showErrorDialog(
+        "NFC không khả dụng",
+        "Thiết bị không hỗ trợ NFC hoặc NFC đang bị tắt. Vui lòng kiểm tra cài đặt NFC.",
+      );
+      return;
+    }
     String licenseNumber = driver.personalId ?? "";
+    // String driverName =
+    //     ((driver.firstname ?? "") + " " + (driver.lastname ?? "")).trim();
     String driverName =
-        ((driver.firstname ?? "") + " " + (driver.lastname ?? "")).trim();
+        ((driver.firstname ?? "") + " " + (driver.lastname ?? ""))
+            .normalize(); // chuẩn hóa tên
+    String nfcDriverName = TextConverter.toAsciiForNfc(driverName);
+
     String driverId = driver.personalId ?? driver.firstname ?? "";
-    String nfcDriverName = TextConverter.toNfcFormat(driverName);
+    //String nfcDriverName = TextConverter.toNfcFormat(driverName);
     String nfcLicenseNumber = TextConverter.toNfcFormat(licenseNumber);
     // Validate data first
     if (nfcDriverName.isEmpty || nfcLicenseNumber.isEmpty) {
@@ -108,7 +144,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     }
 
     // Show NFC writing dialog
-    _showNfcWritingDialog(driver, driverId, licenseNumber, driverName);
+    _showNfcWritingDialog(driver, driverId, nfcLicenseNumber, nfcDriverName);
   }
 
   void _showNfcWritingDialog(
@@ -125,13 +161,13 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.nfc,
                   size: 64,
                   color: ColorCustom.blue,
                 ),
                 const SizedBox(height: 16),
-                Text(
+                const Text(
                   "Ghi thẻ NFC",
                   style: TextStyle(
                     fontSize: 20,
@@ -142,7 +178,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                 const SizedBox(height: 12),
                 Text(
                   "Tài xế: ${driver.firstname ?? ''} ${driver.lastname ?? ''}",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black87,
                   ),
@@ -151,7 +187,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                 const SizedBox(height: 8),
                 Text(
                   "GPLX: ${driver.personalId ?? 'N/A'}",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black54,
                   ),
@@ -228,10 +264,12 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   Future<void> _startNfcWriting(
       String driverId, String licenseNumber, String driverName) async {
     try {
+      final userId = await getSavedUserId();
       await NfcHelper.writeCard(
         data: DriverCardData(
           licenseNumber: licenseNumber,
           driverName: driverName,
+          userId: userId ?? "",
         ),
         onStatus: (status) {
           Navigator.of(context).pop(); // Close dialog
@@ -251,6 +289,13 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   }
 
   Future<void> _readNfcCard() async {
+    if (!_isNfcAvailable) {
+      _showErrorDialog(
+        "NFC không khả dụng",
+        "Thiết bị không hỗ trợ NFC hoặc NFC đang bị tắt. Vui lòng kiểm tra cài đặt NFC.",
+      );
+      return;
+    }
     _showNfcReadingDialog();
   }
 
@@ -267,13 +312,13 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.nfc,
                   size: 64,
                   color: ColorCustom.blue,
                 ),
                 const SizedBox(height: 16),
-                Text(
+                const Text(
                   "Đọc thẻ NFC",
                   style: TextStyle(
                     fontSize: 20,
@@ -353,6 +398,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   Future<void> _startNfcReading() async {
     try {
       await NfcHelper.readCard(
+        context: context,
         onCardRead: (data) {
           Navigator.of(context).pop(); // Close reading dialog
           _showCardInfoDialog(data);
@@ -382,10 +428,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.credit_card, color: ColorCustom.blue, size: 28),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Text(
                       "Thông tin thẻ NFC",
                       style: TextStyle(
@@ -419,7 +465,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                       const SizedBox(height: 4),
                       Text(
                         cardData.driverName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black87,
                           fontWeight: FontWeight.w600,
@@ -437,7 +483,25 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                       const SizedBox(height: 4),
                       Text(
                         cardData.licenseNumber,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "userId:",
                         style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        cardData.userId,
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black87,
                           fontWeight: FontWeight.w600,
@@ -459,7 +523,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       "Đóng",
                       style: TextStyle(
                         fontSize: 16,
@@ -485,7 +549,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const Icon(Icons.check_circle, color: Colors.green, size: 28),
               const SizedBox(width: 12),
               Text(title, style: TextStyle(color: Colors.green.shade700)),
             ],
@@ -494,7 +558,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK", style: TextStyle(color: ColorCustom.blue)),
+              child:
+                  const Text("OK", style: TextStyle(color: ColorCustom.blue)),
             ),
           ],
         );
@@ -511,7 +576,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              Icon(Icons.error, color: Colors.red, size: 28),
+              const Icon(Icons.error, color: Colors.red, size: 28),
               const SizedBox(width: 12),
               Text(title, style: TextStyle(color: Colors.red.shade700)),
             ],
@@ -520,7 +585,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("OK", style: TextStyle(color: ColorCustom.blue)),
+              child:
+                  const Text("OK", style: TextStyle(color: ColorCustom.blue)),
             ),
           ],
         );
@@ -603,9 +669,11 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        onPressed: _isReadingNfc ? null : _readNfcCard,
+                        onPressed: _isNfcAvailable && !_isReadingNfc
+                            ? _readNfcCard
+                            : null,
                         icon: _isReadingNfc
-                            ? SizedBox(
+                            ? const SizedBox(
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
@@ -618,7 +686,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                 size: 18, color: Colors.white),
                         label: Text(
                           _isReadingNfc ? "Đang đọc..." : "Đọc thẻ",
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -639,7 +707,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
             : null,
         isLeading: false,
         widgetTitle: !_isSearching
-            ? SizedBox()
+            ? const SizedBox()
             // Text(lang.unit_driver,
             //         style: const TextStyle(
             //             color: Colors.black, fontWeight: FontWeight.w600))
@@ -734,14 +802,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           ),
           Row(
             children: [
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Text('${lang.total}: ${_filtered.length}',
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Expanded(
             child: _drivers.isEmpty
                 ? _buildShimmerList()
@@ -873,9 +941,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                       // ),
                                       // const SizedBox(height: 6),
                                       ElevatedButton.icon(
-                                        onPressed: isWritingNfc
-                                            ? null
-                                            : () => _writeNfcCard(d),
+                                        onPressed:
+                                            _isNfcAvailable && !isWritingNfc
+                                                ? () => _writeNfcCard(d)
+                                                : null,
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: isWritingNfc
                                               ? Colors.grey.shade400
@@ -888,7 +957,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                                   BorderRadius.circular(20)),
                                         ),
                                         icon: isWritingNfc
-                                            ? SizedBox(
+                                            ? const SizedBox(
                                                 width: 12,
                                                 height: 12,
                                                 child: CircularProgressIndicator(
@@ -897,12 +966,12 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                                         AlwaysStoppedAnimation<
                                                                 Color>(
                                                             Colors.white)))
-                                            : Icon(Icons.nfc, size: 14),
+                                            : const Icon(Icons.nfc, size: 14),
                                         label: Text(
                                             isWritingNfc
                                                 ? "Đang ghi..."
                                                 : "Ghi thẻ",
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontSize: 11,
                                                 fontWeight: FontWeight.w600)),
                                       ),

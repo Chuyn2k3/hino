@@ -52,8 +52,9 @@ class TextConverter {
 
   /// Convert to ASCII and format for NFC (uppercase, no spaces, no special characters)
   static String toAsciiForNfc(String input) {
-    return toAscii(input).toUpperCase().replaceAll(
-        RegExp(r'[^A-Z0-9]'), ''); // Remove all non-alphanumeric characters
+    return toAscii(input)
+        .toUpperCase()
+        .replaceAll(RegExp(r'[^A-Z0-9 ]'), ''); // CHO PHÉP SPACE
   }
 
   /// Convert Vietnamese text to clean uppercase ASCII for NFC writing
@@ -72,4 +73,12 @@ class TextConverter {
 
   /// Check if string contains only ASCII characters
   static bool isAscii(String str) => str.codeUnits.every((c) => c <= 127);
+}
+
+extension NormalizeText on String {
+  String normalize() {
+    return this
+        .replaceAll(RegExp(r'\s+'), ' ') // chuẩn hóa space
+        .trim();
+  }
 }
