@@ -613,6 +613,8 @@ class _PageState extends State<HomeRealtimePage> {
   void _updatePinRefresh() async {
     if (!mounted) return;
     final List<Place> updatedMarkers = [];
+    markers.clear();
+    listVehicleMarker.clear();
     for (Vehicle v in listVehicle) {
       if (isShowDetail &&
           vehicleClick != null &&
@@ -1525,6 +1527,15 @@ class _PageState extends State<HomeRealtimePage> {
       }
       _manager.onCameraMove(value);
     });
+  }
+
+  @override
+  void didUpdateWidget(HomeRealtimePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset trạng thái khi widget được rebuild (chuyển tab)
+    if (!isZoom && vehicleClick != null) {
+      _resetToOverview();
+    }
   }
 
   @override
