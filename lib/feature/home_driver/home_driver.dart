@@ -66,10 +66,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString('profile');
     if (jsonString == null) return null;
-
+    print("jsonString $jsonString");
     final Map<String, dynamic> jsonData = jsonDecode(jsonString);
     final profile = Profile.fromJson(jsonData);
-
+    print(profile.userId);
     return profile.userId?.toString();
   }
 
@@ -265,6 +265,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
       String driverId, String licenseNumber, String driverName) async {
     try {
       final userId = await getSavedUserId();
+      print("userId2 $userId");
       await NfcHelper.writeCard(
         data: DriverCardData(
           licenseNumber: licenseNumber,
@@ -489,24 +490,24 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "userId:",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        cardData.userId,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      // const SizedBox(height: 16),
+                      // Text(
+                      //   "userId:",
+                      //   style: TextStyle(
+                      //     fontSize: 14,
+                      //     color: Colors.grey.shade600,
+                      //     fontWeight: FontWeight.w500,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 4),
+                      // Text(
+                      //   cardData.userId,
+                      //   style: const TextStyle(
+                      //     fontSize: 16,
+                      //     color: Colors.black87,
+                      //     fontWeight: FontWeight.w600,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
