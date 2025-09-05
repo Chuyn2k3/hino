@@ -1,13 +1,7 @@
-//import 'dart:ffi';
-
-import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hino/model/Sensor.dart';
 import 'package:hino/model/driver_card.dart';
 import 'package:hino/model/fleet.dart';
 import 'package:hino/model/info.dart';
-import 'package:hino/model/maintenance.dart';
-
 import 'gps.dart';
 
 class Vehicle {

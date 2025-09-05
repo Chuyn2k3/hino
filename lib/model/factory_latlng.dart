@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 class FactoryLatLng {
   var lat;
   var lng;

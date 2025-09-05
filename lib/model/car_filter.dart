@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 class CarFilter {
   bool isSpeed = true;
   int maxSpeed = 0;

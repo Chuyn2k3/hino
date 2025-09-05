@@ -1,13 +1,9 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hino/feature/home/home.dart';
 import 'package:hino/model/profile.dart';
 import 'package:hino/model/upload.dart';
-import 'package:hino/page/home.dart';
 import 'package:http/http.dart' as http;
 
 class Api {
@@ -15,7 +11,7 @@ class Api {
   static String firebase_key =
       "AAAAwmmo4S8:APA91bFrpiUhVSV5orW6qBnwzUa2376P3t7pTvkY-cPjTn2U_a93n3hj03CgaJNNjqTFZcA_KqcWggwbPZoyvzGXglFj5SEZDBVIQ985JW896aOXybIN2N_nSnxJY9BxBqNakXImCJYt";
 
-  static String login = BaseUrlBuilding + "fleet/mobile/auth/login";
+  static String login = "${BaseUrlBuilding}fleet/mobile/auth/login";
   static String forgot_password =
       "https://apihinov1.hino-connect.vn/prod/fleet/users/forgot-password";
   //BaseUrlBuilding + "users/auth/forgot-password";
@@ -24,36 +20,34 @@ class Api {
   //BaseUrlBuilding + "users/auth/confirm-forgot-password";
 
   // static String realtime = BaseUrlBuilding + "fleet/mobile/realtime";
-  static String realtime = BaseUrlBuilding + "fleet/mobile/V2/realtime";
-  static String vid_detail = BaseUrlBuilding + "fleet/mobile/information?vid=";
-  static String factory = BaseUrlBuilding + "fleet/mobile/V2/listgeofence";
+  static String realtime = "${BaseUrlBuilding}fleet/mobile/V2/realtime";
+  static String vid_detail = "${BaseUrlBuilding}fleet/mobile/information?vid=";
+  static String factory = "${BaseUrlBuilding}fleet/mobile/V2/listgeofence";
 
   // static String factory = BaseUrlBuilding + "fleet/mobile/listgeofence";
-  static String listmember = BaseUrlBuilding + "fleet/mobile/listmember";
-  static String listdriver = BaseUrlBuilding + "fleet/mobile/V2/listdriver";
+  static String listmember = "${BaseUrlBuilding}fleet/mobile/listmember";
+  static String listdriver = "${BaseUrlBuilding}fleet/mobile/V2/listdriver";
   static String driver_detail =
-      BaseUrlBuilding + "fleet/mobile/driverdetails?personal_id=";
-  static String notify = BaseUrlBuilding + "fleet/mobile/history/notify";
-  static String history = BaseUrlBuilding + "fleet/mobile/history";
+      "${BaseUrlBuilding}fleet/mobile/driverdetails?personal_id=";
+  static String notify = "${BaseUrlBuilding}fleet/mobile/history/notify";
+  static String history = "${BaseUrlBuilding}fleet/mobile/history";
   static String dashboard_summary =
-      BaseUrlBuilding + "fleet/mobile/V2/dashboard/summary";
+      "${BaseUrlBuilding}fleet/mobile/V2/dashboard/summary";
   static String dashboard_realtime =
-      BaseUrlBuilding + "fleet/mobile/dashboard/realtime";
+      "${BaseUrlBuilding}fleet/mobile/dashboard/realtime";
   static String dashboard_driver =
-      BaseUrlBuilding + "fleet/mobile/dashboard/driver";
-  static String trip = BaseUrlBuilding + "fleet/mobile/V2/trips";
-  static String trip_detail = BaseUrlBuilding + "fleet/mobile/V2/trips/detail";
-  static String logout = BaseUrlBuilding + "fleet/mobile/auth/logout";
-  static String token = BaseUrlBuilding + "fleet/mobile/token";
+      "${BaseUrlBuilding}fleet/mobile/dashboard/driver";
+  static String trip = "${BaseUrlBuilding}fleet/mobile/V2/trips";
+  static String trip_detail = "${BaseUrlBuilding}fleet/mobile/V2/trips/detail";
+  static String logout = "${BaseUrlBuilding}fleet/mobile/auth/logout";
+  static String token = "${BaseUrlBuilding}fleet/mobile/token";
   //static String cctv_vehicle = BaseUrlBuilding + "fleet/mdvr/device?user_id=";
   //static String cctv_vehicle = "https://iov-apidm.veconnect.vn/prod/fleet/picture?";
-  static String cctv_vehicle = BaseUrlBuilding + "fleet/picture?";
+  static String cctv_vehicle = "${BaseUrlBuilding}fleet/picture?";
   static String cctv_date =
-      BaseUrlBuilding + "fleet/mdvr/playback/calendar/info?user_id=";
-  static String cctv_live = BaseUrlBuilding + "fleet/mdvr/playback?user_id=";
-  static String cctv_live_channel = BaseUrlBuilding +
-      "fleet/mdvr/playback/info?use"
-          "r_id=";
+      "${BaseUrlBuilding}fleet/mdvr/playback/calendar/info?user_id=";
+  static String cctv_live = "${BaseUrlBuilding}fleet/mdvr/playback?user_id=";
+  static String cctv_live_channel = "${BaseUrlBuilding}fleet/mdvr/playback/info?user_id=";
   static String snapshot =
       "https://3tirkucu7j.execute-api.ap-southeast-1.amazonaws.com/prod/prod/fleet/mdvr/playback/images?";
   static String banner = "https://3tirkucu7j.execute-api.ap-southeast-1"
@@ -152,7 +146,7 @@ class Api {
 
       var response;
       if (profile != null) {
-        print("userID = " + profile!.userId.toString());
+        print("userID = ${profile!.userId}");
         Map<String, String> requestHeaders = {
           'Accept-Language': language == "vi" ? "en" : "en",
           'Accept': 'application/json',
@@ -225,7 +219,7 @@ class Api {
 
       var response;
       if (profile != null) {
-        print("userID = " + profile!.userId.toString());
+        print("userID = ${profile!.userId}");
         Map<String, String> requestHeaders = {
           'Accept-Language': language,
           'Accept': 'application/json',
@@ -249,7 +243,7 @@ class Api {
             body: jsonParam, headers: requestHeaders);
       }
 
-      print('print respon status code = ' + response.statusCode.toString());
+      print('print respon status code = ${response.statusCode}');
 
       if (response.statusCode == 200 ||
           response.statusCode == 201 ||
@@ -295,7 +289,7 @@ class Api {
       var res = await request.send();
       final response = await http.Response.fromStream(res);
 
-      print('print respon status code = ' + response.statusCode.toString());
+      print('print respon status code = ${response.statusCode}');
       print(response.body);
 
       final List<dynamic> responseData1 = json.decode(response.body);
@@ -321,7 +315,7 @@ class Api {
   static showAlertDialog(BuildContext context, String message) {
     // set up the button
     Widget okButton = ElevatedButton(
-      child: Text("OK"),
+      child: const Text("OK"),
       onPressed: () {
         Navigator.pop(context);
       },
@@ -348,9 +342,9 @@ class Api {
     AlertDialog alert = AlertDialog(
       content: new Row(
         children: [
-          CircularProgressIndicator(),
+          const CircularProgressIndicator(),
           Container(
-              margin: EdgeInsets.only(left: 7), child: Text("Loading...")),
+              margin: const EdgeInsets.only(left: 7), child: const Text("Loading...")),
         ],
       ),
     );

@@ -1,51 +1,31 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/feature/home/home.dart';
 import 'package:hino/feature/home_noti/home_noti.dart';
 import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/model/factory.dart';
-import 'package:hino/model/factory_latlng.dart';
-import 'package:hino/model/member.dart';
 import 'package:hino/model/noti.dart';
-import 'package:hino/model/truck.dart';
 import 'package:hino/model/vehicle.dart';
-import 'package:hino/page/home_car.dart';
-import 'package:hino/page/home_detail.dart';
 import 'package:hino/page/home_news.dart';
-import 'package:hino/page/home_noti_event.dart';
 import 'package:hino/page/home_noti_map_detail.dart';
 import 'package:hino/provider/page_provider.dart';
-import 'package:hino/utils/ScreenArguments.dart';
 import 'package:hino/utils/color_custom.dart';
-import 'package:hino/utils/responsive.dart';
 import 'package:hino/utils/utils.dart';
-import 'package:hino/widget/back_ios.dart';
-import 'package:hino/widget/fancy_fab.dart';
 import 'package:image/image.dart' as IMG;
-
 import 'dart:ui' as ui;
-
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/src/provider.dart';
 import 'package:screenshot/screenshot.dart';
-
-import '../main.dart';
 import '../model/last_key.dart';
-import 'home.dart';
-import 'home_noti.dart';
-import 'home_realtime.dart';
 
 bool isOpenNoti = false;
 

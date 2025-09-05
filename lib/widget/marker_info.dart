@@ -35,14 +35,14 @@ class _MarkerInfoState extends State<MarkerInfo> {
     return RepaintBoundary(
       key: markerKey,
       child: Container(
-        padding: EdgeInsets.only(bottom: 29),
+        padding: const EdgeInsets.only(bottom: 29),
         child: Container(
           width: 100,
           height: 100,
-          color: Color(0xFF000000),
+          color: const Color(0xFF000000),
           child: Text(
             widget.text,
-            style: TextStyle(
+            style: const TextStyle(
               color: Color(0xFFFFFFFF),
             ),
           ),

@@ -34,14 +34,14 @@ class _PageState extends State<CalendarCustom> {
     // than having to individually change instances of widgets.
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 40),
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(color: ColorCustom.white),
+        margin: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 40),
+        padding: const EdgeInsets.all(10),
+        decoration: const BoxDecoration(color: ColorCustom.white),
         child: Column(
           children: [
             Text(
               widget.title,
-              style: TextStyle(
+              style: const TextStyle(
                 color: ColorCustom.black,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

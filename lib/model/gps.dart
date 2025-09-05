@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:hino/model/location.dart';
 
 class Gps {

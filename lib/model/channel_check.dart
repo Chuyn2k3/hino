@@ -1,7 +1,3 @@
-import 'dart:ffi';
-
-import 'package:fijkplayer/fijkplayer.dart';
-
 class ChannelCheck {
   int? chn;
   int? filetype;

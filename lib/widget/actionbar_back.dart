@@ -30,7 +30,7 @@ class _PageState extends State<ActionBarBack> {
     return Container(
       width: double.infinity,
       color: ColorCustom.greyBG,
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -40,7 +40,7 @@ class _PageState extends State<ActionBarBack> {
             },
             child: Container(
               alignment: Alignment.centerLeft,
-              child: Icon(
+              child: const Icon(
                 Icons.arrow_back_ios,
                 color: Colors.grey,
                 size: 30,
@@ -49,16 +49,16 @@ class _PageState extends State<ActionBarBack> {
           ),
           Container(
             alignment: Alignment.center,
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             child: Text(widget.title,
-                style: TextStyle(
+                style: const TextStyle(
                     color: ColorCustom.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 20)),
           ),
           Container(
             alignment: Alignment.centerLeft,
-            child: Opacity(
+            child: const Opacity(
               opacity: 0.0,
               child: Icon(
                 Icons.arrow_back,

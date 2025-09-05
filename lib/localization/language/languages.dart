@@ -194,4 +194,6 @@ abstract class Languages {
   String get history;
   String get settings;
   String get unknown;
+  String get no_data;
+  
 }

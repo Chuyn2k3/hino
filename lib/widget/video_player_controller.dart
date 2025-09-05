@@ -20,14 +20,10 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
 
-
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
-
 import 'package:fijkplayer/fijkplayer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 FijkPanelWidgetBuilder fijkPanel2BuilderCustom(
     {Key? key,
@@ -99,9 +95,9 @@ class __FijkPanel2State extends State<_FijkPanel2> {
   double? _brightness;
 
   double _seekPos = -1.0;
-  Duration _duration = Duration();
-  Duration _currentPos = Duration();
-  Duration _bufferPos = Duration();
+  Duration _duration = const Duration();
+  Duration _currentPos = const Duration();
+  Duration _bufferPos = const Duration();
 
   StreamSubscription? _currentPosSubs;
   StreamSubscription? _bufferPosSubs;
@@ -277,13 +273,13 @@ class __FijkPanel2State extends State<_FijkPanel2> {
 
   Widget buildPlayButton(BuildContext context, double height) {
     Icon icon = (player.state == FijkState.started)
-        ? Icon(Icons.pause)
-        : Icon(Icons.play_arrow);
+        ? const Icon(Icons.pause)
+        : const Icon(Icons.play_arrow);
     bool fullScreen = player.value.fullScreen;
     return IconButton(
-      padding: EdgeInsets.all(0),
+      padding: const EdgeInsets.all(0),
       iconSize: fullScreen ? height : height * 0.8,
-      color: Color(0xFFFFFFFF),
+      color: const Color(0xFFFFFFFF),
       icon: icon,
       onPressed: playOrPause,
     );
@@ -291,13 +287,13 @@ class __FijkPanel2State extends State<_FijkPanel2> {
 
   Widget buildFullScreenButton(BuildContext context, double height) {
     Icon icon = player.value.fullScreen
-        ? Icon(Icons.fullscreen_exit)
-        : Icon(Icons.fullscreen);
+        ? const Icon(Icons.fullscreen_exit)
+        : const Icon(Icons.fullscreen);
     bool fullScreen = player.value.fullScreen;
     return IconButton(
-      padding: EdgeInsets.all(0),
+      padding: const EdgeInsets.all(0),
       iconSize: fullScreen ? height : height * 0.8,
-      color: Color(0xFFFFFFFF),
+      color: const Color(0xFFFFFFFF),
       icon: icon,
       onPressed: () {
         player.value.fullScreen
@@ -328,7 +324,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
         "${_duration2String(_currentPos)}" + "/${_duration2String(_duration)}";
 
 
-    return Text(text, style: TextStyle(fontSize: 12, color: Color(0xFFFFFFFF)));
+    return Text(text, style: const TextStyle(fontSize: 12, color: Color(0xFFFFFFFF)));
   }
 
 
@@ -342,7 +338,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
     bufferPos = bufferPos.clamp(0.0, duration);
     widget.onTick.call(_duration2String(_currentPos));
     return Padding(
-      padding: EdgeInsets.only(left: 3),
+      padding: const EdgeInsets.only(left: 3),
       child: FijkSlider(
         colors: sliderColors,
         value: currentValue,
@@ -408,11 +404,11 @@ class __FijkPanel2State extends State<_FijkPanel2> {
 
     bool fullScreen = player.value.fullScreen;
     Widget centerWidget = Container(
-      color: Color(0x00000000),
+      color: const Color(0x00000000),
     );
 
     Widget centerChild = Container(
-      color: Color(0x00000000),
+      color: const Color(0x00000000),
     );
 
     if (fullScreen && widget.snapShot) {
@@ -420,14 +416,14 @@ class __FijkPanel2State extends State<_FijkPanel2> {
         children: <Widget>[
           Expanded(child: centerChild),
           Padding(
-            padding: EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 IconButton(
-                  padding: EdgeInsets.all(0),
-                  color: Color(0xFFFFFFFF),
-                  icon: Icon(Icons.camera_alt),
+                  padding: const EdgeInsets.all(0),
+                  color: const Color(0xFFFFFFFF),
+                  icon: const Icon(Icons.camera_alt),
                   onPressed: () {
                     takeSnapshot();
                   },
@@ -443,7 +439,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
       children: <Widget>[
         Container(
           height: height > 200 ? 80 : height / 5,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0x88000000), Color(0x00000000)],
               begin: Alignment.topCenter,
@@ -456,7 +452,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
         ),
         Container(
           height: height > 80 ? 80 : height / 2,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0x88000000), Color(0x00000000)],
               end: Alignment.topCenter,
@@ -466,7 +462,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
           alignment: Alignment.bottomCenter,
           child: Container(
             height: height > 80 ? 45 : height / 2,
-            padding: EdgeInsets.only(left: 8, right: 8, bottom: 5),
+            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 5),
             child: buildBottom(context, height > 80 ? 40 : height / 2),
           ),
         )
@@ -486,7 +482,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
         absorbing: _hideStuff,
         child: AnimatedOpacity(
           opacity: _hideStuff ? 0 : 1,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           child: buildPanel(context),
         ),
       ),
@@ -524,8 +520,8 @@ class __FijkPanel2State extends State<_FijkPanel2> {
 
   Widget buildBack(BuildContext context) {
     return IconButton(
-      padding: EdgeInsets.only(left: 5),
-      icon: Icon(
+      padding: const EdgeInsets.only(left: 5),
+      icon: const Icon(
         Icons.arrow_back_ios,
         color: Color(0xDDFFFFFF),
       ),
@@ -543,14 +539,14 @@ class __FijkPanel2State extends State<_FijkPanel2> {
       return IgnorePointer(
         child: AnimatedOpacity(
           opacity: 1,
-          duration: Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 500),
           child: toast,
         ),
       );
     } else if (player.state == FijkState.asyncPreparing) {
       return Container(
         alignment: Alignment.center,
-        child: SizedBox(
+        child: const SizedBox(
           width: 30,
           height: 30,
           child: CircularProgressIndicator(
@@ -560,7 +556,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
     } else if (player.state == FijkState.error) {
       return Container(
         alignment: Alignment.center,
-        child: Icon(
+        child: const Icon(
           Icons.error,
           size: 30,
           color: Color(0x99FFFFFF),
@@ -568,7 +564,7 @@ class __FijkPanel2State extends State<_FijkPanel2> {
       );
     } else if (_imageProvider != null) {
       _snapshotTimer?.cancel();
-      _snapshotTimer = Timer(Duration(milliseconds: 1500), () {
+      _snapshotTimer = Timer(const Duration(milliseconds: 1500), () {
         if (mounted) {
           setState(() {
             _imageProvider = null;

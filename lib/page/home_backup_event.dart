@@ -694,7 +694,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/feature/home_realtime/home_realtime_page.dart';
@@ -702,7 +702,9 @@ import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/dropdown.dart';
 import 'package:hino/model/vehicle.dart';
 import 'package:hino/page/home_backup_event_search.dart';
+import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
+import 'package:hino/utils/custom_app_bar.dart';
 import 'package:hino/utils/utils.dart';
 import 'package:hino/widget/back_ios.dart';
 import 'package:hino/widget/dropbox_general_search.dart';
@@ -929,49 +931,72 @@ class _HomeBackupEventPageState extends State<HomeBackupEventPage> {
   @override
   Widget build(BuildContext context) {
     final lang = Languages.of(context)!;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            BackIOS(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTitleRow(lang),
-                    const SizedBox(height: 10),
-                    _buildDropdownSearch(lang),
-                    const SizedBox(height: 10),
-                    _buildVehicleSearch(lang),
-                    const SizedBox(height: 10),
-                    _buildDatePicker(lang),
-                    const SizedBox(height: 10),
-                    _buildTimePicker(lang),
-                    const Spacer(),
-                    _buildSearchButton(lang),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    return BaseScaffold(
+      appBar: CustomAppbar.basic(
+        title: lang.event_log,
+        onTap: () => Navigator.pop(context),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // _buildTitleRow(lang),
+              // const SizedBox(height: 20),
+              _buildSectionCard(children: [
+                _buildDropdownSearch(lang),
+                const SizedBox(height: 12),
+                _buildVehicleSearch(lang),
+              ]),
+              const SizedBox(height: 16),
+              _buildSectionCard(children: [
+                _buildDatePicker(lang),
+                const SizedBox(height: 12),
+                _buildTimePicker(lang),
+              ]),
+              const SizedBox(height: 20),
+              _buildSearchButton(lang),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
       ),
     );
   }
 
   Widget _buildTitleRow(Languages lang) => Row(
         children: [
-          const Icon(Icons.restore, size: 26, color: Colors.black87),
-          const SizedBox(width: 8),
+          const Icon(Icons.restore_page_outlined,
+              size: 28, color: ColorCustom.blue),
+          const SizedBox(width: 10),
           Text(
             lang.event_log,
             style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
         ],
@@ -985,7 +1010,7 @@ class _HomeBackupEventPageState extends State<HomeBackupEventPage> {
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.grey.shade400),
             ),
@@ -1010,7 +1035,7 @@ class _HomeBackupEventPageState extends State<HomeBackupEventPage> {
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.grey.shade400),
             ),
@@ -1036,7 +1061,8 @@ class _HomeBackupEventPageState extends State<HomeBackupEventPage> {
           const SizedBox(height: 6),
           InkWell(
             onTap: _pickDateStart,
-            child: _buildInputLikeRow(_dateController.text),
+            child: _buildInputLikeRow(_dateController.text,
+                icon: Icons.date_range),
           ),
         ],
       );
@@ -1049,29 +1075,33 @@ class _HomeBackupEventPageState extends State<HomeBackupEventPage> {
           const SizedBox(height: 6),
           InkWell(
             onTap: _pickTimeStart,
-            child: _buildInputLikeRow(timeString),
+            child: _buildInputLikeRow(timeString, icon: Icons.access_time),
           ),
         ],
       );
 
-  Widget _buildInputLikeRow(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(fontSize: 15, color: Colors.black87),
-              ),
+  Widget _buildInputLikeRow(String text, {IconData? icon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(icon ?? Icons.calendar_today, size: 18, color: Colors.black54),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 15, color: Colors.black87),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildSearchButton(Languages lang) => SizedBox(
         width: double.infinity,
@@ -1079,11 +1109,12 @@ class _HomeBackupEventPageState extends State<HomeBackupEventPage> {
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
             backgroundColor: ColorCustom.blue,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            elevation: 0,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            textStyle:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           child: Text(
             lang.search,

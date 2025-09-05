@@ -1,28 +1,10 @@
-import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hino/model/news.dart';
-import 'package:hino/model/truck.dart';
-import 'package:hino/page/home_car_filter.dart';
-import 'package:hino/page/home_detail.dart';
 import 'package:hino/utils/color_custom.dart';
-import 'package:hino/utils/responsive.dart';
 import 'package:hino/widget/back_ios.dart';
-import 'package:hino/widget/fancy_fab.dart';
-
 import 'dart:ui' as ui;
-
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-
-import 'home_car_sort.dart';
-import 'home_noti_event.dart';
 
 const homeNewsDetailPageDataList1 = [
   "https://hino.vn/w/wp-content/uploads/2024/10/preorder-900x600-1.jpg",

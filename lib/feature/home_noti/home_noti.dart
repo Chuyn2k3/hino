@@ -8,6 +8,7 @@ import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/noti.dart';
 import 'package:hino/model/noti_group.dart';
 import 'package:hino/page/home_noti_event.dart';
+import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
 import 'package:hino/widget/back_ios.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -138,50 +139,49 @@ class _HomeNotiPageState extends State<HomeNotiPage>
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.shade50, width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: Colors.blue.withOpacity(0.08),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: ColorCustom.primaryAssentColor.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue.shade100,
                       child: Text(
                         g.notifications.length.toString(),
                         style: const TextStyle(
                           fontSize: 16,
-                          color: ColorCustom.primaryAssentColor,
+                          color: ColorCustom.blue,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     title: Text(
                       g.name ?? '',
-                      style: const TextStyle(
+                      style: GoogleFonts.kanit(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: ColorCustom.black,
+                        color: ColorCustom.blue,
                       ),
                     ),
                     subtitle: showVehicle && g.vehicle.isNotEmpty
                         ? Text(
                             g.vehicle.first.info?.licenseprov ?? '',
-                            style: const TextStyle(
-                                fontSize: 13, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.blueGrey.shade400,
+                            ),
                           )
                         : null,
                     trailing:
-                        const Icon(Icons.chevron_right, color: Colors.grey),
+                        const Icon(Icons.chevron_right, color: Colors.blueGrey),
                     onTap: () => _openDetail(g),
                   ),
                 );
@@ -205,32 +205,37 @@ class _HomeNotiPageState extends State<HomeNotiPage>
   Widget build(BuildContext context) {
     final lang = Languages.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return BaseScaffold(
+
       body: SafeArea(
         child: Column(
           children: [
-            Row(
-              children: [
-                BackIOS(),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.search,
-                    size: 28,
-                    color: _tabController.index == 0
-                        ? Colors.grey
-                        : ColorCustom.blue,
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Row(
+                children: [
+                  BackIOS(),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(
+                      Icons.search,
+                      size: 28,
+                      color: _tabController.index == 0
+                          ? Colors.grey
+                          : Colors.blue,
+                    ),
+                    onPressed: _tabController.index > 0
+                        ? () {
+                            setState(() => _isSearching = !_isSearching);
+                          }
+                        : null,
                   ),
-                  onPressed: _tabController.index > 0
-                      ? () {
-                          setState(() => _isSearching = !_isSearching);
-                        }
-                      : null,
-                ),
-                const SizedBox(width: 8),
-              ],
+                ],
+              ),
             ),
+
+            // Search box
             if (_isSearching && _tabController.index > 0)
               Padding(
                 padding:
@@ -241,31 +246,49 @@ class _HomeNotiPageState extends State<HomeNotiPage>
                   decoration: InputDecoration(
                     hintText: lang.search,
                     filled: true,
-                    fillColor: ColorCustom.greyBG2,
+                    fillColor: Colors.white,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.blue.shade100),
                     ),
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search, color: Colors.blue),
                   ),
                 ),
               ),
+
+            // Body
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : Column(
                       children: [
-                        TabBar(
-                          controller: _tabController,
-                          labelColor: Colors.black,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorColor: ColorCustom.primaryAssentColor,
-                          labelStyle: GoogleFonts.kanit(),
-                          tabs: [
-                            Tab(text: lang.noti_event),
-                            Tab(text: lang.noti_vehicle),
-                            Tab(text: lang.noti_driver),
-                          ],
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.05),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: TabBar(
+                            controller: _tabController,
+                            labelColor: ColorCustom.blue,
+                            unselectedLabelColor: Colors.grey,
+                            indicatorColor: Colors.blue,
+                            indicatorWeight: 3,
+                            labelStyle: GoogleFonts.kanit(
+                                fontSize: 15, fontWeight: FontWeight.w600),
+                            tabs: [
+                              Tab(text: lang.noti_event),
+                              Tab(text: lang.noti_vehicle),
+                              Tab(text: lang.noti_driver),
+                            ],
+                          ),
                         ),
                         Expanded(
                           child: TabBarView(

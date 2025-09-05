@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:awesome_notifications/awesome_notifications_empty.dart';
 import 'package:fijkplayer/fijkplayer.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hino/feature/home/home.dart';
-import 'package:hino/page/home.dart';
 import 'package:hino/page/home_noti_map.dart';
 import 'package:hino/page/login.dart';
 import 'package:hino/utils/color_custom.dart';
@@ -19,7 +17,7 @@ import 'package:hino/utils/utils.dart';
 import 'package:hino/widget/notification_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+//import 'package:google_maps_flutter_android/google_maps_flutter_android.dart' as ga;
 import 'api/api.dart';
 import 'localization/locale_constant.dart';
 import 'localization/localizations_delegate.dart';
@@ -75,7 +73,7 @@ Future<void> main() async {
   //     ],
   //     debug: true
   // );
-
+ //ga.GoogleMapsFlutterAndroid.warmup();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await NotificationController.initializeLocalNotifications();

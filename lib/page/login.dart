@@ -8,15 +8,11 @@ import 'package:hino/localization/language/languages.dart';
 import 'package:hino/localization/locale_constant.dart';
 import 'package:hino/model/profile.dart';
 import 'package:hino/page/forgot_password.dart';
-import 'package:hino/page/home.dart';
 import 'package:hino/utils/color_custom.dart';
-import 'package:hino/utils/responsive.dart';
 import 'package:hino/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io' show Platform;
-
-import 'home_realtime.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -170,175 +166,187 @@ class _PageState extends State<LoginPage> {
   //   }
   // }
   setLang() {
-    Api.language = "vi";
+    Api.language = Api.language == 'en' ? 'vi' : 'en';
     changeLanguage(context, Api.language);
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    ColorCustom.greyBG2,
-                    Colors.white,
-                  ],
-                ),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 40),
-                            child: Image.asset(
-                              "assets/images/logo_login.png",
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Container(
-                                  child: TextField(
-                                    controller: usernameController,
-                                    keyboardType: TextInputType.text,
-                                    decoration: InputDecoration(
-                                      suffixIcon:
-                                          const Icon(Icons.person_outline),
-                                      hintText: Languages.of(context)!.username,
-                                      hintStyle: const TextStyle(fontSize: 16),
-                                      // fillColor: colorSearchBg,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: TextField(
-                                    controller: passwordController,
-                                    keyboardType: TextInputType.text,
-                                    decoration: InputDecoration(
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                          obscureText
-                                              ? Icons.visibility_off
-                                              : Icons.visibility,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            obscureText = !obscureText;
-                                          });
-                                        },
-                                      ),
-                                      hintText: Languages.of(context)!.password,
-                                      hintStyle: const TextStyle(fontSize: 16),
-                                      // fillColor: colorSearchBg,
-                                    ),
-                                    obscureText: obscureText),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 40,
-                          ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: ColorCustom.blue,
-                                padding: const EdgeInsets.all(15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(5), // <-- Radius
-                                ),
-                              ),
-                              onPressed: () {
-                                loginApi(context);
-                              },
-                              child: Text(
-                                Languages.of(context)!.signin,
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 18),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 20),
-                            alignment: Alignment.centerRight,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ForgotPasswordPage()));
-                              },
-                              child: Text(
-                                Languages.of(context)!.forgot_password,
-                                style: const TextStyle(
-                                    color: Colors.black, fontSize: 16),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  const Text(
-                    "All Rights Reserved. © Onelink Technology Co., Ltd.",
-                    style: TextStyle(color: Colors.black, fontSize: 10),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  )
+
+      body: Stack(
+        children: [
+          // Background gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFe3f2fd),
+                  Colors.white,
                 ],
               ),
             ),
-            Container(
-              margin: const EdgeInsets.all(10),
-              alignment: Alignment.topRight,
-              child: InkWell(
-                onTap: () {
-                  setLang();
-                },
-                child: const Icon(
-                  Icons.language,
-                  size: 35,
+          ),
+      
+          // Content
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo
+                  Hero(
+                    tag: "app_logo",
+                    child: Image.asset(
+                      "assets/images/logo_login.png",
+                      height: 120,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+      
+                  // Username
+                  _buildTextField(
+                    controller: usernameController,
+                    hint: Languages.of(context)!.username,
+                    icon: Icons.person_outline,
+                  ),
+                  const SizedBox(height: 20),
+      
+                  // Password
+                  _buildTextField(
+                    controller: passwordController,
+                    hint: Languages.of(context)!.password,
+                    icon: Icons.lock_outline,
+                    obscure: obscureText,
+                    suffix: IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+      
+                  // Login button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 4,
+                        backgroundColor: ColorCustom.blue,
+                      ),
+                      onPressed: () => loginApi(context),
+                      child: Text(
+                        Languages.of(context)!.signin,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+      
+                  // Forgot password
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordPage(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      Languages.of(context)!.forgot_password,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+      
+                  const SizedBox(height: 40),
+      
+                  const Text(
+                    "All Rights Reserved. © Onelink Technology Co., Ltd.",
+                    style: TextStyle(fontSize: 10, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      
+          // Language switch (chip style)
+          Positioned(
+            top: kTextTabBarHeight,
+            right: 16,
+            child: ActionChip(
+              backgroundColor: Colors.white,
+              avatar: const Icon(Icons.language, color: ColorCustom.blue),
+              label: Text(
+                Api.language.toUpperCase(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
                   color: ColorCustom.blue,
                 ),
               ),
+              onPressed: () => setLang(),
             ),
-            isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : Container()
-          ],
+          ),
+      
+          // Loading overlay
+          if (isLoading)
+            Container(
+              color: Colors.black38,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation(ColorCustom.blue),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: ColorCustom.blue),
+        suffixIcon: suffix,
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: ColorCustom.blue, width: 1.5),
         ),
       ),
     );

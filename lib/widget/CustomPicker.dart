@@ -1,4 +1,4 @@
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 
 class CustomPicker extends CommonPickerModel {
   String digits(int value, int length) {
@@ -8,15 +8,15 @@ class CustomPicker extends CommonPickerModel {
   CustomPicker({DateTime? currentTime, LocaleType? locale})
       : super(locale: locale) {
     this.currentTime = currentTime ?? DateTime.now();
-    this.setLeftIndex(this.currentTime.hour);
-    this.setMiddleIndex(this.currentTime.minute);
-    this.setRightIndex(this.currentTime.second);
+    setLeftIndex(this.currentTime.hour);
+    setMiddleIndex(this.currentTime.minute);
+    setRightIndex(this.currentTime.second);
   }
 
   @override
   String? leftStringAtIndex(int index) {
     if (index >= 0 && index < 24) {
-      return this.digits(index, 2);
+      return digits(index, 2);
     } else {
       return null;
     }
@@ -25,7 +25,7 @@ class CustomPicker extends CommonPickerModel {
   @override
   String? middleStringAtIndex(int index) {
     if (index >= 0 && index < 60) {
-      return this.digits(index, 2);
+      return digits(index, 2);
     } else {
       return null;
     }
@@ -34,7 +34,7 @@ class CustomPicker extends CommonPickerModel {
   @override
   String? rightStringAtIndex(int index) {
     if (index >= 0 && index < 60) {
-      return this.digits(index, 2);
+      return digits(index, 2);
     } else {
       return null;
     }
@@ -58,19 +58,9 @@ class CustomPicker extends CommonPickerModel {
   @override
   DateTime finalTime() {
     return currentTime.isUtc
-        ? DateTime.utc(
-        currentTime.year,
-        currentTime.month,
-        currentTime.day,
-        this.currentLeftIndex(),
-        this.currentMiddleIndex(),
-        this.currentRightIndex())
-        : DateTime(
-        currentTime.year,
-        currentTime.month,
-        currentTime.day,
-        this.currentLeftIndex(),
-        this.currentMiddleIndex(),
-        this.currentRightIndex());
+        ? DateTime.utc(currentTime.year, currentTime.month, currentTime.day,
+            currentLeftIndex(), currentMiddleIndex(), currentRightIndex())
+        : DateTime(currentTime.year, currentTime.month, currentTime.day,
+            currentLeftIndex(), currentMiddleIndex(), currentRightIndex());
   }
 }
