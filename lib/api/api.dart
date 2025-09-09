@@ -161,6 +161,7 @@ class Api {
         };
         response = await http.post(Uri.parse(url),
             body: jsonParam, headers: requestHeaders);
+            print(requestHeaders);
       } else {
         Map<String, String> requestHeaders = {
           HttpHeaders.contentTypeHeader: "application/json"

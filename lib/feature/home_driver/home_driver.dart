@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home_driver/create_driver_page.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/driver.dart';
 import 'package:hino/model/profile.dart';
@@ -651,6 +652,11 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                       ElevatedButton.icon(
                         onPressed: () {
                           // Thêm màn thêm tài xế nếu cần
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CreateDriverPage()),
+                          );
                         },
                         icon: const Icon(Icons.person_add,
                             size: 18, color: Colors.white),
