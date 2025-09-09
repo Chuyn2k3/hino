@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hino/api/api.dart';
+import 'package:hino/model/profile.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/custom_app_bar.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateDriverPage extends StatefulWidget {
   const CreateDriverPage({Key? key}) : super(key: key);
@@ -14,18 +19,24 @@ class CreateDriverPage extends StatefulWidget {
 
 class _CreateDriverPageState extends State<CreateDriverPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+
+  final _firstnameController = TextEditingController();
+  final _lastnameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _cccdController = TextEditingController();
   final _gplxController = TextEditingController();
 
-  DateTime? _selectedDate;
+  String? _selectedPrefix;
+  DateTime? _birthDate;
+  DateTime? _startDate;
+
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstnameController.dispose();
+    _lastnameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     _cccdController.dispose();
@@ -33,40 +44,33 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _pickDate(BuildContext context, bool isBirth) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate:
-          DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 20)),
       firstDate: DateTime(1950),
-      lastDate: DateTime.now().subtract(const Duration(days: 6570)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.blue,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Color(0xFF475569),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      lastDate: DateTime.now(),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
-        _selectedDate = picked;
+        if (isBirth) {
+          _birthDate = picked;
+        } else {
+          _startDate = picked;
+        }
       });
     }
   }
 
   Future<void> _createDriver() async {
-    if (!_formKey.currentState!.validate() || _selectedDate == null) {
+    if (!_formKey.currentState!.validate() ||
+        _birthDate == null ||
+        _startDate == null ||
+        _selectedPrefix == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Vui lòng điền đầy đủ thông tin'),
-          backgroundColor: Color(0xFFef4444),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -77,38 +81,64 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
     });
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("accessToken");
+      final profileString = prefs.getString("profile");
+
+      if (token == null || profileString == null) {
+        throw Exception("Không tìm thấy token hoặc profile");
+      }
+
+      final profileJson = json.decode(profileString);
+      final profile = Profile.fromJson(profileJson);
+      final userId = profile.userId ?? 0;
+
+      final url = Api.BaseUrlBuilding + Api.createDriver;
+
+      final body = {
+        "prefix": _selectedPrefix,
+        "firstname": _firstnameController.text.trim(),
+        "lastname": _lastnameController.text.trim(),
+        "personal_id": _cccdController.text.trim(),
+        "card_id": _gplxController.text.trim(),
+        "phone": _phoneController.text.trim(),
+        "birth_date": DateFormat("yyyy-MM-dd").format(_birthDate!),
+        "start_date": DateFormat("yyyy-MM-dd").format(_startDate!),
+        "full_address": _addressController.text.trim(),
+        "user_id": userId,
+      };
+
+      print("==== CREATE DRIVER ====");
+      print("Token: $token");
+      print("Body: $body");
+
       final response = await http.post(
-        Uri.parse(
-            'https://your-api-endpoint.com/drivers'), // Replace with your API endpoint
+        Uri.parse(url),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
-        body: json.encode({
-          'name': _nameController.text,
-          'dateOfBirth': _selectedDate!.toIso8601String(),
-          'phone': _phoneController.text,
-          'address': _addressController.text,
-          'cccd': _cccdController.text,
-          'gplx': _gplxController.text,
-        }),
+        body: json.encode(body),
       );
+
+      print("Response: ${response.statusCode} ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Tạo tài xế thành công!'),
-            backgroundColor: Color(0xFF4ade80),
+            content: Text("Tạo tài xế thành công!"),
+            backgroundColor: Colors.green,
           ),
         );
         Navigator.pop(context);
       } else {
-        throw Exception('Failed to create driver');
+        throw Exception("Lỗi: ${response.body}");
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lỗi: ${e.toString()}'),
-          backgroundColor: const Color(0xFFef4444),
+          content: Text("Lỗi: ${e.toString()}"),
+          backgroundColor: Colors.red,
         ),
       );
     } finally {
@@ -121,12 +151,9 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
-      // backgroundColor: Colors.white,
       appBar: CustomAppbar.basic(
         title: 'Tạo Tài Xế Mới',
         onTap: () => Navigator.pop(context),
-        // backgroundColor: Colors.white,
-        //elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -135,226 +162,106 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue[600]!, Colors.blue[400]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              // Prefix dropdown
+              const Text("Chức danh",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _selectedPrefix,
+                decoration: InputDecoration(
+                  labelText: "Chức danh",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 ),
-                child: const Column(
-                  children: [
-                    Icon(
-                      Icons.person_add_rounded,
-                      size: 48,
-                      color: Colors.white,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'Thông Tin Tài Xế',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Điền đầy đủ thông tin để tạo tài khoản tài xế mới',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                items: ["Anh", "Chị", "Ông", "Bà"]
+                    .map((e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(
+                            e,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ))
+                    .toList(),
+                onChanged: (val) => setState(() => _selectedPrefix = val),
+                validator: (val) =>
+                    val == null ? "Vui lòng chọn chức danh" : null,
               ),
-
-              const SizedBox(height: 32),
-
-              // Form Fields
-              _buildInputField(
-                controller: _nameController,
-                label: 'Họ và Tên',
-                icon: Icons.person_outline,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập họ tên';
-                  }
-                  return null;
-                },
-              ),
-
               const SizedBox(height: 20),
 
-              // Date of Birth Field
-              GestureDetector(
-                onTap: () => _selectDate(context),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFf0f9ff),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFd1d5db)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today_outlined,
-                        color: Colors.blue,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Ngày Sinh',
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _selectedDate != null
-                                  ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                                  : 'Chọn ngày sinh',
-                              style: TextStyle(
-                                color: _selectedDate != null
-                                    ? const Color(0xFF475569)
-                                    : const Color(0xFF9ca3af),
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              _buildInputField(
+                controller: _firstnameController,
+                label: "Họ",
+                icon: Icons.person_outline,
               ),
+              const SizedBox(height: 20),
 
+              _buildInputField(
+                controller: _lastnameController,
+                label: "Tên",
+                icon: Icons.person_outline,
+              ),
+              const SizedBox(height: 20),
+
+              _datePickerField(
+                label: "Ngày sinh",
+                date: _birthDate,
+                onTap: () => _pickDate(context, true),
+              ),
+              const SizedBox(height: 20),
+
+              _datePickerField(
+                label: "Ngày bắt đầu làm việc",
+                date: _startDate,
+                onTap: () => _pickDate(context, false),
+              ),
               const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _phoneController,
-                label: 'Số Điện Thoại',
-                icon: Icons.phone_outlined,
+                label: "Số điện thoại",
+                icon: Icons.phone,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập số điện thoại';
-                  }
-                  if (value.length < 10) {
-                    return 'Số điện thoại không hợp lệ';
-                  }
-                  return null;
-                },
               ),
-
               const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _addressController,
-                label: 'Địa Chỉ',
-                icon: Icons.location_on_outlined,
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập địa chỉ';
-                  }
-                  return null;
-                },
+                label: "Địa chỉ",
+                icon: Icons.home,
               ),
-
               const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _cccdController,
-                label: 'Số CCCD',
-                icon: Icons.credit_card_outlined,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập số CCCD';
-                  }
-                  if (value.length != 12) {
-                    return 'Số CCCD phải có 12 chữ số';
-                  }
-                  return null;
-                },
+                label: "CCCD",
+                icon: Icons.credit_card,
               ),
-
               const SizedBox(height: 20),
 
               _buildInputField(
                 controller: _gplxController,
-                label: 'Số GPLX',
-                icon: Icons.drive_eta_outlined,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập số GPLX';
-                  }
-                  return null;
-                },
+                label: "GPLX",
+                icon: Icons.drive_eta,
               ),
-
               const SizedBox(height: 40),
 
-              // Submit Button
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _createDriver,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: const Color(0xFF9ca3af),
-                  ),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white),
                   child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Tạo Tài Xế',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Tạo Tài Xế"),
                 ),
-              ),
-
-              const SizedBox(height: 20),
+              )
             ],
           ),
         ),
@@ -368,65 +275,51 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
     required IconData icon,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
-    int maxLines = 1,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.blue,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      validator: (value) =>
+          value == null || value.isEmpty ? "Vui lòng nhập $label" : null,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.blue),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: const Color(0xFFf0f9ff),
+      ),
+    );
+  }
+
+  Widget _datePickerField({
+    required String label,
+    required DateTime? date,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFf0f9ff),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFd1d5db)),
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          validator: validator,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            prefixIcon: Icon(
-              icon,
-              color: Colors.blue,
-              size: 20,
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today, color: Colors.blue),
+            const SizedBox(width: 12),
+            Text(
+              date != null
+                  ? DateFormat("dd/MM/yyyy").format(date)
+                  : "Chọn $label",
+              style: TextStyle(
+                  color: date != null ? Colors.black : Colors.grey[500]),
             ),
-            filled: true,
-            fillColor: const Color(0xFFf0f9ff),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFd1d5db)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFd1d5db)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFef4444)),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFef4444), width: 2),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            hintStyle: const TextStyle(color: Color(0xFF9ca3af)),
-          ),
-          style: const TextStyle(
-            color: Color(0xFF475569),
-            fontSize: 16,
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

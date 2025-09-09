@@ -55,58 +55,45 @@ class _PageState extends State<LoginPage> {
     isLoading = true;
     refresh();
     var uuid = const Uuid();
-    var platform = "";
-    if (Platform.isAndroid) {
-      // Android-specific code
-      platform = "ANDROID";
-    } else if (Platform.isIOS) {
-      // iOS-specific code
-      platform = "IOS";
-    }
+    var platform = Platform.isAndroid ? "ANDROID" : "IOS";
 
     var param = jsonEncode(<dynamic, dynamic>{
       "userName": usernameController.text,
       "password": passwordController.text,
-      // "userName": "hc0853861806s",
-      // "password": "hc0853861806solt",
       "applicationId": 2,
       "app_id": "FLEET-" + platform,
       "uuid": uuid.v1(),
       "token_id": token,
-      // "student_code": "62000344",
-      // "password": "123456",
     });
 
-    Profile profile;
-    Api.post(context, Api.login, param).then((value) => {
-          isLoading = false,
-          refresh(),
-          if (value != null)
-            {
-              // postToken(context),
-              profile = Profile.fromJson(value),
-              if (profile.userId != null)
-                {
-                  isAdvertise = true,
-                  Api.setProfile(profile),
-                  storeProfile(json.encode(value)),
-                  // Navigator.pushReplacement(
-                  //     context, MaterialPageRoute(builder: (_) => HomePage()))
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/root', (Route<dynamic> route) => false),
-                }
-              else
-                {
-                  Utils.showAlertDialog(
-                      context, "Sai Tên đăng nhập hoặc Mật khẩu")
-                }
-            }
-          else
-            {
-              Utils.showAlertDialog(
-                  context, "Sai Tên đăng nhập hoặc Mật khẩu")
-            }
-        });
+    Api.post(context, Api.login, param).then((value) async {
+      isLoading = false;
+      refresh();
+
+      if (value != null) {
+        Profile profile = Profile.fromJson(value);
+        if (profile.userId != null) {
+          Api.setProfile(profile);
+
+          // ✅ Lưu toàn bộ profile
+          await storeProfile(json.encode(value));
+
+          // ✅ Lưu riêng token vào SharedPreferences
+          if (profile.userTokenInfo?.accessToken != null) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+                'accessToken', profile.userTokenInfo!.accessToken!);
+          }
+
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              '/root', (Route<dynamic> route) => false);
+        } else {
+          Utils.showAlertDialog(context, "Sai Tên đăng nhập hoặc Mật khẩu");
+        }
+      } else {
+        Utils.showAlertDialog(context, "Sai Tên đăng nhập hoặc Mật khẩu");
+      }
+    });
   }
 
   postToken(BuildContext context) {
@@ -174,7 +161,6 @@ class _PageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: Stack(
         children: [
           // Background gradient
@@ -190,7 +176,7 @@ class _PageState extends State<LoginPage> {
               ),
             ),
           ),
-      
+
           // Content
           Center(
             child: SingleChildScrollView(
@@ -207,7 +193,7 @@ class _PageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-      
+
                   // Username
                   _buildTextField(
                     controller: usernameController,
@@ -215,7 +201,7 @@ class _PageState extends State<LoginPage> {
                     icon: Icons.person_outline,
                   ),
                   const SizedBox(height: 20),
-      
+
                   // Password
                   _buildTextField(
                     controller: passwordController,
@@ -234,7 +220,7 @@ class _PageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 30),
-      
+
                   // Login button
                   SizedBox(
                     width: double.infinity,
@@ -258,7 +244,7 @@ class _PageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-      
+
                   // Forgot password
                   TextButton(
                     onPressed: () {
@@ -276,9 +262,9 @@ class _PageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-      
+
                   const SizedBox(height: 40),
-      
+
                   const Text(
                     "All Rights Reserved. © Onelink Technology Co., Ltd.",
                     style: TextStyle(fontSize: 10, color: Colors.black54),
@@ -287,7 +273,7 @@ class _PageState extends State<LoginPage> {
               ),
             ),
           ),
-      
+
           // Language switch (chip style)
           Positioned(
             top: kTextTabBarHeight,
@@ -305,7 +291,7 @@ class _PageState extends State<LoginPage> {
               onPressed: () => setLang(),
             ),
           ),
-      
+
           // Loading overlay
           if (isLoading)
             Container(

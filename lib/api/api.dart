@@ -47,7 +47,8 @@ class Api {
   static String cctv_date =
       "${BaseUrlBuilding}fleet/mdvr/playback/calendar/info?user_id=";
   static String cctv_live = "${BaseUrlBuilding}fleet/mdvr/playback?user_id=";
-  static String cctv_live_channel = "${BaseUrlBuilding}fleet/mdvr/playback/info?user_id=";
+  static String cctv_live_channel =
+      "${BaseUrlBuilding}fleet/mdvr/playback/info?user_id=";
   static String snapshot =
       "https://3tirkucu7j.execute-api.ap-southeast-1.amazonaws.com/prod/prod/fleet/mdvr/playback/images?";
   static String banner = "https://3tirkucu7j.execute-api.ap-southeast-1"
@@ -61,8 +62,10 @@ class Api {
   static String postFileUrl =
       "https://ru.71dev.com/etest-enrollment/api/upload/upload";
 
-  static String version = "https://apihinov1.hino-connect.vn/prod/fleet/mobile/getLastestVersion";
-
+  static String version =
+      "https://apihinov1.hino-connect.vn/prod/fleet/mobile/getLastestVersion";
+  static String changePassword = "fleet/users/change-password";
+  static String createDriver = "fleet/mobile/create_drive";
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
@@ -131,7 +134,8 @@ class Api {
   }
 
   static Future<dynamic> post(
-      BuildContext context, String url, String jsonParam) async {
+      BuildContext context, String url, String jsonParam,
+      {String? accessToken = ""}) async {
     print(url);
     try {
       print(jsonParam);
@@ -156,12 +160,13 @@ class Api {
           "uuid": uuid,
           "token_id": token,
           "os": os,
+          "Authorization": accessToken ?? "",
           HttpHeaders.contentTypeHeader: "application/json"
           // 'user_id': "38"
         };
         response = await http.post(Uri.parse(url),
             body: jsonParam, headers: requestHeaders);
-            print(requestHeaders);
+        print(requestHeaders);
       } else {
         Map<String, String> requestHeaders = {
           HttpHeaders.contentTypeHeader: "application/json"
@@ -345,7 +350,8 @@ class Api {
         children: [
           const CircularProgressIndicator(),
           Container(
-              margin: const EdgeInsets.only(left: 7), child: const Text("Loading...")),
+              margin: const EdgeInsets.only(left: 7),
+              child: const Text("Loading...")),
         ],
       ),
     );

@@ -37,8 +37,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       "proposedPassword": _newController.text.trim(),
     });
 
-    final url = "https://apihinov1.hino-connect.vn/prod/fleet/users/change-password";
-    final response = await Api.post(context, url, body);
+    final url = Api.BaseUrlBuilding + Api.changePassword;
+
+    // ✅ Log thông tin gửi đi
+    print("==== CHANGE PASSWORD API ====");
+    print("URL: $url");
+    print("AccessToken: $token");
+    print("Body: $body");
+
+    final response = await Api.post(
+      context,
+      url,
+      body,
+      accessToken: token,
+    );
+
+    // ✅ Log response từ server
+    print("Response: ${response.toString()}");
+    print("=============================");
 
     setState(() => _isLoading = false);
 
@@ -54,12 +70,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       Navigator.pop(context);
     } else {
       final message = response?["Error"]?["Message"] ?? "Đổi mật khẩu thất bại";
+      print("Error Message: $message"); // ✅ Log lỗi chi tiết
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -71,7 +90,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           ),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -101,13 +121,16 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           prefixIcon: Icon(prefixIcon, color: Colors.blue[600]),
           suffixIcon: IconButton(
             icon: Icon(
-              obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              obscureText
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
               color: Colors.grey[600],
             ),
             onPressed: onToggleVisibility,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
         ),
         validator: validator,
@@ -177,7 +200,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
 
               // Form fields
@@ -185,9 +208,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 controller: _currentController,
                 label: "Mật khẩu hiện tại",
                 obscureText: _obscureCurrent,
-                onToggleVisibility: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                onToggleVisibility: () =>
+                    setState(() => _obscureCurrent = !_obscureCurrent),
                 prefixIcon: Icons.lock_outline,
-                validator: (v) => v == null || v.isEmpty ? "Vui lòng nhập mật khẩu hiện tại" : null,
+                validator: (v) => v == null || v.isEmpty
+                    ? "Vui lòng nhập mật khẩu hiện tại"
+                    : null,
               ),
 
               const SizedBox(height: 20),
@@ -196,10 +222,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 controller: _newController,
                 label: "Mật khẩu mới",
                 obscureText: _obscureNew,
-                onToggleVisibility: () => setState(() => _obscureNew = !_obscureNew),
+                onToggleVisibility: () =>
+                    setState(() => _obscureNew = !_obscureNew),
                 prefixIcon: Icons.lock_reset,
                 validator: (v) {
-                  if (v == null || v.isEmpty) return "Vui lòng nhập mật khẩu mới";
+                  if (v == null || v.isEmpty)
+                    return "Vui lòng nhập mật khẩu mới";
                   if (v.length < 6) return "Mật khẩu phải ít nhất 6 ký tự";
                   return null;
                 },
@@ -211,11 +239,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 controller: _confirmController,
                 label: "Xác nhận mật khẩu mới",
                 obscureText: _obscureConfirm,
-                onToggleVisibility: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                onToggleVisibility: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
                 prefixIcon: Icons.check_circle_outline,
                 validator: (v) {
-                  if (v == null || v.isEmpty) return "Vui lòng xác nhận mật khẩu";
-                  if (v != _newController.text.trim()) return "Mật khẩu xác nhận không khớp";
+                  if (v == null || v.isEmpty)
+                    return "Vui lòng xác nhận mật khẩu";
+                  if (v != _newController.text.trim())
+                    return "Mật khẩu xác nhận không khớp";
                   return null;
                 },
               ),
@@ -271,7 +302,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.tips_and_updates, color: Colors.amber[700], size: 20),
+                        Icon(Icons.tips_and_updates,
+                            color: Colors.amber[700], size: 20),
                         const SizedBox(width: 8),
                         Text(
                           "Mẹo bảo mật",

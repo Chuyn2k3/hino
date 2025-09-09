@@ -1,4 +1,28 @@
+class UserTokenInfo {
+  String? accessToken;
+  String? expiresIn;
+  String? idToken;
+  String? refreshToken;
+  String? tokenType;
 
+  UserTokenInfo.fromJson(Map<String, dynamic> json) {
+    accessToken = json['accessToken'];
+    expiresIn = json['expiresIn']?.toString();
+    idToken = json['idToken'];
+    refreshToken = json['refreshToken'];
+    tokenType = json['tokenType'];
+  }
+}
+
+class UserAction {
+  int? actionId;
+  int? actionLevelMax;
+
+  UserAction.fromJson(Map<String, dynamic> json) {
+    actionId = json['actionId'];
+    actionLevelMax = json['actionLevelMax'];
+  }
+}
 
 class Profile {
   var userId;
@@ -15,6 +39,8 @@ class Profile {
   var language;
   var redisKey;
 
+  UserTokenInfo? userTokenInfo;
+  List<UserAction>? userActions;
 
   Profile.fromJson(Map<String, dynamic> json) {
     userId = json['userId'];
@@ -29,7 +55,15 @@ class Profile {
     defaultLanguageId = json['defaultLanguageId'];
     language = json['language'];
     redisKey = json['redisKey'];
+
+    if (json['userTokenInfo'] != null) {
+      userTokenInfo = UserTokenInfo.fromJson(json['userTokenInfo']);
+    }
+
+    if (json['userActions'] != null) {
+      userActions = (json['userActions'] as List)
+          .map((e) => UserAction.fromJson(e))
+          .toList();
+    }
   }
-
 }
-
