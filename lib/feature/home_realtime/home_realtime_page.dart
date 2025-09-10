@@ -92,10 +92,37 @@ class _PageState extends State<HomeRealtimePage> {
   final Map<String, BitmapDescriptor> _markerIconCache = {};
   Timer? _searchDebounce;
   int _maxCacheSize = 200;
+  List<MarkerIcon> listIcon = [];
   @override
   void initState() {
     super.initState();
+    _loadMarkerIcons();
     _initializeApp();
+  }
+
+  void _loadMarkerIcons() {
+    const colors = ["GREEN", "RED", "RED", "YELLOW", "WHITE", "VIOLET"];
+    for (int i = 0; i < 7; i++) {
+      for (final c in colors) {
+        final path = 'assets/images/$c${i + 1}.png';
+        getBytesFromAsset(path, 250).then((bytes) {
+          listIcon
+              .add(MarkerIcon(BitmapDescriptor.fromBytes(bytes), path, bytes));
+        });
+      }
+    }
+  }
+
+  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    final data = await rootBundle.load(path);
+    final codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: width,
+    );
+    final frame = await codec.getNextFrame();
+    final byteData =
+        await frame.image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
   }
 
   void _initializeApp() {

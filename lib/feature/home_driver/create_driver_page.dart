@@ -45,12 +45,18 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
   }
 
   Future<void> _pickDate(BuildContext context, bool isBirth) async {
+    final DateTime initialDate = isBirth
+        ? DateTime.now()
+            .subtract(const Duration(days: 365 * 20)) // mặc định 20 năm trước
+        : DateTime.now(); // mặc định hôm nay
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365 * 20)),
+      initialDate: initialDate,
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
     );
+
     if (picked != null) {
       setState(() {
         if (isBirth) {
@@ -111,7 +117,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
       print("==== CREATE DRIVER ====");
       print("Token: $token");
       print("Body: $body");
-
+      print("Url: $url");
       final response = await http.post(
         Uri.parse(url),
         headers: {
@@ -124,15 +130,24 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
       print("Response: ${response.statusCode} ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Tạo tài xế thành công!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
+        final responseJson = json.decode(response.body);
+
+        // Kiểm tra code trả về từ API
+        if (responseJson["code"] == 200) {
+          // Thành công
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Tạo tài xế thành công!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          // Có lỗi nghiệp vụ, ví dụ: số điện thoại đã tồn tại
+          throw Exception(responseJson["result"] ?? "Có lỗi xảy ra");
+        }
       } else {
-        throw Exception("Lỗi: ${response.body}");
+        throw Exception("Lỗi HTTP: ${response.body}");
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,22 +183,56 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedPrefix,
+                hint: const Text(
+                  // 👈 chữ hiển thị ban đầu
+                  "Chức danh",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
                 decoration: InputDecoration(
-                  labelText: "Chức danh",
+                  filled: true,
+                  fillColor: Colors.white, // nền trắng
+                  //labelText: "Chức danh",
+                  labelStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: Colors.blue, width: 1.5),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
                 ),
+                dropdownColor: Colors.white, // nền menu trắng
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
                 items: ["Anh", "Chị", "Ông", "Bà"]
-                    .map((e) => DropdownMenuItem(
-                          value: e,
-                          child: Text(
-                            e,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ))
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(
+                          e,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (val) => setState(() => _selectedPrefix = val),
                 validator: (val) =>
@@ -211,12 +260,12 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
                 onTap: () => _pickDate(context, true),
               ),
               const SizedBox(height: 20),
-
               _datePickerField(
                 label: "Ngày bắt đầu làm việc",
                 date: _startDate,
                 onTap: () => _pickDate(context, false),
               ),
+
               const SizedBox(height: 20),
 
               _buildInputField(
@@ -287,7 +336,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
         prefixIcon: Icon(icon, color: Colors.blue),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
-        fillColor: const Color(0xFFf0f9ff),
+        fillColor: Colors.white,
       ),
     );
   }
@@ -297,29 +346,42 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
     required DateTime? date,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFf0f9ff),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFd1d5db)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today, color: Colors.blue),
-            const SizedBox(width: 12),
-            Text(
-              date != null
-                  ? DateFormat("dd/MM/yyyy").format(date)
-                  : "Chọn $label",
-              style: TextStyle(
-                  color: date != null ? Colors.black : Colors.grey[500]),
+        const SizedBox(height: 6),
+        InkWell(
+          onTap: onTap,
+          child: InputDecorator(
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              suffixIcon: const Icon(Icons.calendar_today, color: Colors.blue),
             ),
-          ],
+            child: Text(
+              date == null
+                  ? "Chọn $label"
+                  : "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
+              style: TextStyle(
+                fontSize: 14,
+                color: date == null ? Colors.grey : Colors.black,
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

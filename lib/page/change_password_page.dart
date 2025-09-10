@@ -58,7 +58,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
     setState(() => _isLoading = false);
 
-    if (response != null && response["Error"] == null) {
+    if (response != null && response["Code"] == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(

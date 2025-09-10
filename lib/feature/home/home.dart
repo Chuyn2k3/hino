@@ -36,7 +36,7 @@ final String uuid = const Uuid().v1();
 String platform = "", token = "", os = "";
 bool isNotiSetting = false;
 List<BannerHino> listBanner = [];
-List<MarkerIcon> listIcon = [];
+//List<MarkerIcon> listIcon = [];
 StreamController<int> notiController = StreamController<int>.broadcast();
 int noti_count = 0;
 
@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initApp() async {
-    _loadMarkerIcons();
+    //_loadMarkerIcons();
     await _loadProfileOrRedirect();
     _setupNotifications();
     _fetchBanner();
@@ -220,18 +220,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _loadMarkerIcons() {
-    const colors = ["GREEN", "RED", "RED", "YELLOW", "WHITE", "VIOLET"];
-    for (int i = 0; i < 7; i++) {
-      for (final c in colors) {
-        final path = 'assets/images/$c${i + 1}.png';
-        getBytesFromAsset(path, 250).then((bytes) {
-          listIcon
-              .add(MarkerIcon(BitmapDescriptor.fromBytes(bytes), path, bytes));
-        });
-      }
-    }
-  }
+  // void _loadMarkerIcons() {
+  //   const colors = ["GREEN", "RED", "RED", "YELLOW", "WHITE", "VIOLET"];
+  //   for (int i = 0; i < 7; i++) {
+  //     for (final c in colors) {
+  //       final path = 'assets/images/$c${i + 1}.png';
+  //       getBytesFromAsset(path, 250).then((bytes) {
+  //         listIcon
+  //             .add(MarkerIcon(BitmapDescriptor.fromBytes(bytes), path, bytes));
+  //       });
+  //     }
+  //   }
+  // }
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     final data = await rootBundle.load(path);

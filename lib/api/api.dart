@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 class Api {
   static String BaseUrlBuilding = "https://apihinov1.hino-connect.vn/prod/";
+  static String BaseUrlBuildingSwagger = "http://42.96.42.254:4004/prod/";
   static String firebase_key =
       "AAAAwmmo4S8:APA91bFrpiUhVSV5orW6qBnwzUa2376P3t7pTvkY-cPjTn2U_a93n3hj03CgaJNNjqTFZcA_KqcWggwbPZoyvzGXglFj5SEZDBVIQ985JW896aOXybIN2N_nSnxJY9BxBqNakXImCJYt";
 
@@ -65,7 +66,7 @@ class Api {
   static String version =
       "https://apihinov1.hino-connect.vn/prod/fleet/mobile/getLastestVersion";
   static String changePassword = "fleet/users/change-password";
-  static String createDriver = "fleet/mobile/create_drive";
+  static String createDriver = "fleet/mobile/create_driver";
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.
