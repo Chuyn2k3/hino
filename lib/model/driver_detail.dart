@@ -1,35 +1,73 @@
-import 'dart:ffi';
-
-import 'package:hino/model/Eco.dart';
+import 'package:hino/model/eco.dart';
 import 'package:hino/model/safety.dart';
 
+import 'driver_info_model.dart';
+import 'driver_user_model.dart';
+
 class DriverDetail {
-
-
-  String? driver_name ;
-  String? driver_license_id ;
-  String? driver_licensecard_type ;
-  String? card_expire ;
-  String? total_time ;
-  double? distance ;
-  double? fuel_usage ;
+  String? driverName;
+  String? driverLicenseId;
+  String? driverLicensecardType;
+  String? cardExpire;
+  String? totalTime;
+  double? distance;
+  double? fuelUsage;
   List<Safety> safety = [];
   List<Eco> eco = [];
+  DriverInfoModel? driverInfo;
+  DriverUserModel? driverUser;
 
-  DriverDetail.fromJson(Map<String, dynamic> json) {
-    driver_name = json['driver_name'];
-    driver_license_id = json['driver_license_id'];
-    driver_licensecard_type = json['driver_licensecard_type'];
-    card_expire = json['card_expire'];
-    total_time = json['total_time'];
-    distance = json['distance'];
-    fuel_usage = json['fuel_usage'];
-    safety = List.from(json['safety'])
-        .map((a) => Safety.fromJson(a))
-        .toList();
-    eco = List.from(json['eco'])
-        .map((a) => Eco.fromJson(a))
-        .toList();
+  DriverDetail({
+    this.driverName,
+    this.driverLicenseId,
+    this.driverLicensecardType,
+    this.cardExpire,
+    this.totalTime,
+    this.distance,
+    this.fuelUsage,
+    this.safety = const [],
+    this.eco = const [],
+    this.driverInfo,
+    this.driverUser,
+  });
+
+  factory DriverDetail.fromJson(Map<String, dynamic> json) {
+    return DriverDetail(
+      driverName: json['driver_name'],
+      driverLicenseId: json['driver_license_id'],
+      driverLicensecardType: json['driver_licensecard_type'],
+      cardExpire: json['card_expire'],
+      totalTime: json['total_time'],
+      distance: (json['distance'] ?? 0).toDouble(),
+      fuelUsage: (json['fuel_usage'] ?? 0).toDouble(),
+      safety: (json['safety'] != null)
+          ? List.from(json['safety']).map((a) => Safety.fromJson(a)).toList()
+          : [],
+      eco: (json['eco'] != null)
+          ? List.from(json['eco']).map((a) => Eco.fromJson(a)).toList()
+          : [],
+      driverInfo: json['driver_info'] != null
+          ? DriverInfoModel.fromJson(json['driver_info'])
+          : null,
+      driverUser: json['driver_user'] != null
+          ? DriverUserModel.fromJson(json['driver_user'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "driver_name": driverName,
+      "driver_license_id": driverLicenseId,
+      "driver_licensecard_type": driverLicensecardType,
+      "card_expire": cardExpire,
+      "total_time": totalTime,
+      "distance": distance,
+      "fuel_usage": fuelUsage,
+      "safety": safety.map((e) => e.toJson()).toList(),
+      "eco": eco.map((e) => e.toJson()).toList(),
+      "driver_info": driverInfo?.toJson(),
+      "driver_user": driverUser?.toJson(),
+    };
   }
 }
-

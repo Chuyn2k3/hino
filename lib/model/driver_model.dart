@@ -41,7 +41,8 @@ class Driver {
       address: json['address'],
       cccd: json['cccd'],
       gplx: json['gplx'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
   }
 }

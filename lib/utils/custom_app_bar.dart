@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppbar(
       {super.key,
@@ -12,7 +11,8 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
       this.widgetTitle,
       this.leading,
       this.leadingWidth,
-      this.styleTitle});
+      this.styleTitle,
+      this.bottom});
   final String? title;
   final List<Widget>? actions;
   final Widget? flexibleSpace;
@@ -21,7 +21,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? leading;
   final double? leadingWidth;
   final TextStyle? styleTitle;
-
+  final TabBar? bottom;
   CustomAppbar.basic({
     super.key,
     this.title,
@@ -33,27 +33,33 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
     this.styleTitle,
     VoidCallback? onTap,
     bool isLeading = true,
+    this.bottom,
   }) : leading = isLeading ? _previousButton(onTap) : const SizedBox();
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-        title: widgetTitle ??
-            Text(title ?? "",
-                style: styleTitle ??TextStyle(color: Colors.black,fontSize: 20,fontWeight: FontWeight.w600)
-                    ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0.0,
-        actions: actions,
-        flexibleSpace: flexibleSpace,
-        iconTheme: IconThemeData(color: Colors.black),
-        leading: leading,
-        leadingWidth: leadingWidth,
-        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
-            statusBarIconBrightness: Brightness.dark,
-            statusBarColor: Colors.transparent),
-        automaticallyImplyLeading: automaticallyImplyLeading ?? true);
+      title: widgetTitle ??
+          Text(title ?? "",
+              style: styleTitle ??
+                  TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600)),
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0.0,
+      actions: actions,
+      flexibleSpace: flexibleSpace,
+      iconTheme: IconThemeData(color: Colors.black),
+      leading: leading,
+      leadingWidth: leadingWidth,
+      systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+          statusBarIconBrightness: Brightness.dark,
+          statusBarColor: Colors.transparent),
+      automaticallyImplyLeading: automaticallyImplyLeading ?? true,
+      bottom: bottom,
+    );
   }
 
   @override

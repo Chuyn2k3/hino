@@ -27,7 +27,7 @@ import 'dart:ui' as ui;
 import 'package:radar_chart/radar_chart.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import 'home_driver_detail.dart';
+import '../feature/home_driver/home_driver_detail.dart';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({
@@ -297,8 +297,8 @@ class _PageState extends State<HomeDashboardPage>
             return Center(
               child: Container(
                 padding: const EdgeInsets.all(10),
-                margin:
-                    const EdgeInsets.only(left: 20, right: 20, top: 50, bottom: 50),
+                margin: const EdgeInsets.only(
+                    left: 20, right: 20, top: 50, bottom: 50),
                 color: Colors.white,
                 child: DashboardFilter(
                   data: (List<Vehicle> value) {
@@ -1257,8 +1257,8 @@ class _PageState extends State<HomeDashboardPage>
                                                 // Chart title
                                                 // title: ChartTitle(text: 'Half yearly sales analysis'),
                                                 // Enable legend
-                                                legend:
-                                                    const Legend(isVisible: false),
+                                                legend: const Legend(
+                                                    isVisible: false),
                                                 tooltipBehavior:
                                                     TooltipBehavior(
                                                         enable: true),
@@ -1609,8 +1609,8 @@ class _PageState extends State<HomeDashboardPage>
                                                 // Chart title
                                                 // title: ChartTitle(text: 'Half yearly sales analysis'),
                                                 // Enable legend
-                                                legend:
-                                                    const Legend(isVisible: false),
+                                                legend: const Legend(
+                                                    isVisible: false),
                                                 tooltipBehavior:
                                                     TooltipBehavior(
                                                         enable: true),
@@ -2192,7 +2192,8 @@ class _PageState extends State<HomeDashboardPage>
                       size: 30,
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: indexTab == 0 ? ColorCustom.blue : Colors.grey,
+                      backgroundColor:
+                          indexTab == 0 ? ColorCustom.blue : Colors.grey,
                       shape: const CircleBorder(),
                       padding: const EdgeInsets.all(5),
                     ),

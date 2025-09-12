@@ -31,6 +31,32 @@ class Driver {
   String? display_last_updated;
   String? card_id;
 
+  Driver({
+    this.id,
+    this.score,
+    this.prefix,
+    this.firstname,
+    this.lastname,
+    this.personalId,
+    this.photoUrl,
+    this.datetimeSwipe,
+    this.imei,
+    this.statusSwipeCard,
+    this.licensePlateNo,
+    this.vehicleName,
+    this.lat,
+    this.lng,
+    this.adminLevel3Name,
+    this.adminLevel2Name,
+    this.adminLevel1Name,
+    this.vehicle,
+    this.driver_phone_no,
+    this.box_phone_no,
+    this.display_datetime_swipe,
+    this.display_last_updated,
+    this.card_id,
+  });
+
   Driver.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     score = json['score'];
@@ -46,9 +72,7 @@ class Driver {
     vehicleName = json['vehicle_name'];
     lat = json['lat'];
     lng = json['lng'];
-    // adminLevel3Name = json['admin_level3_name'];
-    // adminLevel2Name = json['admin_level2_name'];
-    // adminLevel1Name = json['admin_level1_name'];
+
     if (Api.language == "en") {
       adminLevel3Name = json['admin_level3_name_en'];
       adminLevel2Name = json['admin_level2_name_en'];
@@ -58,14 +82,11 @@ class Driver {
       adminLevel2Name = json['admin_level2_name'];
       adminLevel1Name = json['admin_level1_name'];
     }
-    // adminLevel3NameEn = json['admin_level3_name_en'];
-    // adminLevel2NameEn = json['admin_level2_name_en'];
-    // adminLevel1NameEn = json['admin_level1_name_en'];
 
     display_datetime_swipe = json['display_datetime_swipe'];
     display_last_updated = json['display_last_updated'];
 
-    vehicle = Utils.getVehicleByLicense(licensePlateNo!);
+    vehicle = Utils.getVehicleByLicense(licensePlateNo ?? "");
 
     if (vehicleName == null || vehicleName!.isEmpty || vehicleName! == "-") {
       vehicleName = licensePlateNo;
@@ -76,8 +97,6 @@ class Driver {
     }
 
     if (firstname == null || firstname!.isEmpty) {
-      // firstname = "ไม่ระบุผู้ขับขี่";
-
       if (Api.language == "vi") {
         firstname = LanguageVi().unidentified_driver;
       } else {
@@ -85,9 +104,36 @@ class Driver {
       }
     }
 
-    driver_phone_no = json['driver_phone_no'];
-    box_phone_no = json['box_phone_no'];
-    driver_phone_no ??= "";
-    box_phone_no ??= "";
+    driver_phone_no = json['driver_phone_no'] ?? "";
+    box_phone_no = json['box_phone_no'] ?? "";
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "score": score,
+      "prefix": prefix,
+      "firstname": firstname,
+      "lastname": lastname,
+      "personal_id": personalId,
+      "photo_url": photoUrl,
+      "datetime_swipe": datetimeSwipe,
+      "imei": imei,
+      "status_swipe_card": statusSwipeCard,
+      "license_plate_no": licensePlateNo,
+      "vehicle_name": vehicleName,
+      "lat": lat,
+      "lng": lng,
+      "admin_level3_name": adminLevel3Name,
+      "admin_level2_name": adminLevel2Name,
+      "admin_level1_name": adminLevel1Name,
+      "display_datetime_swipe": display_datetime_swipe,
+      "display_last_updated": display_last_updated,
+      "card_id": card_id,
+      "driver_phone_no": driver_phone_no,
+      "box_phone_no": box_phone_no,
+      // nếu Vehicle có toJson thì thêm vào:
+      "vehicle": vehicle != null ? vehicle!.toJson() : null,
+    };
   }
 }

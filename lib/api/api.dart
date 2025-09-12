@@ -29,7 +29,7 @@ class Api {
   static String listmember = "${BaseUrlBuilding}fleet/mobile/listmember";
   static String listdriver = "${BaseUrlBuilding}fleet/mobile/V2/listdriver";
   static String driver_detail =
-      "${BaseUrlBuilding}fleet/mobile/driverdetails?personal_id=";
+      "${BaseUrlBuilding}fleet/mobile/driverdetails?driver_id=";
   static String notify = "${BaseUrlBuilding}fleet/mobile/history/notify";
   static String history = "${BaseUrlBuilding}fleet/mobile/history";
   static String dashboard_summary =

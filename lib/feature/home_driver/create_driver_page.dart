@@ -6,9 +6,15 @@ import 'package:hino/api/api.dart';
 import 'package:hino/model/profile.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/custom_app_bar.dart';
+import 'package:hino/utils/snack_bar.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../model/driver_info_create_model.dart';
+import '../../model/driver_info_model.dart';
+import '../../widget/custom_date_picker.dart';
+import '../../widget/custom_text_field.dart';
 
 class CreateDriverPage extends StatefulWidget {
   const CreateDriverPage({Key? key}) : super(key: key);
@@ -27,9 +33,10 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
   final _cccdController = TextEditingController();
   final _gplxController = TextEditingController();
 
-  String? _selectedPrefix;
+  String? _selectedPrefix = "Ông"; // Default to "Ông"
   DateTime? _birthDate;
-  DateTime? _startDate;
+  DateTime _startDate = DateTime.now(); // Default to current date
+  DateTime? _cardExpiredDate;
 
   bool _isLoading = false;
 
@@ -44,43 +51,74 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
     super.dispose();
   }
 
-  Future<void> _pickDate(BuildContext context, bool isBirth) async {
-    final DateTime initialDate = isBirth
-        ? DateTime.now()
-            .subtract(const Duration(days: 365 * 20)) // mặc định 20 năm trước
-        : DateTime.now(); // mặc định hôm nay
+  Future<void> _pickDate(BuildContext context, String field) async {
+    final DateTime initialDate = field == 'birth'
+        ? DateTime.now().subtract(const Duration(days: 365 * 20))
+        : DateTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
+      firstDate: field == 'birth' ? DateTime(1950) : DateTime.now(),
+      lastDate: field == 'expire' ? DateTime(2100) : DateTime.now(),
     );
 
     if (picked != null) {
       setState(() {
-        if (isBirth) {
+        if (field == 'birth') {
           _birthDate = picked;
-        } else {
+        } else if (field == 'start') {
           _startDate = picked;
+        } else {
+          _cardExpiredDate = picked;
         }
       });
     }
   }
 
+  Future<bool> _showConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              title: const Text('Xác nhận thêm mới tài xế'),
+              content: const Text(
+                'Vui lòng kiểm tra lại nội dung, các thông tin CCCD và GPLX sẽ không thể thay đổi sau khi tạo.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Hủy', style: TextStyle(color: Colors.red)),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Xác nhận'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
   Future<void> _createDriver() async {
     if (!_formKey.currentState!.validate() ||
         _birthDate == null ||
-        _startDate == null ||
         _selectedPrefix == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin'),
-          backgroundColor: Colors.red,
-        ),
+      context.showSnackBarFail(
+        text: 'Vui lòng điền đầy đủ thông tin bắt buộc',
       );
       return;
     }
+
+    // Show confirmation dialog
+    final confirmed = await _showConfirmationDialog();
+    if (!confirmed) return;
 
     setState(() {
       _isLoading = true;
@@ -100,23 +138,23 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
       final userId = profile.userId ?? 0;
 
       final url = Api.BaseUrlBuilding + Api.createDriver;
-
-      final body = {
-        "prefix": _selectedPrefix,
-        "firstname": _firstnameController.text.trim(),
-        "lastname": _lastnameController.text.trim(),
-        "personal_id": _cccdController.text.trim(),
-        "card_id": _gplxController.text.trim(),
-        "phone": _phoneController.text.trim(),
-        "birth_date": DateFormat("yyyy-MM-dd").format(_birthDate!),
-        "start_date": DateFormat("yyyy-MM-dd").format(_startDate!),
-        "full_address": _addressController.text.trim(),
-        "user_id": userId,
-      };
+      final body = DriverInfoCreateModel(
+        prefix: _selectedPrefix,
+        firstname: _firstnameController.text.trim(),
+        lastname: _lastnameController.text.trim(),
+        personalId: _cccdController.text.trim(),
+        cardId: _gplxController.text.trim(),
+        phone: _phoneController.text.trim(),
+        birthDate: _birthDate!,
+        startDate: _startDate,
+        fullAddress: _addressController.text.trim(),
+        userId: userId,
+        cardExpiredDate: _cardExpiredDate,
+      );
 
       print("==== CREATE DRIVER ====");
       print("Token: $token");
-      print("Body: $body");
+      print("Body: ${body.toString()}");
       print("Url: $url");
       final response = await http.post(
         Uri.parse(url),
@@ -124,7 +162,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: json.encode(body),
+        body: json.encode(body.toJson()),
       );
 
       print("Response: ${response.statusCode} ${response.body}");
@@ -132,35 +170,35 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseJson = json.decode(response.body);
 
-        // Kiểm tra code trả về từ API
         if (responseJson["code"] == 200) {
-          // Thành công
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Tạo tài xế thành công!"),
-              backgroundColor: Colors.green,
-            ),
+          context.showSnackBarSuccess(
+            text: "Tạo tài xế thành công!",
           );
-          Navigator.pop(context);
+          _firstnameController.clear();
+          _lastnameController.clear();
+          _phoneController.clear();
+          _addressController.clear();
+          _cccdController.clear();
+          _gplxController.clear();
+          _birthDate = null;
+          // Navigator.pop(context);
         } else {
-          // Có lỗi nghiệp vụ, ví dụ: số điện thoại đã tồn tại
-          throw Exception(responseJson["result"] ?? "Có lỗi xảy ra");
+          context.showSnackBarFail(
+            text: responseJson["result"],
+          );
+          //throw Exception(responseJson["result"] ?? "Có lỗi xảy ra");
         }
       } else {
-        throw Exception("Lỗi HTTP: ${response.body}");
+        throw Exception("Lỗi: ${response.body}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Lỗi: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      context.showSnackBarFail(text: e.toString());
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -177,14 +215,12 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Prefix dropdown
               const Text("Chức danh",
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedPrefix,
                 hint: const Text(
-                  // 👈 chữ hiển thị ban đầu
                   "Chức danh",
                   style: TextStyle(
                     fontSize: 16,
@@ -193,8 +229,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
                 ),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Colors.white, // nền trắng
-                  //labelText: "Chức danh",
+                  fillColor: Colors.white,
                   labelStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -217,7 +252,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
                     vertical: 14,
                   ),
                 ),
-                dropdownColor: Colors.white, // nền menu trắng
+                dropdownColor: Colors.white,
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black87,
@@ -238,66 +273,64 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
                 validator: (val) =>
                     val == null ? "Vui lòng chọn chức danh" : null,
               ),
-              const SizedBox(height: 20),
-
-              _buildInputField(
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _firstnameController,
                 label: "Họ",
                 icon: Icons.person_outline,
               ),
-              const SizedBox(height: 20),
-
-              _buildInputField(
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _lastnameController,
                 label: "Tên",
                 icon: Icons.person_outline,
               ),
-              const SizedBox(height: 20),
-
-              _datePickerField(
-                label: "Ngày sinh",
-                date: _birthDate,
-                onTap: () => _pickDate(context, true),
-              ),
-              const SizedBox(height: 20),
-              _datePickerField(
-                label: "Ngày bắt đầu làm việc",
-                date: _startDate,
-                onTap: () => _pickDate(context, false),
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildInputField(
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _phoneController,
                 label: "Số điện thoại",
                 icon: Icons.phone,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
-              const SizedBox(height: 20),
-
-              _buildInputField(
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _addressController,
                 label: "Địa chỉ",
                 icon: Icons.home,
               ),
-              const SizedBox(height: 20),
-
-              _buildInputField(
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _cccdController,
                 label: "CCCD",
                 icon: Icons.credit_card,
+                keyboardType: TextInputType.phone,
               ),
-              const SizedBox(height: 20),
-
-              _buildInputField(
+              const SizedBox(height: 16),
+              CustomTextField(
                 controller: _gplxController,
                 label: "GPLX",
                 icon: Icons.drive_eta,
               ),
+              const SizedBox(height: 16),
+              CustomDatePickerField(
+                label: "Ngày sinh",
+                date: _birthDate,
+                onTap: () => _pickDate(context, 'birth'),
+              ),
+              const SizedBox(height: 16),
+              CustomDatePickerField(
+                label: "Ngày bắt đầu làm việc",
+                date: _startDate,
+                onTap: () => _pickDate(context, 'start'),
+              ),
+              const SizedBox(height: 16),
+              CustomDatePickerField(
+                label: "Ngày hết hạn GPLX",
+                date: _cardExpiredDate,
+                onTap: () => _pickDate(context, 'expire'),
+              ),
               const SizedBox(height: 40),
-
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -315,73 +348,6 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      validator: (value) =>
-          value == null || value.isEmpty ? "Vui lòng nhập $label" : null,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.blue),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-    );
-  }
-
-  Widget _datePickerField({
-    required String label,
-    required DateTime? date,
-    required VoidCallback onTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 6),
-        InkWell(
-          onTap: onTap,
-          child: InputDecorator(
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              suffixIcon: const Icon(Icons.calendar_today, color: Colors.blue),
-            ),
-            child: Text(
-              date == null
-                  ? "Chọn $label"
-                  : "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
-              style: TextStyle(
-                fontSize: 14,
-                color: date == null ? Colors.grey : Colors.black,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

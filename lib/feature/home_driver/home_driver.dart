@@ -6,7 +6,7 @@ import 'package:hino/feature/home_driver/create_driver_page.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/driver.dart';
 import 'package:hino/model/profile.dart';
-import 'package:hino/page/home_driver_detail.dart';
+import 'package:hino/feature/home_driver/home_driver_detail.dart';
 import 'package:hino/page/home_driver_sort.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
@@ -114,7 +114,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     showBarModalBottomSheet(
       backgroundColor: Colors.transparent,
       context: context,
-      builder: (_) => HomeDriverDetailPage(driver: d),
+      builder: (_) => DriverManagementPage(driver: d),
     );
   }
 

@@ -89,7 +89,8 @@ dependencies:
   shimmer: ^3.0.0
   nfc_manager: ^3.5.0
   #google_maps_flutter_android: ^2.14.13
-  
+  another_flushbar: ^1.12.30
+  cached_network_image:
 #  custom_info_window: ^1.0.1
 
 

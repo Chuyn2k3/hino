@@ -1,52 +1,70 @@
-import 'dart:ffi';
-
 import 'package:hino/api/api.dart';
 
 class Eco {
-  String? arg;
+  String? arg; // tên hiển thị đã map
+  String? rawArg; // tên gốc từ API
+  dynamic avg;
+  dynamic point;
 
-  var avg;
+  Eco({
+    this.arg,
+    this.rawArg,
+    this.avg,
+    this.point,
+  });
 
-  var point;
-
-  Eco.fromJson(Map<String, dynamic> json) {
-    arg = mapName(json['arg']);
-    avg = json['avg'];
-    point = json['point'];
+  factory Eco.fromJson(Map<String, dynamic> json) {
+    final raw = json['arg'] as String?;
+    return Eco(
+      arg: raw != null ? _mapName(raw) : null,
+      rawArg: raw,
+      avg: json['avg'],
+      point: json['point'],
+    );
   }
 
-  mapName(String name) {
+  Map<String, dynamic> toJson() {
+    return {
+      "arg": rawArg, // trả về tên gốc
+      "avg": avg,
+      "point": point,
+    };
+  }
+
+  static String _mapName(String name) {
     if (Api.language == "en") {
-      if (name == "rpm_high") {
-        return "RPM High Speed";
-      } else if (name == "rpm_low") {
-        return "RPM Low Speed";
-      } else if (name == "shift_up") {
-        return "Shift Up & Exceeding RPM";
-      } else if (name == "shift_down,") {
-        return "Shift Down & Exceeding RPM";
-      } else if (name == "long_idling") {
-        return "Long Idling";
-      } else if (name == "exhaust_brake") {
-        return "Exhaust Brake Retarder";
-      } else {
-        return name;
+      switch (name) {
+        case "rpm_high":
+          return "RPM High Speed";
+        case "rpm_low":
+          return "RPM Low Speed";
+        case "shift_up":
+          return "Shift Up & Exceeding RPM";
+        case "shift_down":
+          return "Shift Down & Exceeding RPM";
+        case "long_idling":
+          return "Long Idling";
+        case "exhaust_brake":
+          return "Exhaust Brake Retarder";
+        default:
+          return name;
       }
     } else {
-      if (name == "rpm_high") {
-        return "RPM Tốc độ cao";
-      } else if (name == "rpm_low") {
-        return "RPM Tốc độ thấp";
-      } else if (name == "shift_up") {
-        return "Tăng tốc và vượt quá RPM";
-      } else if (name == "shift_down,") {
-        return "Giảm tốc và vượt quá RPM";
-      } else if (name == "long_idling") {
-        return "Chạy không tải lâu";
-      } else if (name == "exhaust_brake") {
-        return "Bộ hãm phanh xả";
-      } else {
-        return name;
+      switch (name) {
+        case "rpm_high":
+          return "RPM Tốc độ cao";
+        case "rpm_low":
+          return "RPM Tốc độ thấp";
+        case "shift_up":
+          return "Tăng tốc và vượt quá RPM";
+        case "shift_down":
+          return "Giảm tốc và vượt quá RPM";
+        case "long_idling":
+          return "Chạy không tải lâu";
+        case "exhaust_brake":
+          return "Bộ hãm phanh xả";
+        default:
+          return name;
       }
     }
   }
