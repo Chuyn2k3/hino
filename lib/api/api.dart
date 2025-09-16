@@ -67,9 +67,10 @@ class Api {
       "https://apihinov1.hino-connect.vn/prod/fleet/mobile/getLastestVersion";
   static String changePassword = "fleet/users/change-password";
   static String createDriver = "fleet/mobile/create_driver";
-  static String createDriverUser ="fleet/mobile/create_driver_user";
-static String updateDriver="fleet/mobile/update_driver";
-static String deleteDriver="fleet/mobile/delete_driver";
+  static String createDriverUser = "fleet/mobile/create_driver_user";
+  static String updateDriver = "fleet/mobile/update_driver";
+  static String deleteDriver = "fleet/mobile/delete_driver";
+  static String importDriver = "fleet/driver_changes/import";
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.

@@ -92,7 +92,7 @@ class _HomePageState extends State<HomePage> {
       );
       if (res.statusCode == 200) {
         final agreed = jsonDecode(res.body) as bool; // true / false
-        if (agreed && mounted) {
+        if (!agreed && mounted) {
           _showAgreementDialog();
         }
       }

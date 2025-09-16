@@ -53,9 +53,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   Future<void> _fetchDrivers() async {
     final resp = await Api.get(context, Api.listdriver);
     if (resp != null) {
-      _drivers =
-          (resp['result'] as List).map((e) => Driver.fromJson(e)).toList()
-      ..sort((a, b) => b.datetimeSwipe!.compareTo(a.datetimeSwipe!));
+      _drivers = (resp['result'] as List)
+          .map((e) => Driver.fromJson(e))
+          .toList()
+        ..sort((a, b) => b.datetimeSwipe!.compareTo(a.datetimeSwipe!));
 
       _filtered = List.from(_drivers);
       _lastUpdate = Utils.getDateTimeCreate();
@@ -143,13 +144,49 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           "Thông tin tài xế không đầy đủ hoặc chứa ký tự không hợp lệ.");
       return;
     }
-
+    DriverCardData? oldCardData;
+    try {
+      await NfcHelper.readCard(
+        context: context,
+        onCardRead: (data) {
+          oldCardData = data; // Return the read data
+        },
+        onError: (error) {
+          // If reading fails, proceed with empty old data
+          print("Failed to read NFC card: $error");
+          return null;
+        },
+      );
+    } catch (e) {
+      print("Error reading NFC card: $e");
+    }
     // Show NFC writing dialog
-    _showNfcWritingDialog(driver, driverId, nfcLicenseNumber, nfcDriverName);
+    _showNfcWritingDialog(
+      driver,
+      driverId,
+      nfcLicenseNumber,
+      nfcDriverName,
+      oldCardData?.driverName ?? "",
+      oldCardData?.licenseNumber ?? "",
+    );
+
+    // await _startNfcWriting(
+    //   driverId,
+    //   nfcLicenseNumber,
+    //   nfcDriverName,
+    //   oldCardData?.driverName ?? "",
+    //   oldCardData?.licenseNumber ?? "",
+    // );
   }
 
   void _showNfcWritingDialog(
-      Driver driver, String driverId, String licenseNumber, String driverName) {
+    Driver driver,
+    String driverId,
+    String licenseNumber,
+    String driverName,
+    String oldDriverName,
+    String oldLicenseNumber,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -259,27 +296,52 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
       _writingNfcDrivers.add(driverId);
     });
 
-    _startNfcWriting(driverId, licenseNumber, driverName);
+    _startNfcWriting(driver, driverId, licenseNumber, driverName, oldDriverName,
+        oldLicenseNumber);
   }
 
   Future<void> _startNfcWriting(
-      String driverId, String licenseNumber, String driverName) async {
+    Driver driver,
+    String driverId,
+    String licenseNumber,
+    String driverName,
+    String oldDriverName,
+    String oldLicenseNumber,
+  ) async {
     try {
-      final userId = await getSavedUserId();
+      final userId = await getSavedUserId() ?? "";
       print("userId2 $userId");
       await NfcHelper.writeCard(
         data: DriverCardData(
           licenseNumber: licenseNumber,
           driverName: driverName,
-          userId: userId ?? "",
+          userId: userId,
         ),
-        onStatus: (status) {
+        onStatus: (status) async {
+          await _callDriverChangesApi(
+            userId,
+            driver.customerId != null ? driver.customerId.toString() : userId,
+            driverName,
+            licenseNumber,
+            oldDriverName,
+            oldLicenseNumber,
+            "success",
+          );
           Navigator.of(context).pop(); // Close dialog
           _showSuccessDialog("Ghi NFC thành công!",
               "Thẻ NFC đã được ghi thông tin tài xế $driverName");
           // Update dialog with status
         },
-        onError: (error) {
+        onError: (error) async {
+          await _callDriverChangesApi(
+            userId,
+            driver.customerId != null ? driver.customerId.toString() : userId,
+            driverName,
+            licenseNumber,
+            oldDriverName,
+            oldLicenseNumber,
+            "fail",
+          );
           Navigator.of(context).pop(); // Close dialog
           _showErrorDialog("Lỗi ghi NFC", error);
         },
@@ -299,6 +361,49 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
       return;
     }
     _showNfcReadingDialog();
+  }
+
+  Future<void> _callDriverChangesApi(
+    String userId,
+    String customerId,
+    String newDriverName,
+    String newLicenseNumber,
+    String oldDriverName,
+    String oldLicenseNumber,
+    String status,
+  ) async {
+    try {
+      final url = "${Api.BaseUrlBuilding}${Api.importDriver}";
+      final jsonParam = jsonEncode({
+        'card_id': "HMV_$userId",
+        'customer_id': customerId,
+        'new_driver_name': newDriverName,
+        'new_license_number': newLicenseNumber,
+        'old_driver_name': oldDriverName,
+        'old_license_number': oldLicenseNumber,
+        'created_by': userId, // Assuming created_by is the same as customerId
+        'status': status, // Adjust status as needed
+      });
+
+      print("Calling API: $url with params: $jsonParam");
+
+      final response = await Api.post(
+        context,
+        url,
+        jsonParam,
+      );
+
+      if (response != null) {
+        print("API call successful: $response");
+      } else {
+        print("API call failed: No response");
+        _showErrorDialog("Lỗi API", "Không nhận được phản hồi từ server.");
+      }
+    } catch (e) {
+      print("Error calling API: $e");
+      _showErrorDialog(
+          "Lỗi API", "Không thể lưu thông tin thay đổi tài xế: $e");
+    }
   }
 
   void _showNfcReadingDialog() {

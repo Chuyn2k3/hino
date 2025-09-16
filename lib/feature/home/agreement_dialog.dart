@@ -33,23 +33,39 @@ class _AgreementDialogState extends State<AgreementDialog> {
 
   Future<void> _submitAgreement() async {
     try {
-      final res = await http.post(
-        Uri.parse(
-            "https://apidotnet-v2.hino-connect.vn/users/agreement?AgreementTypeId=1&IsAgreement=true"),
+      final url = Uri.parse(
+        "https://apidotnet-v2.hino-connect.vn/users/agreement?AgreementTypeId=1&IsAgreement=true",
+      );
+
+      debugPrint("👉 Calling API: $url");
+      debugPrint("👉 Headers: ${{
+        "x-api-key": Api.profile?.redisKey ?? "",
+        "Content-Type": "application/json"
+      }}");
+
+      final res = await http.put(
+        url,
         headers: {
           "x-api-key": Api.profile?.redisKey ?? "",
           "Content-Type": "application/json"
         },
       );
-      if (res.statusCode == 200) {
-        Navigator.pop(context, true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Xác nhận thất bại")),
-        );
-      }
-    } catch (e) {
-      debugPrint("Error submit agreement: $e");
+
+      debugPrint("✅ Response status: ${res.statusCode}");
+      debugPrint("✅ Response body: ${res.body}");
+      Navigator.pop(context, true);
+      // if (res.statusCode == 200) {
+      //   debugPrint("🎉 Agreement submit success");
+      //   Navigator.pop(context, true);
+      // } else {
+      //   debugPrint("⚠️ Agreement submit failed with status: ${res.statusCode}");
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(content: Text("Xác nhận thất bại")),
+      //   );
+      // }
+    } catch (e, s) {
+      debugPrint("❌ Error submit agreement: $e");
+      debugPrint("❌ StackTrace: $s");
     }
   }
 
