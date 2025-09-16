@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home_settings/agreement/agreement_screen.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/localization/locale_constant.dart';
 import 'package:hino/page/change_password_page.dart';
@@ -444,6 +445,11 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                           iconColor:  Colors.blue,
                           onTap: () {
                             // Navigate to terms page
+                             Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AgreementScreen()),
+                            );
+                            
                           },
                         ),
 

@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home/agreement_dialog.dart';
 import 'package:hino/feature/home_driver/home_driver.dart';
 import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/feature/home_settings/home_settings.dart';
@@ -79,6 +80,33 @@ class _HomePageState extends State<HomePage> {
     _setupNotifications();
     _fetchBanner();
     _checkForceUpdate();
+    _checkAgreement();
+  }
+
+  Future<void> _checkAgreement() async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+            "https://apidotnet-v2.hino-connect.vn/users/check-agreement?agreementTypeId=1"),
+        headers: {"x-api-key": Api.profile?.redisKey ?? ""},
+      );
+      if (res.statusCode == 200) {
+        final agreed = jsonDecode(res.body) as bool; // true / false
+        if (agreed && mounted) {
+          _showAgreementDialog();
+        }
+      }
+    } catch (e) {
+      log("Check agreement error: $e");
+    }
+  }
+
+  void _showAgreementDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AgreementDialog(),
+    );
   }
 
   Future<void> _loadProfileOrRedirect() async {

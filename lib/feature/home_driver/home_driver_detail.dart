@@ -8,6 +8,7 @@ import 'package:hino/api/api.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/driver.dart';
 import 'package:hino/model/driver_detail.dart';
+import 'package:hino/model/driver_info_create_model.dart';
 import 'package:hino/model/profile.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
@@ -20,6 +21,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:radar_chart/radar_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../model/driver_info_model.dart';
 import '../../model/driver_user_model.dart';
@@ -61,7 +63,7 @@ class _DriverManagementPageState extends State<DriverManagementPage>
     try {
       final res = await Api.get(
         context,
-        "${Api.driver_detail}${widget.driver.personalId!}&start_date=${Utils.getDateCreate()}&stop_date=${Utils.getDateCreate()}",
+        "${Api.driver_detail}${widget.driver.driver_id!}",
       );
       if (res != null) {
         setState(() {
@@ -112,7 +114,9 @@ class _DriverManagementPageState extends State<DriverManagementPage>
                     children: [
                       DriverDetailTab(
                           driver: widget.driver, driverDetail: driverDetail!),
-                      DriverInfoTab(driverInfo: driverDetail!.driverInfo),
+                      DriverInfoTab(
+                          driver: widget.driver,
+                          driverInfo: driverDetail!.driverInfo),
                       AccountTab(
                           driverUser: driverDetail!.driverUser,
                           // DriverUserModel(
@@ -482,9 +486,12 @@ class _DriverDetailTabState extends State<DriverDetailTab> {
 }
 
 class DriverInfoTab extends StatefulWidget {
+  final Driver driver;
   final DriverInfoModel? driverInfo;
 
-  const DriverInfoTab({Key? key, required this.driverInfo}) : super(key: key);
+  const DriverInfoTab(
+      {Key? key, required this.driverInfo, required this.driver})
+      : super(key: key);
 
   @override
   State<DriverInfoTab> createState() => _DriverInfoTabState();
@@ -505,13 +512,23 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
   DateTime? _cardExpiredDate;
   bool _isLoading = false;
   bool _isEditing = false;
-  DriverInfoModel? _originalDriverInfo;
+  DriverInfoCreateModel? _originalDriverInfo;
 
   @override
   void initState() {
     super.initState();
-    _originalDriverInfo = widget.driverInfo;
-    _selectedPrefix = widget.driverInfo?.prefix;
+    if (widget.driverInfo != null) {
+      _originalDriverInfo =
+          DriverInfoCreateModel.fromDriverInfoModel(widget.driverInfo!);
+    }
+    // danh sách hợp lệ
+    final validPrefixes = ["Anh", "Chị", "Ông", "Bà", ""];
+
+    // nếu prefix từ API không có trong list thì set về ""
+    final prefixFromApi = widget.driverInfo?.prefix;
+    _selectedPrefix =
+        validPrefixes.contains(prefixFromApi) ? prefixFromApi : "";
+    // _selectedPrefix = widget.driverInfo?.prefix ?? "Ông";
     _firstnameController.text = widget.driverInfo?.firstname ?? '';
     _lastnameController.text = widget.driverInfo?.lastname ?? '';
     _phoneController.text = widget.driverInfo?.phone ?? '';
@@ -626,8 +643,8 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
       final userId = profile.userId ?? 0;
 
       final url =
-          "${Api.BaseUrlBuilding}/driver/${widget.driverInfo?.personalId}";
-      final body = DriverInfoModel(
+          "${Api.BaseUrlBuilding}${Api.updateDriver}/${widget.driver.driver_id}";
+      final body = DriverInfoCreateModel(
         prefix: _selectedPrefix,
         firstname: _firstnameController.text.trim(),
         lastname: _lastnameController.text.trim(),
@@ -692,25 +709,36 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
     });
 
     try {
+      // final prefs = await SharedPreferences.getInstance();
+      // final token = prefs.getString("accessToken");
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("accessToken");
+      final profileString = prefs.getString("profile");
 
+      if (token == null || profileString == null) {
+        throw Exception("Không tìm thấy token hoặc profile");
+      }
+
+      final profileJson = json.decode(profileString);
+      final profile = Profile.fromJson(profileJson);
+      final userId = profile.userId ?? 0;
       if (token == null) {
         throw Exception("Không tìm thấy token");
       }
 
       final url =
-          "${Api.BaseUrlBuilding}/driver/${widget.driverInfo?.personalId}";
+          "${Api.BaseUrlBuilding}${Api.deleteDriver}/${widget.driver.driver_id}";
 
       print("==== DELETE DRIVER ====");
       print("Token: $token");
       print("Url: $url");
-      final response = await http.delete(
+      final response = await http.put(
         Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
+        body: json.encode({"user_id": userId}),
       );
 
       print("Response: ${response.statusCode} ${response.body}");
@@ -721,7 +749,9 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
           context.showSnackBarSuccess(
             text: "Xóa tài xế thành công!",
           );
-          Navigator.pop(context);
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) Navigator.pop(context);
+          });
         } else {
           throw Exception(responseJson["result"] ?? "Có lỗi xảy ra");
         }
@@ -847,7 +877,7 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
                 color: Colors.black87,
               ),
               icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-              items: ["Anh", "Chị", "Ông", "Bà"]
+              items: ["Anh", "Chị", "Ông", "Bà", ""]
                   .map(
                     (e) => DropdownMenuItem(
                       value: e,
@@ -934,8 +964,10 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
                   width: 150,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    //_isLoading || !_isEditing ? null : _updateDriver,
+                    onPressed:
+                        //()
+                        //{},
+                        _isLoading || !_isEditing ? null : _updateDriver,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
@@ -947,8 +979,9 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
                   width: 150,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    //_isLoading ? null : _deleteDriver,
+                    onPressed:
+                        //() {},
+                        _isLoading ? null : _deleteDriver,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
@@ -1078,7 +1111,7 @@ class _AccountTabState extends State<AccountTab> {
         throw Exception("Không tìm thấy token");
       }
 
-      final url = "${Api.BaseUrlBuilding}/driver_user";
+      final url = "${Api.BaseUrlBuilding}${Api.createDriverUser}";
       final body = {
         "display_name": _displayNameController.text.trim(),
         "username": _usernameController.text.trim(),
@@ -1142,6 +1175,17 @@ class _AccountTabState extends State<AccountTab> {
     }
   }
 
+  Future<void> _callHotline() async {
+    final Uri url = Uri(scheme: 'tel', path: '19009082');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Không thể thực hiện cuộc gọi")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.driverUser == null && !_isCreatingAccount) {
@@ -1168,6 +1212,23 @@ class _AccountTabState extends State<AccountTab> {
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Tạo tài khoản'),
+              ),
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: _callHotline,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.call),
+                label: const Text("Liên hệ tổng đài 19009082"),
               ),
             ),
           ],
@@ -1244,8 +1305,9 @@ class _AccountTabState extends State<AccountTab> {
                     width: 150,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {},
-                      //_isLoading ? null : _createAccount,
+                      onPressed:
+                          //() {},
+                          _isLoading ? null : _createAccount,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -1254,6 +1316,23 @@ class _AccountTabState extends State<AccountTab> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _callHotline,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.call),
+                  label: const Text("Liên hệ tổng đài 19009082"),
+                ),
               ),
             ],
           ),
@@ -1280,14 +1359,52 @@ class _AccountTabState extends State<AccountTab> {
             _buildInfoRow("Ngôn ngữ mặc định", "Vietnam"),
             const SizedBox(height: 16),
             _buildAvatar(user.avatarAttachId),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: _callHotline,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.call),
+                label: const Text("Liên hệ tổng đài 19009082"),
+              ),
+            ),
           ],
         ),
       );
     }
-    return const Center(
-      child: Text(
-        'Thông tin tài khoản (Chưa triển khai đầy đủ)',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
+    return Center(
+      child: Column(
+        children: [
+          const Text(
+            'Thông tin tài khoản (Chưa triển khai đầy đủ)',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 30),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: _callHotline,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.call),
+              label: const Text("Liên hệ tổng đài 19009082"),
+            ),
+          ),
+        ],
       ),
     );
   }

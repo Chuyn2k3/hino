@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:hino/model/driver_info_model.dart';
 import 'package:intl/intl.dart';
 
 class DriverInfoCreateModel {
@@ -50,6 +51,21 @@ class DriverInfoCreateModel {
               : null,
     );
   }
+factory DriverInfoCreateModel.fromDriverInfoModel(DriverInfoModel model) {
+  return DriverInfoCreateModel(
+    prefix: model.prefix,
+    firstname: model.firstname,
+    lastname: model.lastname,
+    personalId: model.personalId,
+    cardId: model.cardId,
+    phone: model.phone, // lưu ý: DriverInfoModel.phone lấy từ phone1
+    birthDate: model.birthDate,
+    startDate: model.startDate,
+    fullAddress: model.fullAddress,
+    userId: model.userId,
+    cardExpiredDate: model.cardExpiredDate,
+  );
+}
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> body = {

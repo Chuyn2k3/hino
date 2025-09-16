@@ -6,6 +6,7 @@ import 'package:hino/utils/utils.dart';
 
 class Driver {
   int? id;
+  int? driver_id;
   int? score;
   String? prefix;
   String? firstname;
@@ -33,6 +34,7 @@ class Driver {
 
   Driver({
     this.id,
+    this.driver_id,
     this.score,
     this.prefix,
     this.firstname,
@@ -59,6 +61,7 @@ class Driver {
 
   Driver.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    driver_id = json['driver_id'];
     score = json['score'];
     prefix = json['prefix'];
     firstname = json['firstname'];
@@ -111,6 +114,7 @@ class Driver {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
+      "driver_id": driver_id,
       "score": score,
       "prefix": prefix,
       "firstname": firstname,

@@ -53,10 +53,10 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   Future<void> _fetchDrivers() async {
     final resp = await Api.get(context, Api.listdriver);
     if (resp != null) {
-      _drivers = (resp['result'] as List)
-          .map((e) => Driver.fromJson(e))
-          .toList()
-        ..sort((a, b) => b.datetimeSwipe!.compareTo(a.datetimeSwipe!));
+      _drivers =
+          (resp['result'] as List).map((e) => Driver.fromJson(e)).toList()
+      ..sort((a, b) => b.datetimeSwipe!.compareTo(a.datetimeSwipe!));
+
       _filtered = List.from(_drivers);
       _lastUpdate = Utils.getDateTimeCreate();
       setState(() {});
