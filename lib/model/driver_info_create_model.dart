@@ -51,21 +51,21 @@ class DriverInfoCreateModel {
               : null,
     );
   }
-factory DriverInfoCreateModel.fromDriverInfoModel(DriverInfoModel model) {
-  return DriverInfoCreateModel(
-    prefix: model.prefix,
-    firstname: model.firstname,
-    lastname: model.lastname,
-    personalId: model.personalId,
-    cardId: model.cardId,
-    phone: model.phone, // lưu ý: DriverInfoModel.phone lấy từ phone1
-    birthDate: model.birthDate,
-    startDate: model.startDate,
-    fullAddress: model.fullAddress,
-    userId: model.userId,
-    cardExpiredDate: model.cardExpiredDate,
-  );
-}
+  factory DriverInfoCreateModel.fromDriverInfoModel(DriverInfoModel model) {
+    return DriverInfoCreateModel(
+      prefix: model.prefix,
+      firstname: model.firstname,
+      lastname: model.lastname,
+      personalId: model.personalId,
+      cardId: model.cardId,
+      phone: model.phone, // lưu ý: DriverInfoModel.phone lấy từ phone1
+      birthDate: model.birthDate,
+      startDate: model.startDate,
+      fullAddress: model.fullAddress,
+      userId: model.userId,
+      cardExpiredDate: model.cardExpiredDate,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> body = {
@@ -75,15 +75,15 @@ factory DriverInfoCreateModel.fromDriverInfoModel(DriverInfoModel model) {
       "personal_id": personalId,
       "card_id": cardId,
       "phone": phone,
-      "birth_date": birthDate != null
-          ? DateFormat("yyyy-MM-dd").format(birthDate!)
-          : null,
       "start_date": startDate != null
           ? DateFormat("yyyy-MM-dd").format(startDate!)
           : null,
       "full_address": fullAddress,
       "user_id": userId,
     };
+    if (birthDate != null) {
+      body["birth_date"] = DateFormat("yyyy-MM-dd").format(birthDate!);
+    }
     if (cardExpiredDate != null) {
       body["card_expired_date"] =
           DateFormat("yyyy-MM-dd").format(cardExpiredDate!);

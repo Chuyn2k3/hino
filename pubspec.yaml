@@ -92,6 +92,7 @@ dependencies:
   another_flushbar: ^1.12.30
   cached_network_image:
   flutter_widget_from_html: ^0.9.1
+  logger:
 #  custom_info_window: ^1.0.1
 
 

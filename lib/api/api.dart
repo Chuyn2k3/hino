@@ -71,6 +71,7 @@ class Api {
   static String updateDriver = "fleet/mobile/update_driver";
   static String deleteDriver = "fleet/mobile/delete_driver";
   static String importDriver = "fleet/driver_changes/import";
+  static String updateVehicleAssignment = "fleet/mobile/driver_manage_vehicle";
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
   // how it looks.

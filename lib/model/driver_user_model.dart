@@ -9,6 +9,7 @@ class DriverUserModel {
   final DateTime? expiredDate;
   final String? lastChangePassword;
   final String? avatarAttachId;
+  final List<int?>? vehicleIds;
 
   DriverUserModel({
     this.driverUserId,
@@ -19,6 +20,7 @@ class DriverUserModel {
     this.expiredDate,
     this.lastChangePassword,
     this.avatarAttachId,
+    this.vehicleIds,
   });
 
   factory DriverUserModel.fromJson(Map<String, dynamic> json) {
@@ -28,11 +30,14 @@ class DriverUserModel {
       username: json['username'] as String?,
       mobile: json['mobile'] as String?,
       email: json['email'] as String?,
-      expiredDate: json['expired_date'] != null && json['expired_date'] != ""
-          ? DateTime.tryParse(json['expired_date'])
+      expiredDate: (json['expired_date'] != null && json['expired_date'] != "")
+          ? DateTime.tryParse(json['expired_date'] as String)
           : null,
       lastChangePassword: json['last_change_password'] as String?,
       avatarAttachId: json['avatar_attach_id'] as String?,
+      vehicleIds: json['vehicle_ids'] != null
+          ? List<int?>.from(json['vehicle_ids'])
+          : null,
     );
   }
 
@@ -48,6 +53,7 @@ class DriverUserModel {
           : null,
       "last_change_password": lastChangePassword,
       "avatar_attach_id": avatarAttachId,
+      "vehicle_ids": vehicleIds,
     };
   }
 }

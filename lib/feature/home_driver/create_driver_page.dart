@@ -7,12 +7,10 @@ import 'package:hino/model/profile.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/custom_app_bar.dart';
 import 'package:hino/utils/snack_bar.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/driver_info_create_model.dart';
-import '../../model/driver_info_model.dart';
 import '../../widget/custom_date_picker.dart';
 import '../../widget/custom_text_field.dart';
 
@@ -25,6 +23,7 @@ class CreateDriverPage extends StatefulWidget {
 
 class _CreateDriverPageState extends State<CreateDriverPage> {
   final _formKey = GlobalKey<FormState>();
+  final _focusScopeNode = FocusScopeNode();
 
   final _firstnameController = TextEditingController();
   final _lastnameController = TextEditingController();
@@ -42,6 +41,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
 
   @override
   void dispose() {
+    _focusScopeNode.dispose();
     _firstnameController.dispose();
     _lastnameController.dispose();
     _phoneController.dispose();
@@ -63,7 +63,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
       lastDate: field == 'expire' ? DateTime(2100) : DateTime.now(),
     );
 
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         if (field == 'birth') {
           _birthDate = picked;
@@ -107,12 +107,15 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
   }
 
   Future<void> _createDriver() async {
-    if (!_formKey.currentState!.validate() ||
-        _birthDate == null ||
-        _selectedPrefix == null) {
-      context.showSnackBarFail(
-        text: 'Vui lòng điền đầy đủ thông tin bắt buộc',
-      );
+    // Unfocus all fields before validation
+    _focusScopeNode.unfocus();
+
+    if (!_formKey.currentState!.validate() || _selectedPrefix == null) {
+      if (mounted) {
+        context.showSnackBarFail(
+          text: 'Vui lòng điền đầy đủ thông tin bắt buộc',
+        );
+      }
       return;
     }
 
@@ -137,7 +140,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
       final profile = Profile.fromJson(profileJson);
       final userId = profile.userId ?? 0;
 
-      final url = Api.BaseUrlBuilding + Api.createDriver;
+      final url = "${Api.BaseUrlBuilding}${Api.createDriver}";
       final body = DriverInfoCreateModel(
         prefix: _selectedPrefix,
         firstname: _firstnameController.text.trim(),
@@ -145,7 +148,7 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
         personalId: _cccdController.text.trim(),
         cardId: _gplxController.text.trim(),
         phone: _phoneController.text.trim(),
-        birthDate: _birthDate!,
+        birthDate: _birthDate,
         startDate: _startDate,
         fullAddress: _addressController.text.trim(),
         userId: userId,
@@ -154,62 +157,66 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
 
       print("==== CREATE DRIVER ====");
       print("Token: $token");
-      print("Body: ${body.toString()}");
+      print("Body: ${body.toJson()}");
       print("Url: $url");
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: json.encode(body.toJson()),
+
+      final response = await Api.post(
+        context,
+        url,
+        json.encode(body.toJson()),
+        accessToken: "Bearer $token",
       );
 
-      print("Response: ${response.statusCode} ${response.body}");
+      if (response == null) {
+        throw Exception("Không nhận được phản hồi từ server");
+      }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseJson = json.decode(response.body);
+      if (response["code"] == 200) {
+        if (mounted) {
+          context.showSnackBarSuccess(
+            text: response["result"] ?? "Thêm tài xế thành công",
+          );
+        }
 
-        if (responseJson["code"] == 200) {
-          if (mounted) {
-            context.showSnackBarSuccess(
-              text: responseJson["result"] ?? "Thêm tài xế thành công",
-            );
-          }
-
-          _firstnameController.clear();
-          _lastnameController.clear();
-          _phoneController.clear();
-          _addressController.clear();
-          _cccdController.clear();
-          _gplxController.clear();
+        // Clear form fields
+        _firstnameController.clear();
+        _lastnameController.clear();
+        _phoneController.clear();
+        _addressController.clear();
+        _cccdController.clear();
+        _gplxController.clear();
+        setState(() {
           _birthDate = null;
-          await Future.delayed(const Duration(milliseconds: 1500));
-          if (mounted) {
-            Navigator.pop(context);Navigator.pop(context);
-          }
-        } else {
-          if (mounted) {
-            context.showSnackBarFail(
-              text: responseJson["result"] ?? "Thêm tài xế thất bại",
-            );
-          }
+          _startDate = DateTime.now();
+          _cardExpiredDate = null;
+          _selectedPrefix = "Ông";
+        });
 
-          //throw Exception(responseJson["result"] ?? "Có lỗi xảy ra");
+        // Navigate back after a short delay
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (mounted) {
+          Navigator.pop(context);
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) {
+            Navigator.pop(context);
+          }
         }
       } else {
-        throw Exception("Lỗi: ${response.body}");
+        throw Exception(response["result"] ?? "Thêm tài xế thất bại");
       }
     } catch (e) {
       if (mounted) {
         context.showSnackBarFail(text: e.toString());
+        // Ensure no TextField gains focus after error
+        _focusScopeNode.unfocus();
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -219,143 +226,153 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
         title: 'Tạo Tài Xế Mới',
         onTap: () => Navigator.pop(context),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Chức danh",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedPrefix,
-                hint: const Text(
-                  "Chức danh",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  labelStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey, width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: Colors.blue, width: 1.5),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
-                ),
-                dropdownColor: Colors.white,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-                items: ["Anh", "Chị", "Ông", "Bà"]
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(
-                          e,
-                          style: const TextStyle(fontSize: 16),
-                        ),
+      body: FocusScope(
+        node: _focusScopeNode,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            _focusScopeNode.unfocus(); // Dismiss keyboard on tap
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Chức danh",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _selectedPrefix,
+                    hint: const Text(
+                      "Chức danh",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
                       ),
-                    )
-                    .toList(),
-                onChanged: (val) => setState(() => _selectedPrefix = val),
-                validator: (val) =>
-                    val == null ? "Vui lòng chọn chức danh" : null,
+                    ),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      labelStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Colors.grey, width: 1),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: Colors.blue, width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
+                      ),
+                    ),
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                    icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
+                    items: ["Anh", "Chị", "Ông", "Bà"]
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(
+                              e,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (val) => setState(() => _selectedPrefix = val),
+                    validator: (val) =>
+                        val == null ? "Vui lòng chọn chức danh" : null,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _firstnameController,
+                    label: "Họ",
+                    icon: Icons.person_outline,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _lastnameController,
+                    label: "Tên",
+                    icon: Icons.person_outline,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _phoneController,
+                    label: "Số điện thoại",
+                    icon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _addressController,
+                    label: "Địa chỉ",
+                    icon: Icons.home,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _cccdController,
+                    label: "CCCD",
+                    icon: Icons.credit_card,
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _gplxController,
+                    label: "GPLX",
+                    icon: Icons.drive_eta,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomDatePickerField(
+                    label: "Ngày sinh",
+                    date: _birthDate,
+                    onTap: () => _pickDate(context, 'birth'),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomDatePickerField(
+                    label: "Ngày bắt đầu làm việc",
+                    date: _startDate,
+                    onTap: () => _pickDate(context, 'start'),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomDatePickerField(
+                    label: "Ngày hết hạn GPLX",
+                    date: _cardExpiredDate,
+                    onTap: () => _pickDate(context, 'expire'),
+                  ),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _createDriver,
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("Tạo Tài Xế"),
+                    ),
+                  )
+                ],
               ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _firstnameController,
-                label: "Họ",
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _lastnameController,
-                label: "Tên",
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _phoneController,
-                label: "Số điện thoại",
-                icon: Icons.phone,
-                keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _addressController,
-                label: "Địa chỉ",
-                icon: Icons.home,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _cccdController,
-                label: "CCCD",
-                icon: Icons.credit_card,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _gplxController,
-                label: "GPLX",
-                icon: Icons.drive_eta,
-              ),
-              const SizedBox(height: 16),
-              CustomDatePickerField(
-                label: "Ngày sinh",
-                date: _birthDate,
-                onTap: () => _pickDate(context, 'birth'),
-              ),
-              const SizedBox(height: 16),
-              CustomDatePickerField(
-                label: "Ngày bắt đầu làm việc",
-                date: _startDate,
-                onTap: () => _pickDate(context, 'start'),
-              ),
-              const SizedBox(height: 16),
-              CustomDatePickerField(
-                label: "Ngày hết hạn GPLX",
-                date: _cardExpiredDate,
-                onTap: () => _pickDate(context, 'expire'),
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _createDriver,
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Tạo Tài Xế"),
-                ),
-              )
-            ],
+            ),
           ),
         ),
       ),

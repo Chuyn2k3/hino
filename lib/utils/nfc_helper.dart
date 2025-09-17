@@ -881,7 +881,7 @@ class NfcHelper {
               final message =
                   'Ghi thất bại: chỉ ghi được $successfulBlocks/$numberOfBlocks khối';
               print(message);
-              onError?.call(message);
+              //onError?.call(message);
               await NfcManager.instance.stopSession(errorMessage: message);
               return;
             }
@@ -903,6 +903,83 @@ class NfcHelper {
       final message = 'Lỗi khởi động phiên NFC: $e\n$stackTrace';
       print(message);
       onError?.call('Chưa ghi được thẻ, vui lòng đặt lại thẻ');
+    }
+  }
+
+  static Future<void> readOnce({
+    required BuildContext context,
+    required OnCardRead onCardRead,
+    OnError? onError,
+    OnStatus? onStatus,
+  }) async {
+    try {
+      await NfcManager.instance.startSession(
+        pollingOptions: {NfcPollingOption.iso15693},
+        onDiscovered: (NfcTag tag) async {
+          try {
+            dynamic nfcTag;
+            Uint8List identifier;
+            List<int> allData = [];
+
+            if (Platform.isAndroid) {
+              nfcTag = NfcV.from(tag);
+              if (nfcTag == null) {
+                onError?.call('Thẻ không phải ISO15693');
+                await NfcManager.instance
+                    .stopSession(errorMessage: 'Thẻ không hợp lệ');
+                return;
+              }
+              identifier = nfcTag.identifier;
+
+              int blockSize = 4;
+              int totalBytes = 60; // chỉ đọc 60 byte
+              int numberOfBlocks = (totalBytes / blockSize).ceil();
+
+              for (int i = 0; i < numberOfBlocks; i++) {
+                final command =
+                    Uint8List.fromList([0x22, 0x20, ...identifier, i]);
+                final blockData = await nfcTag.transceive(data: command);
+                if (blockData.length > 1) allData.addAll(blockData.skip(1));
+              }
+            } else {
+              final isoTag = Iso15693.from(tag);
+              if (isoTag == null) {
+                onError?.call('Thẻ không phải ISO15693');
+                await NfcManager.instance
+                    .stopSession(errorMessage: 'Thẻ không hợp lệ');
+                return;
+              }
+
+              int blockSize = 4;
+              int totalBytes = 60;
+              int numberOfBlocks = (totalBytes / blockSize).ceil();
+
+              for (int i = 0; i < numberOfBlocks; i++) {
+                final blockData = await isoTag.readSingleBlock(
+                  requestFlags: {Iso15693RequestFlag.highDataRate},
+                  blockNumber: i,
+                );
+                allData.addAll(blockData);
+              }
+            }
+
+            // Cắt đúng 60 byte
+            Uint8List fixedData = Uint8List.fromList(allData.take(60).toList());
+            final cardData = parseCardData(context, fixedData);
+
+            onCardRead(cardData);
+            await NfcManager.instance.stopSession();
+          } catch (e, stackTrace) {
+            print('Lỗi readOnce: $e\n$stackTrace');
+            onError?.call('Không đọc được thẻ, vui lòng thử lại');
+            await NfcManager.instance.stopSession(errorMessage: 'Lỗi đọc thẻ');
+          }
+        },
+        alertMessage: 'Đặt thẻ gần thiết bị để đọc',
+      );
+    } catch (e, stackTrace) {
+      print('Lỗi khởi động NFC: $e\n$stackTrace');
+      onError?.call('Không đọc được thẻ');
     }
   }
 }

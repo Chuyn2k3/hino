@@ -44,6 +44,7 @@ class CustomTextField extends StatelessWidget {
           ),
           enabled: enabled,
           autofocus: false,
+          //focusNode: FocusNode(),
         ),
       ],
     );
