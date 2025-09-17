@@ -83,28 +83,65 @@ class _HomeBackupEventSearchPageState extends State<HomeBackupEventSearchPage> {
     isLoad = false;
     data.clear();
     for (var item in list) {
-      if (item[13].isNotEmpty) {
+    //  if (item[13].isNotEmpty) {
         final trip = Trip()..data = item;
         data.add(trip);
-      }
+     // }
     }
     group2();
     setState(() {});
   }
 
-  void group2() {
-    listEvent2.clear();
-    int start = 0;
-    for (int i = 0; i < data.length; i++) {
-      if (data[i].data[2] == 2000) {
-        final group = EventGroup()..date = "";
-        group.trips.addAll(data.sublist(start, i + 1));
-        listEvent2.add(group);
-        start = i + 1;
-      }
+  // void group2() {
+  //   listEvent2.clear();
+  //   int start = 0;
+  //   for (int i = 0; i < data.length; i++) {
+  //     if (data[i].data[2] == 2000) {
+  //       final group = EventGroup()..date = "";
+  //       group.trips.addAll(data.sublist(start, i + 1));
+  //       listEvent2.add(group);
+  //       start = i + 1;
+  //     }
+  //   }
+  // }
+// void group2() {
+//   listEvent2.clear();
+//   if (data.isNotEmpty) {
+//     final group = EventGroup()..date = "";
+//     group.trips.addAll(data);
+//     listEvent2.add(group);
+//   }
+// }
+void group2() {
+  listEvent2.clear();
+  if (data.isEmpty) return;
+
+  List<Trip> currentGroupTrips = [];
+  int? currentEventType;
+
+  for (int i = 0; i < data.length; i++) {
+    final eventType = data[i].data[2];
+
+    if (currentEventType == null) {
+      currentEventType = eventType;
+      currentGroupTrips.add(data[i]);
+    } else if (eventType == currentEventType) {
+      currentGroupTrips.add(data[i]);
+    } else {
+      final group = EventGroup()..date = "";
+      group.trips.addAll(currentGroupTrips);
+      listEvent2.add(group);
+      currentGroupTrips = [data[i]];
+      currentEventType = eventType;
     }
   }
 
+  if (currentGroupTrips.isNotEmpty) {
+    final group = EventGroup()..date = "";
+    group.trips.addAll(currentGroupTrips);
+    listEvent2.add(group);
+  }
+}
   String calTime(List<Trip> trips) {
     final startTime =
         DateFormat('yyyy-MM-dd HH:mm:ss').parseLoose(trips[0].data[0]);

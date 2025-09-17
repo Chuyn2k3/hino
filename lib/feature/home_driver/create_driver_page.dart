@@ -171,9 +171,12 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
         final responseJson = json.decode(response.body);
 
         if (responseJson["code"] == 200) {
-          context.showSnackBarSuccess(
-            text: "Tạo tài xế thành công!",
-          );
+          if (mounted) {
+            context.showSnackBarSuccess(
+              text: responseJson["result"] ?? "Thêm tài xế thành công",
+            );
+          }
+
           _firstnameController.clear();
           _lastnameController.clear();
           _phoneController.clear();
@@ -181,18 +184,26 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
           _cccdController.clear();
           _gplxController.clear();
           _birthDate = null;
-          // Navigator.pop(context);
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (mounted) {
+            Navigator.pop(context);Navigator.pop(context);
+          }
         } else {
-          context.showSnackBarFail(
-            text: responseJson["result"],
-          );
+          if (mounted) {
+            context.showSnackBarFail(
+              text: responseJson["result"] ?? "Thêm tài xế thất bại",
+            );
+          }
+
           //throw Exception(responseJson["result"] ?? "Có lỗi xảy ra");
         }
       } else {
         throw Exception("Lỗi: ${response.body}");
       }
     } catch (e) {
-      context.showSnackBarFail(text: e.toString());
+      if (mounted) {
+        context.showSnackBarFail(text: e.toString());
+      }
     } finally {
       setState(() {
         _isLoading = false;

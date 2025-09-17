@@ -53,6 +53,8 @@
 	<string>This app need access to your gallery to save screenshots</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app need access to your gallery to save screenshots</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ứng dụng có thể cần truy cập micro để phát hoặc ghi âm thanh.</string>
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
