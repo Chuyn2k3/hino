@@ -7,11 +7,14 @@ import 'package:hino/api/api.dart';
 import 'package:hino/feature/home_settings/agreement/agreement_screen.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/localization/locale_constant.dart';
+import 'package:hino/model/profile.dart';
 import 'package:hino/page/change_password_page.dart';
 import 'package:hino/page/login.dart';
 import 'package:hino/utils/base_scaffold.dart';
 import 'package:hino/utils/color_custom.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeSettingsPage extends StatefulWidget {
   const HomeSettingsPage({super.key});
@@ -20,7 +23,8 @@ class HomeSettingsPage extends StatefulWidget {
   State<HomeSettingsPage> createState() => _HomeSettingsPageState();
 }
 
-class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProviderStateMixin {
+class _HomeSettingsPageState extends State<HomeSettingsPage>
+    with TickerProviderStateMixin {
   bool isNotiSetting = false;
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   late AnimationController _animationController;
@@ -40,7 +44,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    ).animate(CurvedAnimation(
+        parent: _animationController, curve: Curves.easeOutCubic));
     _loadNotiSetting();
     _animationController.forward();
   }
@@ -64,7 +69,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
     setState(() => isNotiSetting = value);
 
     if (value) {
-      final token = await firebaseMessaging.getToken(vapidKey: Api.firebase_key);
+      final token =
+          await firebaseMessaging.getToken(vapidKey: Api.firebase_key);
       if (token != null) {
         Api.post(context, Api.token, jsonEncode({}));
       }
@@ -80,6 +86,11 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
   }
 
   Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('profile');
+    if (jsonString == null) return null;
+    final Map<String, dynamic> jsonData = jsonDecode(jsonString);
+    final profile = Profile.fromJson(jsonData);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -95,7 +106,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                 color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.logout_rounded, color: Colors.red[600], size: 24),
+              child:
+                  Icon(Icons.logout_rounded, color: Colors.red[600], size: 24),
             ),
             const SizedBox(width: 16),
             const Text(
@@ -121,7 +133,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text(
               "Hủy",
@@ -134,7 +147,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await Api.post(context, Api.logout, jsonEncode({}));
+              await Api.post(context, Api.logout,
+                  jsonEncode({"redisKey": profile.redisKey}));
               AwesomeNotifications().cancelAll();
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
@@ -148,7 +162,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
               backgroundColor: Colors.red[600],
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
             child: const Text(
@@ -223,9 +238,9 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                 ),
                 if (trailing != null) trailing,
                 if (trailing == null)
-                  Icon(
+                  const Icon(
                     Icons.chevron_right_rounded,
-                    color: const Color(0xFF9CA3AF),
+                    color: Color(0xFF9CA3AF),
                     size: 24,
                   ),
               ],
@@ -242,7 +257,7 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
     final profile = Api.profile!;
 
     return BaseScaffold(
-    //  backgroundColor: const Color(0xFFF8FAFC),
+      //  backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -253,12 +268,11 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient:  LinearGradient(
+                      gradient: LinearGradient(
                         colors: [Colors.blue[600]!, Colors.blue[400]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -266,7 +280,7 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color:  Colors.blue.withOpacity(0.25),
+                          color: Colors.blue.withOpacity(0.25),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -289,12 +303,15 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                             ],
                           ),
                           child: ClipOval(
-                            child: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                            child: profile.avatarUrl != null &&
+                                    profile.avatarUrl!.isNotEmpty
                                 ? FadeInImage.assetNetwork(
-                                    placeholder: 'assets/images/profile_empty.png',
+                                    placeholder:
+                                        'assets/images/profile_empty.png',
                                     image: profile.avatarUrl!,
                                     fit: BoxFit.cover,
-                                    imageErrorBuilder: (context, error, stackTrace) {
+                                    imageErrorBuilder:
+                                        (context, error, stackTrace) {
                                       return Image.asset(
                                         'assets/images/profile_empty.png',
                                         fit: BoxFit.cover,
@@ -329,9 +346,7 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
@@ -352,7 +367,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                           title: lang.select_lang,
                           subtitle: "Thay đổi ngôn ngữ hiển thị",
                           trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.blue.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
@@ -367,9 +383,8 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                             ),
                           ),
                           onTap: _switchLanguage,
-                          iconColor:  Colors.blue,
+                          iconColor: Colors.blue,
                         ),
-                        
                         Container(
                           padding: const EdgeInsets.all(20),
                           child: Row(
@@ -377,12 +392,17 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: (isNotiSetting ? Colors.blue : const Color(0xFF6B7280)).withOpacity(0.1),
+                                  color: (isNotiSetting
+                                          ? Colors.blue
+                                          : const Color(0xFF6B7280))
+                                      .withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Icon(
                                   Icons.notifications_rounded,
-                                  color: isNotiSetting ?  Colors.blue : const Color(0xFF6B7280),
+                                  color: isNotiSetting
+                                      ? Colors.blue
+                                      : const Color(0xFF6B7280),
                                   size: 24,
                                 ),
                               ),
@@ -418,13 +438,13 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                                   value: isNotiSetting,
                                   onChanged: _toggleNotifications,
                                   activeColor: Colors.blue,
-                                  activeTrackColor: Colors.blue.withOpacity(0.3),
+                                  activeTrackColor:
+                                      Colors.blue.withOpacity(0.3),
                                 ),
                               ),
                             ],
                           ),
                         ),
-
                         _buildSettingTile(
                           icon: Icons.lock_rounded,
                           title: "Đổi mật khẩu",
@@ -433,26 +453,25 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const ChangePasswordPage()),
+                              MaterialPageRoute(
+                                  builder: (_) => const ChangePasswordPage()),
                             );
                           },
                         ),
-
                         _buildSettingTile(
                           icon: Icons.description_rounded,
                           title: "Xem điều khoản",
                           subtitle: "Điều khoản sử dụng và chính sách",
-                          iconColor:  Colors.blue,
+                          iconColor: Colors.blue,
                           onTap: () {
                             // Navigate to terms page
-                             Navigator.push(
+                            Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const AgreementScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const AgreementScreen()),
                             );
-                            
                           },
                         ),
-
                         _buildSettingTile(
                           icon: Icons.logout_rounded,
                           title: lang.sign_out,
@@ -464,65 +483,173 @@ class _HomeSettingsPageState extends State<HomeSettingsPage> with TickerProvider
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.info_outline_rounded,
-                            color: Colors.blue,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          "Hino Connect",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1F2937),
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          "Phiên bản 1.0.0",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
+                  const HotlineCard(),
                   const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHotlineCard() {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () async {
+        final Uri telUri = Uri(scheme: 'tel', path: '19009082'); // số hotline
+        if (await canLaunchUrl(telUri)) {
+          await launchUrl(telUri);
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.phone_in_talk_rounded,
+                color: Colors.blue,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "Hotline hỗ trợ",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "19009082",
+              style: TextStyle(
+                fontSize: 12, // nhỏ hơn phiên bản cũ
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HotlineCard extends StatefulWidget {
+  const HotlineCard({super.key});
+
+  @override
+  State<HotlineCard> createState() => _HotlineCardState();
+}
+
+class _HotlineCardState extends State<HotlineCard> {
+  String _appVersion = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = info.version; // đọc version từ pubspec.yaml
+    });
+  }
+
+  Future<void> _callHotline() async {
+    final Uri telUri = Uri(scheme: 'tel', path: '19009082'); // số hotline
+    if (await canLaunchUrl(telUri)) {
+      await launchUrl(telUri);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: _callHotline,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.phone_in_talk_rounded,
+                color: Colors.blue,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "Hotline hỗ trợ",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "19009082",
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Phiên bản $_appVersion",
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF9CA3AF),
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -64,7 +64,7 @@ class _DriverManagementPageState extends State<DriverManagementPage>
       final profileJson = json.decode(profileString);
       _profile = Profile.fromJson(profileJson);
       setState(() {
-        _showVehicleTab = (_profile?.userLevelId ?? 0) > 41;
+        _showVehicleTab = (_profile?.userLevelId ?? 0) <= 41;
         _tabController = TabController(
           length: _showVehicleTab ? 4 : 3,
           vsync: this,
@@ -148,6 +148,7 @@ class _DriverManagementPageState extends State<DriverManagementPage>
                           driver: widget.driver,
                           driverInfo: driverDetail!.driverInfo),
                       AccountTab(
+                          driver: widget.driver,
                           driverUser: driverDetail!.driverUser,
                           driverInfo: driverDetail!.driverInfo,
                           driverName: driverDetail!.driverName),
@@ -1025,12 +1026,17 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
 }
 
 class AccountTab extends StatefulWidget {
+  final Driver driver;
   final DriverUserModel? driverUser;
   final DriverInfoModel? driverInfo;
   final String? driverName;
 
   const AccountTab(
-      {Key? key, this.driverUser, this.driverName, this.driverInfo})
+      {Key? key,
+      this.driverUser,
+      this.driverName,
+      this.driverInfo,
+      required this.driver})
       : super(key: key);
 
   @override
@@ -1046,7 +1052,7 @@ class _AccountTabState extends State<AccountTab> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController(text: "123456"); // default
 
-  DateTime? _expiredDate;
+  //DateTime? _expiredDate;
   bool _isLoading = false;
 
   @override
@@ -1071,28 +1077,23 @@ class _AccountTabState extends State<AccountTab> {
   }
 
   Future<void> _pickDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
+    // final DateTime? picked = await showDatePicker(
+    //   context: context,
+    //   initialDate: DateTime.now(),
+    //   firstDate: DateTime.now(),
+    //   lastDate: DateTime(2100),
+    // );
 
-    if (picked != null) {
-      setState(() {
-        _expiredDate = picked;
-      });
-    }
+    // if (picked != null) {
+    //   setState(() {
+    //     _expiredDate = picked;
+    //   });
+    // }
   }
 
   Future<void> _createAccount() async {
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      context.showSnackBarFail(text: 'Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
@@ -1132,26 +1133,32 @@ class _AccountTabState extends State<AccountTab> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("accessToken");
+      final profileString = prefs.getString("profile");
 
-      if (token == null) {
-        throw Exception("Không tìm thấy token");
+      if (token == null || profileString == null) {
+        throw Exception("Không tìm thấy token hoặc profile");
       }
+
+      final profileJson = json.decode(profileString);
+      final profile = Profile.fromJson(profileJson);
 
       final url = "${Api.BaseUrlBuilding}${Api.createDriverUser}";
       final body = {
+        "driver_id": widget.driver.driver_id,
         "display_name": _displayNameController.text.trim(),
         "username": _usernameController.text.trim(),
         "email": _emailController.text.trim(),
-        "expired_date": _expiredDate != null
-            ? DateFormat("yyyy-MM-dd").format(_expiredDate!)
-            : null,
         "password": _passwordController.text.trim(),
+        "mobile": widget.driverInfo?.phone ?? "", // mặc định phone của tài xế
+        "owner_partner_id": profile.userId,
+        "user_id": profile.userId,
       };
 
       print("==== CREATE DRIVER ACCOUNT ====");
       print("Token: $token");
       print("Body: ${json.encode(body)}");
       print("Url: $url");
+
       final response = await http.post(
         Uri.parse(url),
         headers: {
@@ -1175,7 +1182,6 @@ class _AccountTabState extends State<AccountTab> {
           setState(() {
             _isCreatingAccount = false;
           });
-          // Refresh driver detail
           if (context.mounted) {
             final parentState =
                 context.findAncestorStateOfType<_DriverManagementPageState>();
@@ -1299,12 +1305,12 @@ class _AccountTabState extends State<AccountTab> {
                 icon: Icons.email,
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16),
-              CustomDatePickerField(
-                label: "Ngày hết hạn",
-                date: _expiredDate,
-                onTap: () => _pickDate(context),
-              ),
+              // const SizedBox(height: 16),
+              // CustomDatePickerField(
+              //   label: "Ngày hết hạn",
+              //   date: _expiredDate,
+              //   onTap: () => _pickDate(context),
+              // ),
               const SizedBox(height: 40),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -1630,6 +1630,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
             oldLicenseNumber,
             "success",
           );
+          if (!mounted) return; // Check if still mounted
           setState(() {
             _writingNfcDrivers.remove(driverId);
           });
@@ -1649,6 +1650,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
             oldLicenseNumber,
             "fail",
           );
+          if (!mounted) return; // Check if still mounted
           setState(() {
             _writingNfcDrivers.remove(driverId);
           });
@@ -1657,6 +1659,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
         },
       );
     } catch (e) {
+      if (!mounted) return; // Check if still mounted
       setState(() {
         _writingNfcDrivers.remove(driverId);
       });
@@ -1701,16 +1704,20 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
       print("Calling API: $url with params: $jsonParam");
 
       final response = await Api.post(context, url, jsonParam);
-      if (response != null) {
-        print("API call successful: $response");
-      } else {
+      if (response == null) {
         print("API call failed: No response");
-        _showErrorDialog("Lỗi API", "Không nhận được phản hồi từ server.");
+        if (mounted) {
+          _showErrorDialog("Lỗi API", "Không nhận được phản hồi từ server.");
+        }
+      } else {
+        print("API call successful: $response");
       }
     } catch (e) {
       print("Error calling API: $e");
-      _showErrorDialog(
-          "Lỗi API", "Không thể lưu thông tin thay đổi tài xế: $e");
+      if (mounted) {
+        _showErrorDialog(
+            "Lỗi API", "Không thể lưu thông tin thay đổi tài xế: $e");
+      }
     }
   }
 
@@ -1935,7 +1942,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     );
   }
 
-  void _showSuccessDialog(String title, String message) {
+  void _showErrorDialog(String title, String message) {
+    if (!mounted) return; // Check if the State is still mounted
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1944,9 +1952,9 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const Icon(Icons.error, color: Colors.red, size: 28),
               const SizedBox(width: 12),
-              Text(title, style: TextStyle(color: Colors.green.shade700)),
+              Text(title, style: TextStyle(color: Colors.red.shade700)),
             ],
           ),
           content: Text(message),
@@ -1962,7 +1970,8 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     );
   }
 
-  void _showErrorDialog(String title, String message) {
+  void _showSuccessDialog(String title, String message) {
+    if (!mounted) return; // Check if the State is still mounted
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1971,9 +1980,9 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              const Icon(Icons.error, color: Colors.red, size: 28),
+              const Icon(Icons.check_circle, color: Colors.green, size: 28),
               const SizedBox(width: 12),
-              Text(title, style: TextStyle(color: Colors.red.shade700)),
+              Text(title, style: TextStyle(color: Colors.green.shade700)),
             ],
           ),
           content: Text(message),
