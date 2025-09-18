@@ -41,7 +41,7 @@ class _PageState extends State<HomeDetailPage> {
 
   @override
   void initState() {
-    vehicle = widget?.vehicle;
+    vehicle = widget.vehicle;
     getData(context);
     super.initState();
   }

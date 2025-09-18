@@ -1308,6 +1308,25 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
 
     // Start reading old card data
     DriverCardData? oldCardData = await _showNfcReadingDialogForWrite(driverId);
+    if (oldCardData == null) {
+      print("User cancelled NFC reading process");
+      // Loại bỏ driver khỏi writing list nếu đã được thêm
+      if (_writingNfcDrivers.contains(driverId)) {
+        setState(() {
+          _writingNfcDrivers.remove(driverId);
+        });
+      }
+      return; // Thoát khỏi quá trình ghi
+    }
+
+    print(oldCardData?.driverName);
+    print(oldCardData?.licenseNumber);
+
+    // Chỉ tiến hành ghi nếu chưa bị hủy và không có quá trình writing khác
+    if (!_writingNfcDrivers.contains(driverId)) {
+      print("NFC writing process was cancelled");
+      return;
+    }
     print(oldCardData?.driverName);
     print(oldCardData?.licenseNumber);
     // Proceed to writing only after reading is complete

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hino/api/api.dart';
-import 'package:hino/feature/home_driver/vehicle_list_tab.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/model/driver.dart';
 import 'package:hino/model/driver_detail.dart';
@@ -22,10 +21,12 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:radar_chart/radar_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../model/driver_info_model.dart';
 import '../../model/driver_user_model.dart';
+import '../../model/vehicle.dart';
 
 class DriverManagementPage extends StatefulWidget {
   final Driver driver;
@@ -71,12 +72,8 @@ class _DriverManagementPageState extends State<DriverManagementPage>
         );
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Lỗi khi lấy thông tin profile: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      context.showSnackBarFail(
+          text: "Lỗi khi lấy thông tin profile: ${e.toString()}");
     }
   }
 
@@ -101,12 +98,7 @@ class _DriverManagementPageState extends State<DriverManagementPage>
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Lỗi khi lấy thông tin: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      context.showSnackBarFail(text: "Lỗi khi lấy thông tin: ${e.toString()}");
     } finally {
       setState(() {
         _isLoading = false;
@@ -640,12 +632,7 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
         _birthDate == null ||
         _selectedPrefix == null ||
         _startDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      context.showSnackBarFail(text: 'Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
@@ -1173,12 +1160,7 @@ class _AccountTabState extends State<AccountTab> {
       if (response.statusCode == 200) {
         final responseJson = json.decode(response.body);
         if (responseJson["code"] == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Tạo tài khoản thành công!"),
-              backgroundColor: Colors.green,
-            ),
-          );
+          context.showSnackBarSuccess(text: "Tạo tài khoản thành công!");
           setState(() {
             _isCreatingAccount = false;
           });
@@ -1194,12 +1176,7 @@ class _AccountTabState extends State<AccountTab> {
         throw Exception("Lỗi HTTP: ${response.body}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Lỗi: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      context.showSnackBarFail(text: "Lỗi: ${e.toString()}");
     } finally {
       setState(() {
         _isLoading = false;
@@ -1212,9 +1189,7 @@ class _AccountTabState extends State<AccountTab> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Không thể thực hiện cuộc gọi")),
-      );
+      context.showSnackBarFail(text: "Không thể thực hiện cuộc gọi");
     }
   }
 
@@ -1568,76 +1543,182 @@ class VehicleListTab extends StatefulWidget {
   State<VehicleListTab> createState() => _VehicleListTabState();
 }
 
-class _VehicleListTabState extends State<VehicleListTab> {
+class _VehicleListTabState extends State<VehicleListTab>
+    with TickerProviderStateMixin {
   bool _isLoading = false;
-  Map<int, bool> _vehicleSelection = {};
-  final TextEditingController _newVehicleIdController = TextEditingController();
+  List<Vehicle> _allVehicles = [];
+  List<Vehicle> _assignedVehicles = [];
+  Set<int> _selectedVehicles = {};
+  bool _isAllVehiclesLoaded = false;
+  bool _selectAll = false;
+  bool _indeterminate = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _vehicleSelection = {for (var id in widget.vehicleIds) id: true};
+    // Khởi tạo animation controller và fade animation
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    // Đảm bảo animation bắt đầu từ đầu
+    _animationController.value = 0.0;
+    _loadAllVehicles();
   }
 
   @override
   void dispose() {
-    _newVehicleIdController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  void _addVehicleId() {
-    final input = _newVehicleIdController.text.trim();
-    if (input.isNotEmpty && int.tryParse(input) != null) {
-      final vehicleId = int.parse(input);
-      setState(() {
-        if (!_vehicleSelection.containsKey(vehicleId)) {
-          _vehicleSelection[vehicleId] = true;
-          _newVehicleIdController.clear();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ID xe đã tồn tại trong danh sách'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      });
+  // Cập nhật select all logic với vid
+  void _updateSelectAllState() {
+    final validAssignedVehicles = _assignedVehicles
+        .where((vehicle) => vehicle.info?.vid != null)
+        .toList();
+
+    if (validAssignedVehicles.isEmpty) {
+      _selectAll = false;
+      _indeterminate = false;
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập ID xe hợp lệ'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      final validSelectedCount = _selectedVehicles
+          .where((id) => validAssignedVehicles.any((v) => v.info?.vid == id))
+          .length;
+
+      if (validSelectedCount == validAssignedVehicles.length) {
+        _selectAll = true;
+        _indeterminate = false;
+      } else if (validSelectedCount > 0) {
+        _selectAll = false;
+        _indeterminate = true;
+      } else {
+        _selectAll = false;
+        _indeterminate = false;
+      }
     }
   }
 
-  Future<void> _updateVehicleAssignments() async {
-    final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              title: const Text('Xác nhận thay đổi'),
-              content: const Text('Bạn có chắc muốn lưu các thay đổi này?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Hủy', style: TextStyle(color: Colors.red)),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Xác nhận'),
-                ),
-              ],
-            );
+  Future<void> _loadAllVehicles() async {
+    setState(() {
+      _isLoading = true;
+      _isAllVehiclesLoaded = false;
+    });
+
+    try {
+      final value = await Api.get(context, Api.realtime);
+      if (value != null && mounted) {
+        final listVehicle = List.from(value['vehicles'])
+            .map((a) => Vehicle.fromJson(a))
+            .toList();
+
+        setState(() {
+          _allVehicles = listVehicle;
+          _assignedVehicles = listVehicle
+              .where((vehicle) =>
+                  vehicle.info?.vid != null &&
+                  widget.vehicleIds.contains(vehicle.info!.vid!))
+              .toList();
+          _isAllVehiclesLoaded = true;
+          _updateSelectAllState();
+        });
+
+        // Trigger animation sau khi data được load
+        if (mounted) {
+          _animationController.forward();
+        }
+      }
+    } catch (e) {
+      context.showSnackBarFail(
+          text: "Lỗi khi tải danh sách xe: ${e.toString()}");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _showAddVehicleDialog() async {
+    if (!_isAllVehiclesLoaded) {
+      context.showSnackBarInfo(text: 'Đang tải danh sách xe...');
+      return;
+    }
+
+    final availableVehicles = _allVehicles
+        .where((vehicle) =>
+            vehicle.info?.vid != null &&
+            !widget.vehicleIds.contains(vehicle.info!.vid!))
+        .toList();
+
+    if (availableVehicles.isEmpty) {
+      context.showSnackBarFail(text: 'Không có xe nào để thêm');
+      return;
+    }
+
+    final selectedVehicleIds = <int>{};
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return _VehicleSelectionDialog(
+          title: 'Thêm xe',
+          vehicles: availableVehicles,
+          selectedVehicleIds: selectedVehicleIds,
+          onConfirm: (selectedIds) {
+            Navigator.pop(context);
+            _addSelectedVehicles(selectedIds);
           },
-        ) ??
-        false;
+        );
+      },
+    );
+  }
+
+  Future<void> _addSelectedVehicles(List<int> vehicleIds) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _updateVehicleAssignment(vehicleIds, 'INSERT');
+
+      if (response != null && response["code"] == 200) {
+        context.showSnackBarSuccess(
+            text: "Đã thêm ${vehicleIds.length} xe thành công!");
+        await _loadAllVehicles();
+        _refreshParent();
+      }
+    } catch (e) {
+      context.showSnackBarFail(
+        text: "Lỗi: ${e.toString()}",
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _deleteSelectedVehicles() async {
+    if (_selectedVehicles.isEmpty) {
+      context.showSnackBarFail(
+        text: 'Vui lòng chọn xe để xóa',
+      );
+      return;
+    }
+
+    final confirmed = await _showConfirmationDialog(
+      'Xác nhận xóa xe',
+      'Bạn có chắc muốn xóa ${_selectedVehicles.length} xe khỏi danh sách?',
+    );
 
     if (!confirmed) return;
 
@@ -1645,6 +1726,34 @@ class _VehicleListTabState extends State<VehicleListTab> {
       _isLoading = true;
     });
 
+    try {
+      final vehicleIds = _selectedVehicles.toList();
+      final response = await _updateVehicleAssignment(vehicleIds, 'DELETE');
+
+      if (response != null && response["code"] == 200) {
+        context.showSnackBarSuccess(
+            text: "Đã xóa ${_selectedVehicles.length} xe thành công!");
+        setState(() {
+          _selectedVehicles.clear();
+        });
+        await _loadAllVehicles();
+        _refreshParent();
+      }
+    } catch (e) {
+      context.showSnackBarFail(
+        text: "Lỗi: ${e.toString()}",
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>?> _updateVehicleAssignment(
+    List<int> vehicleIds,
+    String action,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("accessToken");
@@ -1661,27 +1770,11 @@ class _VehicleListTabState extends State<VehicleListTab> {
       final url = "${Api.BaseUrlBuilding}${Api.updateVehicleAssignment}";
       final List<Map<String, dynamic>> vehicleManager = [];
 
-      _vehicleSelection.forEach((vehicleId, isSelected) {
-        final wasAssigned = widget.vehicleIds.contains(vehicleId);
-        if (isSelected != wasAssigned) {
-          vehicleManager.add({
-            "vehicle_id": vehicleId,
-            "action": isSelected ? "INSERT" : "DELETE",
-          });
-        }
-      });
-
-      if (vehicleManager.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Không có thay đổi để cập nhật'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        setState(() {
-          _isLoading = false;
+      for (int vehicleId in vehicleIds) {
+        vehicleManager.add({
+          "vehicle_id": vehicleId,
+          "action": action,
         });
-        return;
       }
 
       final payload = {
@@ -1690,7 +1783,7 @@ class _VehicleListTabState extends State<VehicleListTab> {
         "driver_id": widget.driverId,
       };
 
-      print("==== UPDATE VEHICLE ASSIGNMENTS ====");
+      print("==== ${action.toUpperCase()} VEHICLES ====");
       print("Token: $token");
       print("Body: ${json.encode(payload)}");
       print("Url: $url");
@@ -1702,129 +1795,851 @@ class _VehicleListTabState extends State<VehicleListTab> {
         accessToken: "Bearer $token",
       );
 
-      if (response == null) {
-        throw Exception("Không nhận được phản hồi từ server");
-      }
-
-      if (response["code"] != 200) {
-        throw Exception(response["result"] ?? "Có lỗi xảy ra");
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cập nhật danh sách xe thành công!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Refresh driver detail to update vehicleIds
-      if (context.mounted) {
-        final parentState =
-            context.findAncestorStateOfType<_DriverManagementPageState>();
-        await parentState?._fetchDriverDetail();
-        if (context.mounted) {
-          setState(() {
-            _vehicleSelection = {for (var id in widget.vehicleIds) id: true};
-          });
-        }
-      }
+      return response;
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Lỗi: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      rethrow;
+    }
+  }
+
+  void _onVehicleSelected(bool? selected, int? vehicleId) {
+    if (vehicleId == null) return;
+
+    setState(() {
+      if (selected == true) {
+        _selectedVehicles.add(vehicleId);
+      } else {
+        _selectedVehicles.remove(vehicleId);
+      }
+      _updateSelectAllState();
+    });
+  }
+
+  void _onSelectAllChanged(bool? value) {
+    setState(() {
+      if (value == true) {
+        _selectedVehicles = _assignedVehicles
+            .where((v) => v.info?.vid != null)
+            .map((v) => v.info!.vid!)
+            .toSet();
+      } else {
+        _selectedVehicles.clear();
+      }
+      _updateSelectAllState();
+    });
+  }
+
+  Future<bool> _showConfirmationDialog(String title, String content) async {
+    if (!mounted) return false;
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange[700],
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Text(
+                content,
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  height: 1.4,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: const Text(
+                    'Hủy',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Xóa',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  void _refreshParent() {
+    if (context.mounted) {
+      final parentState =
+          context.findAncestorStateOfType<_DriverManagementPageState>();
+      parentState?._fetchDriverDetail();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+    return Container(
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Danh sách xe',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _newVehicleIdController,
-                  decoration: InputDecoration(
-                    labelText: 'Nhập ID xe',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: Colors.grey, width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: Colors.blue, width: 1.5),
-                    ),
+          // Enhanced Action buttons
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.add_circle_outline,
+                    label: 'Thêm xe mới',
+                    color: Colors.blue,
+                    onPressed: _isLoading ? null : _showAddVehicleDialog,
+                    iconColor: Colors.white,
                   ),
-                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.delete_outline,
+                    label: 'Xóa xe (${_selectedVehicles.length})',
+                    color: Colors.red,
+                    onPressed: _isLoading || _selectedVehicles.isEmpty
+                        ? null
+                        : _deleteSelectedVehicles,
+                    iconColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Loading indicator for empty state
+          if (_isLoading && _assignedVehicles.isEmpty)
+            _buildShimmerTable()
+          // Empty state
+          else if (!_isLoading && _assignedVehicles.isEmpty)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(48),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(40),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.grey[100]!,
+                            Colors.grey[200]!,
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.directions_car_outlined,
+                        size: 80,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Chưa có xe nào được gán',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w700,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Nhấn "Thêm xe mới" để bắt đầu quản lý phương tiện cho tài xế',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    _buildActionButton(
+                      icon: Icons.add_circle_outline,
+                      label: 'Thêm xe ngay',
+                      color: Colors.blue,
+                      onPressed: _showAddVehicleDialog,
+                      iconColor: Colors.white,
+                      size: 'large',
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _addVehicleId,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
+            )
+          // Table section
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Table header - CHỈ HIỆN KHI KHÔNG LOADING
+                if (!_isLoading)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[50]!,
+                          Colors.blue[100]!.withOpacity(0.3),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        // Main Select All Checkbox
+                        Transform.scale(
+                          scale: 1.2,
+                          child: Checkbox(
+                            value: _selectAll,
+                            tristate: _indeterminate,
+                            onChanged: _assignedVehicles.isEmpty
+                                ? null
+                                : _onSelectAllChanged,
+                            activeColor: Colors.blue[600],
+                            checkColor: Colors.white,
+                            side: MaterialStateBorderSide.resolveWith(
+                              (states) => BorderSide(
+                                width: 2,
+                                color: Colors.blue[300]!,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Chọn tất cả',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.blue[700],
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${_selectedVehicles.length}/${_assignedVehicles.where((v) => v.info?.vid != null).length} xe được chọn',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+
+                // Table container với CIRCULAR LOADING
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: _isLoading
+                      ? _buildShimmerTable() // Circular loading table
+                      : _isAllVehiclesLoaded
+                          ? FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: _buildDataTable(),
+                              ),
+                            )
+                          : _buildShimmerTable(),
                 ),
-                child: const Text('Thêm'),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerTable() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        children: [
+          // Header shimmer
+          Container(
+            height: 40,
+            color: Colors.blue[50],
+            child: Row(
+              children: [
+                _buildShimmerCell(
+                    width: 20, height: 20, margin: 12), // checkbox col
+                _buildShimmerCell(
+                    width: 100, height: 16, margin: 12), // biển số
+                _buildShimmerCell(width: 140, height: 16, margin: 12), // VIN
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // Rows shimmer
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 6,
+            separatorBuilder: (_, __) =>
+                Divider(height: 1, color: Colors.grey[200]),
+            itemBuilder: (context, index) {
+              return Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    _buildShimmerCell(
+                        width: 20, height: 20, radius: 4), // checkbox
+                    const SizedBox(width: 12),
+                    _buildShimmerCell(width: 80, height: 14), // biển số
+                    const SizedBox(width: 32),
+                    _buildShimmerCell(width: 120, height: 14), // VIN
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 👉 shimmer cell riêng lẻ
+  Widget _buildShimmerCell({
+    double width = 60,
+    double height = 16,
+    double radius = 6,
+    double margin = 0,
+  }) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        margin: EdgeInsets.all(margin),
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+    );
+  }
+
+  // DataTable widget - CHỈ CÓ 1 CHECKBOX TRONG MỖI ROW
+  Widget _buildDataTable() {
+    return DataTable(
+      headingRowColor: WidgetStateProperty.all(Colors.blue[50]),
+      headingRowHeight: 32,
+      dataRowHeight: 48,
+      border: TableBorder.all(
+        color: Colors.grey[200]!,
+        width: 1,
+      ),
+      columnSpacing: 16,
+      columns: const [
+        // Checkbox column - KHÔNG CÓ LABEL
+        DataColumn(
+          label: Text(''),
+        ),
+        DataColumn(
+          label: Text(
+            'Biển số xe',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Số VIN',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+      rows: _assignedVehicles.asMap().entries.map((entry) {
+        final index = entry.key;
+        final vehicle = entry.value;
+        final vehicleId = vehicle.info?.vid;
+        final isSelected =
+            vehicleId != null && _selectedVehicles.contains(vehicleId);
+        final isEvenRow = index % 2 == 0;
+
+        return DataRow(
+          // LOẠI BỎ selected để tránh double checkbox effect
+          // LOẠI BỎ onSelectChanged của DataRow
+          color: MaterialStateProperty.all(
+            isEvenRow ? Colors.grey[50] : Colors.white,
+          ),
+          cells: [
+            // Checkbox cell - CHỈ CÓ 1 CHECKBOX VỚI INKWELL
+            DataCell(
+              InkWell(
+                onTap: vehicleId != null
+                    ? () => _onVehicleSelected(!isSelected, vehicleId)
+                    : null,
+                // borderRadius: BorderRadius.circular(4),
+                child: Center(
+                  child: Transform.scale(
+                    scale: 1.1,
+                    child: Align(
+                      alignment:
+                          Alignment.centerLeft, // 👈 đảm bảo nằm giữa cell
+                      child: Checkbox(
+                        materialTapTargetSize: MaterialTapTargetSize
+                            .shrinkWrap, // 👈 bỏ padding mặc định
+                        visualDensity: VisualDensity.compact,
+                        value: isSelected,
+                        onChanged: vehicleId != null
+                            ? (bool? value) {
+                                _onVehicleSelected(value, vehicleId);
+                              }
+                            : null,
+                        activeColor: Colors.blue[600],
+                        checkColor: Colors.white,
+                        side: MaterialStateBorderSide.resolveWith(
+                          (states) => BorderSide(
+                            width: 2,
+                            color:
+                                isSelected ? Colors.blue[300]! : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // License plate cell
+            DataCell(
+              InkWell(
+                onTap: vehicleId != null
+                    ? () => _onVehicleSelected(!isSelected, vehicleId)
+                    : null,
+                child: Text(
+                  vehicle.info?.licenseplate ?? 'N/A',
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 12,
+                    color: isSelected ? Colors.blue[700] : Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+            // VIN cell
+            DataCell(
+              InkWell(
+                onTap: vehicleId != null
+                    ? () => _onVehicleSelected(!isSelected, vehicleId)
+                    : null,
+                child: Text(
+                  vehicle.info?.vin_no ?? 'N/A',
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 12,
+                    color: isSelected ? Colors.blue[700] : Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback? onPressed,
+    required Color iconColor,
+    String size = 'normal',
+  }) {
+    final isDisabled = onPressed == null;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(
+          icon,
+          size: size == 'large' ? 24 : 20,
+          color: isDisabled ? Colors.white54 : iconColor,
+        ),
+        label: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: size == 'large' ? 16 : 14,
+            color: isDisabled ? Colors.white54 : Colors.white,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isDisabled ? color.withOpacity(0.6) : color,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(
+            vertical: size == 'large' ? 16 : 14,
+            horizontal: size == 'large' ? 28 : 20,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: isDisabled ? 0 : 4,
+          shadowColor: isDisabled ? null : color.withOpacity(0.3),
+        ),
+      ),
+    );
+  }
+}
+
+// Enhanced Vehicle Selection Dialog
+class _VehicleSelectionDialog extends StatefulWidget {
+  final String title;
+  final List<Vehicle> vehicles;
+  final Set<int> selectedVehicleIds;
+  final Function(List<int>) onConfirm;
+
+  const _VehicleSelectionDialog({
+    required this.title,
+    required this.vehicles,
+    required this.selectedVehicleIds,
+    required this.onConfirm,
+  });
+
+  @override
+  State<_VehicleSelectionDialog> createState() =>
+      _VehicleSelectionDialogState();
+}
+
+class _VehicleSelectionDialogState extends State<_VehicleSelectionDialog>
+    with TickerProviderStateMixin {
+  late Set<int> _selectedIds;
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIds = widget.selectedVehicleIds.toSet();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Hàm tìm kiếm theo biển số hoặc mã VIN
+  List<Vehicle> _searchVehicles(String query) {
+    if (query.isEmpty) return widget.vehicles;
+    return widget.vehicles.where((v) {
+      final license = (v.info?.licenseplate ?? "").toLowerCase();
+      final vin = (v.info?.vin_no ?? "").toLowerCase();
+      return license.contains(query.toLowerCase()) ||
+          vin.contains(query.toLowerCase());
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredVehicles = _searchVehicles(_searchQuery);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          if (_vehicleSelection.isEmpty)
-            const Text(
-              'Không có xe nào',
-              style: TextStyle(color: Colors.grey),
-            )
-          else
-            ..._vehicleSelection.entries.map((entry) {
-              final vehicleId = entry.key;
-              final isChecked = entry.value;
-              return CheckboxListTile(
-                title: Text('Xe $vehicleId'),
-                value: isChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _vehicleSelection[vehicleId] = value ?? false;
-                  });
-                },
-              );
-            }).toList(),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _isLoading || _vehicleSelection.isEmpty
-                  ? null
-                  : _updateVehicleAssignments,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.indigo, Colors.blue],
+                  ),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.directions_car,
+                        color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      "${_selectedIds.length} xe",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: const Text('Xác nhận'),
-            ),
+
+              // Thanh tìm kiếm
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Tìm theo biển số hoặc VIN...",
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value.trim());
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Danh sách xe
+              Flexible(
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 500,
+                    minHeight: 300,
+                  ),
+                  child: filteredVehicles.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "Không tìm thấy xe",
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filteredVehicles.length,
+                          itemBuilder: (context, index) {
+                            final vehicle = filteredVehicles[index];
+                            final id = vehicle.info?.vid;
+                            if (id == null) return const SizedBox.shrink();
+
+                            final isSelected = _selectedIds.contains(id);
+
+                            return Card(
+                              color: Colors.white,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: isSelected ? 6 : 2,
+                              shadowColor: isSelected
+                                  ? Colors.blue.withOpacity(0.2)
+                                  : Colors.black.withOpacity(0.05),
+                              child: ListTile(
+                                onTap: () {
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedIds.remove(id);
+                                    } else {
+                                      _selectedIds.add(id);
+                                    }
+                                  });
+                                },
+                                leading: CircleAvatar(
+                                  backgroundColor: isSelected
+                                      ? Colors.blue[600]
+                                      : Colors.grey[200],
+                                  child: Icon(
+                                    Icons.directions_car,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                                title: Text(
+                                  vehicle.info?.licenseplate ?? "N/A",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "VIN: ${vehicle.info?.vin_no ?? "N/A"}",
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                                trailing: isSelected
+                                    ? const Icon(Icons.check_circle,
+                                        color: Colors.green, size: 28)
+                                    : const Icon(Icons.circle_outlined,
+                                        color: Colors.grey, size: 26),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ),
+
+              // Actions
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: Colors.blue),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          "Hủy",
+                          style: TextStyle(fontSize: 16, color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _selectedIds.isEmpty
+                            ? null
+                            : () => widget.onConfirm(_selectedIds.toList()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[600],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 3,
+                        ),
+                        child: Text(
+                          "Thêm ${_selectedIds.length} xe",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
