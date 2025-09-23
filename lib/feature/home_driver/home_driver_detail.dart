@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -146,11 +147,13 @@ class _DriverManagementPageState extends State<DriverManagementPage>
                           driverName: driverDetail!.driverName),
                       if (_showVehicleTab)
                         VehicleListTab(
-                            driverId: widget.driver.driver_id!,
-                            vehicleIds:
-                                (driverDetail!.driverUser?.vehicleIds ?? [])
-                                    .whereType<int>()
-                                    .toList()),
+                          driverId: widget.driver.driver_id!,
+                          vehicleIds:
+                              (driverDetail!.driverUser?.vehicleIds ?? [])
+                                  .whereType<int>()
+                                  .toList(),
+                          driverUser: driverDetail?.driverUser,
+                        ),
                     ],
                   ),
                 ),
@@ -1045,9 +1048,9 @@ class _AccountTabState extends State<AccountTab> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _isCreatingAccount = widget.driverUser == null;
-    });
+    // setState(() {
+    //   _isCreatingAccount = widget.driverUser == null;
+    // });
 
     print(widget.driverInfo?.toJson());
     _displayNameController.text = widget.driverName ?? '';
@@ -1253,7 +1256,7 @@ class _AccountTabState extends State<AccountTab> {
                 label: "Email",
                 icon: Icons.email,
                 keyboardType: TextInputType.emailAddress,
-                validator: (val)=>null,
+                validator: (val) => null,
               ),
               // const SizedBox(height: 16),
               // CustomDatePickerField(
@@ -1456,11 +1459,12 @@ class RadarVertex extends StatelessWidget implements PreferredSizeWidget {
 class VehicleListTab extends StatefulWidget {
   final int driverId;
   final List<int> vehicleIds;
-
+  final DriverUserModel? driverUser;
   const VehicleListTab({
     Key? key,
     required this.driverId,
     required this.vehicleIds,
+    required this.driverUser,
   }) : super(key: key);
 
   @override
@@ -1845,199 +1849,211 @@ class _VehicleListTabState extends State<VehicleListTab>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Enhanced Action buttons
-          AnimatedContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            duration: const Duration(milliseconds: 300),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.add_circle_outline,
-                    label: 'Thêm xe mới',
-                    color: Colors.blue,
-                    onPressed: _isLoading ? null : _showAddVehicleDialog,
-                    iconColor: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.delete_outline,
-                    label: 'Xóa xe (${_selectedVehicles.length})',
-                    color: Colors.red,
-                    onPressed: _isLoading || _selectedVehicles.isEmpty
-                        ? null
-                        : _deleteSelectedVehicles,
-                    iconColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Loading indicator for empty state
-          if (_isLoading && _assignedVehicles.isEmpty)
-            _buildShimmerTable()
-          // Empty state
-          else if (!_isLoading && _assignedVehicles.isEmpty)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(48),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(40),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.grey[100]!,
-                            Colors.grey[200]!,
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.directions_car_outlined,
-                        size: 80,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Chưa có xe nào được gán',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[800],
-                        fontWeight: FontWeight.w700,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Nhấn "Thêm xe mới" để bắt đầu quản lý phương tiện cho tài xế',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    _buildActionButton(
-                      icon: Icons.add_circle_outline,
-                      label: 'Thêm xe ngay',
-                      color: Colors.blue,
-                      onPressed: _showAddVehicleDialog,
-                      iconColor: Colors.white,
-                      size: 'large',
-                    ),
-                  ],
-                ),
+    return widget.driverUser == null
+        ? Center(
+            child: Text(
+              'Vui lòng tạo tài khoản tài xế trước khi gán xe',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+                height: 1.4,
               ),
-            )
-          // Table section
-          else
-            Column(
+              textAlign: TextAlign.center,
+            ),
+          )
+        : Container(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Table header - CHỈ HIỆN KHI KHÔNG LOADING
-                if (!_isLoading)
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue[50]!,
-                          Colors.blue[100]!.withOpacity(0.3),
-                        ],
+                // Enhanced Action buttons
+                AnimatedContainer(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  duration: const Duration(milliseconds: 300),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: Icons.add_circle_outline,
+                          label: 'Thêm xe mới',
+                          color: Colors.blue,
+                          onPressed: _isLoading ? null : _showAddVehicleDialog,
+                          iconColor: Colors.white,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        // Main Select All Checkbox
-                        Transform.scale(
-                          scale: 1.2,
-                          child: Checkbox(
-                            value: _selectAll,
-                            tristate: _indeterminate,
-                            onChanged: _assignedVehicles.isEmpty
-                                ? null
-                                : _onSelectAllChanged,
-                            activeColor: Colors.blue[600],
-                            checkColor: Colors.white,
-                            side: MaterialStateBorderSide.resolveWith(
-                              (states) => BorderSide(
-                                width: 2,
-                                color: Colors.blue[300]!,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildActionButton(
+                          icon: Icons.delete_outline,
+                          label: 'Xóa xe (${_selectedVehicles.length})',
+                          color: Colors.red,
+                          onPressed: _isLoading || _selectedVehicles.isEmpty
+                              ? null
+                              : _deleteSelectedVehicles,
+                          iconColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Loading indicator for empty state
+                if (_isLoading && _assignedVehicles.isEmpty)
+                  _buildShimmerTable()
+                // Empty state
+                else if (!_isLoading && _assignedVehicles.isEmpty)
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(48),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(40),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.grey[100]!,
+                                  Colors.grey[200]!,
+                                ],
                               ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.directions_car_outlined,
+                              size: 80,
+                              color: Colors.grey[400],
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 24),
+                          Text(
+                            'Chưa có xe nào được gán',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.w700,
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Nhấn "Thêm xe mới" để bắt đầu quản lý phương tiện cho tài xế',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                              height: 1.4,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+                          _buildActionButton(
+                            icon: Icons.add_circle_outline,
+                            label: 'Thêm xe ngay',
+                            color: Colors.blue,
+                            onPressed: _showAddVehicleDialog,
+                            iconColor: Colors.white,
+                            size: 'large',
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                // Table section
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Table header - CHỈ HIỆN KHI KHÔNG LOADING
+                      if (!_isLoading)
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.blue[50]!,
+                                Colors.blue[100]!.withOpacity(0.3),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                'Chọn tất cả',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  color: Colors.blue[700],
+                              // Main Select All Checkbox
+                              Transform.scale(
+                                scale: 1.2,
+                                child: Checkbox(
+                                  value: _selectAll,
+                                  tristate: _indeterminate,
+                                  onChanged: _assignedVehicles.isEmpty
+                                      ? null
+                                      : _onSelectAllChanged,
+                                  activeColor: Colors.blue[600],
+                                  checkColor: Colors.white,
+                                  side: MaterialStateBorderSide.resolveWith(
+                                    (states) => BorderSide(
+                                      width: 2,
+                                      color: Colors.blue[300]!,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${_selectedVehicles.length}/${_assignedVehicles.where((v) => v.info?.vid != null).length} xe được chọn',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Chọn tất cả',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: Colors.blue[700],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${_selectedVehicles.length}/${_assignedVehicles.where((v) => v.info?.vid != null).length} xe được chọn',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 8),
+                      const SizedBox(height: 8),
 
-                // Table container với CIRCULAR LOADING
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                      // Table container với CIRCULAR LOADING
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: _isLoading
+                            ? _buildShimmerTable() // Circular loading table
+                            : _isAllVehiclesLoaded
+                                ? FadeTransition(
+                                    opacity: _fadeAnimation,
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: _buildDataTable(),
+                                    ),
+                                  )
+                                : _buildShimmerTable(),
                       ),
                     ],
                   ),
-                  child: _isLoading
-                      ? _buildShimmerTable() // Circular loading table
-                      : _isAllVehiclesLoaded
-                          ? FadeTransition(
-                              opacity: _fadeAnimation,
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: _buildDataTable(),
-                              ),
-                            )
-                          : _buildShimmerTable(),
-                ),
               ],
             ),
-        ],
-      ),
-    );
+          );
   }
 
   Widget _buildShimmerTable() {
@@ -2116,23 +2132,27 @@ class _VehicleListTabState extends State<VehicleListTab>
     );
   }
 
-  // DataTable widget - CHỈ CÓ 1 CHECKBOX TRONG MỖI ROW
   Widget _buildDataTable() {
-    return DataTable(
-      headingRowColor: WidgetStateProperty.all(Colors.blue[50]),
+    return DataTable2(
+      isVerticalScrollBarVisible: true,
+      // Không cần showCheckboxColumn: false, để mặc định hiển thị checkbox
+      isHorizontalScrollBarVisible: true,
+      minWidth: MediaQuery.of(context).size.width, // Full chiều rộng màn hình
       headingRowHeight: 32,
       dataRowHeight: 48,
+      dividerThickness: 1,
       border: TableBorder.all(
         color: Colors.grey[200]!,
         width: 1,
       ),
-      columnSpacing: 40,
+      columnSpacing: 16, // Giảm khoảng cách giữa các cột
       columns: const [
-        // Checkbox column - KHÔNG CÓ LABEL
-        DataColumn(
+        // Cột checkbox mặc định với chiều rộng nhỏ
+        DataColumn2(
           label: Text(''),
+          fixedWidth: 40, // Chiều rộng nhỏ cho cột checkbox
         ),
-        DataColumn(
+        DataColumn2(
           label: Text(
             'Biển số xe',
             style: TextStyle(
@@ -2141,8 +2161,9 @@ class _VehicleListTabState extends State<VehicleListTab>
               color: Colors.black87,
             ),
           ),
+          size: ColumnSize.L, // Tự động điều chỉnh kích thước cột
         ),
-        DataColumn(
+        DataColumn2(
           label: Text(
             'Số VIN',
             style: TextStyle(
@@ -2151,6 +2172,7 @@ class _VehicleListTabState extends State<VehicleListTab>
               color: Colors.black87,
             ),
           ),
+          size: ColumnSize.L,
         ),
       ],
       rows: _assignedVehicles.asMap().entries.map((entry) {
@@ -2161,80 +2183,40 @@ class _VehicleListTabState extends State<VehicleListTab>
             vehicleId != null && _selectedVehicles.contains(vehicleId);
         final isEvenRow = index % 2 == 0;
 
-        return DataRow(
-          // LOẠI BỎ selected để tránh double checkbox effect
-          // LOẠI BỎ onSelectChanged của DataRow
+        return DataRow2(
+          selected: isSelected, // Sử dụng checkbox mặc định của DataTable2
+          onSelectChanged: vehicleId != null
+              ? (bool? value) {
+                  _onVehicleSelected(value, vehicleId);
+                }
+              : null,
           color: MaterialStateProperty.all(
             isEvenRow ? Colors.grey[50] : Colors.white,
           ),
           cells: [
-            // Checkbox cell - CHỈ CÓ 1 CHECKBOX VỚI INKWELL
+            // Cột checkbox (không cần nội dung vì checkbox mặc định sẽ hiển thị)
             DataCell(
-              InkWell(
-                onTap: vehicleId != null
-                    ? () => _onVehicleSelected(!isSelected, vehicleId)
-                    : null,
-                // borderRadius: BorderRadius.circular(4),
-                child: Center(
-                  child: Transform.scale(
-                    scale: 1.1,
-                    child: Align(
-                      alignment:
-                          Alignment.centerLeft, // 👈 đảm bảo nằm giữa cell
-                      child: Checkbox(
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // 👈 bỏ padding mặc định
-                        visualDensity: VisualDensity.compact,
-                        value: isSelected,
-                        onChanged: vehicleId != null
-                            ? (bool? value) {
-                                _onVehicleSelected(value, vehicleId);
-                              }
-                            : null,
-                        activeColor: Colors.blue[600],
-                        checkColor: Colors.white,
-                        side: MaterialStateBorderSide.resolveWith(
-                          (states) => BorderSide(
-                            width: 2,
-                            color:
-                                isSelected ? Colors.blue[300]! : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+              Container(), // Để trống vì checkbox mặc định được quản lý bởi DataRow2
+            ),
+            // Cột biển số xe
+            DataCell(
+              Text(
+                vehicle.info?.licenseplate ?? 'N/A',
+                style: TextStyle(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 12,
+                  color: isSelected ? Colors.blue[700] : Colors.black87,
                 ),
               ),
             ),
-            // License plate cell
+            // Cột số VIN
             DataCell(
-              InkWell(
-                onTap: vehicleId != null
-                    ? () => _onVehicleSelected(!isSelected, vehicleId)
-                    : null,
-                child: Text(
-                  vehicle.info?.licenseplate ?? 'N/A',
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    fontSize: 12,
-                    color: isSelected ? Colors.blue[700] : Colors.black87,
-                  ),
-                ),
-              ),
-            ),
-            // VIN cell
-            DataCell(
-              InkWell(
-                onTap: vehicleId != null
-                    ? () => _onVehicleSelected(!isSelected, vehicleId)
-                    : null,
-                child: Text(
-                  vehicle.info?.vin_no ?? 'N/A',
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    fontSize: 12,
-                    color: isSelected ? Colors.blue[700] : Colors.black87,
-                  ),
+              Text(
+                vehicle.info?.vin_no ?? 'N/A',
+                style: TextStyle(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 12,
+                  color: isSelected ? Colors.blue[700] : Colors.black87,
                 ),
               ),
             ),

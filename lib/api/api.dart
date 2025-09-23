@@ -7,7 +7,9 @@ import 'package:hino/model/upload.dart';
 import 'package:http/http.dart' as http;
 
 class Api {
-  static String BaseUrlBuilding = "http://42.96.40.69:9082/prod/";
+  static String BaseUrlBuilding =
+      //"https://apihinov1.hino-connect.vn/prod/";
+      "http://42.96.40.69:9082/prod/";
   static String BaseUrlBuildingSwagger = "http://42.96.42.254:4004/prod/";
   static String firebase_key =
       "AAAAwmmo4S8:APA91bFrpiUhVSV5orW6qBnwzUa2376P3t7pTvkY-cPjTn2U_a93n3hj03CgaJNNjqTFZcA_KqcWggwbPZoyvzGXglFj5SEZDBVIQ985JW896aOXybIN2N_nSnxJY9BxBqNakXImCJYt";
