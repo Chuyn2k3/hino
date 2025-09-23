@@ -1184,15 +1184,6 @@ class _AccountTabState extends State<AccountTab> {
     }
   }
 
-  Future<void> _callHotline() async {
-    final Uri url = Uri(scheme: 'tel', path: '19009082');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      context.showSnackBarFail(text: "Không thể thực hiện cuộc gọi");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.driverUser == null && !_isCreatingAccount) {
@@ -1219,23 +1210,6 @@ class _AccountTabState extends State<AccountTab> {
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Tạo tài khoản'),
-              ),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: _callHotline,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.call),
-                label: const Text("Liên hệ tổng đài 19009082"),
               ),
             ),
           ],
@@ -1279,6 +1253,7 @@ class _AccountTabState extends State<AccountTab> {
                 label: "Email",
                 icon: Icons.email,
                 keyboardType: TextInputType.emailAddress,
+                validator: (val)=>null,
               ),
               // const SizedBox(height: 16),
               // CustomDatePickerField(
@@ -1324,23 +1299,6 @@ class _AccountTabState extends State<AccountTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: _callHotline,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  icon: const Icon(Icons.call),
-                  label: const Text("Liên hệ tổng đài 19009082"),
-                ),
-              ),
             ],
           ),
         ),
@@ -1366,50 +1324,16 @@ class _AccountTabState extends State<AccountTab> {
             _buildInfoRow("Ngôn ngữ mặc định", "Vietnam"),
             const SizedBox(height: 16),
             _buildAvatar(user.avatarAttachId),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: _callHotline,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.call),
-                label: const Text("Liên hệ tổng đài 19009082"),
-              ),
-            ),
           ],
         ),
       );
     }
-    return Center(
+    return const Center(
       child: Column(
         children: [
-          const Text(
+          Text(
             'Thông tin tài khoản (Chưa triển khai đầy đủ)',
             style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: _callHotline,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              icon: const Icon(Icons.call),
-              label: const Text("Liên hệ tổng đài 19009082"),
-            ),
           ),
         ],
       ),
@@ -1922,12 +1846,12 @@ class _VehicleListTabState extends State<VehicleListTab>
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Enhanced Action buttons
           AnimatedContainer(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             duration: const Duration(milliseconds: 300),
             child: Row(
               children: [
@@ -2025,7 +1949,7 @@ class _VehicleListTabState extends State<VehicleListTab>
                 // Table header - CHỈ HIỆN KHI KHÔNG LOADING
                 if (!_isLoading)
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -2083,7 +2007,7 @@ class _VehicleListTabState extends State<VehicleListTab>
                       ],
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Table container với CIRCULAR LOADING
                 Container(
@@ -2202,7 +2126,7 @@ class _VehicleListTabState extends State<VehicleListTab>
         color: Colors.grey[200]!,
         width: 1,
       ),
-      columnSpacing: 16,
+      columnSpacing: 40,
       columns: const [
         // Checkbox column - KHÔNG CÓ LABEL
         DataColumn(
@@ -2335,7 +2259,7 @@ class _VehicleListTabState extends State<VehicleListTab>
         onPressed: onPressed,
         icon: Icon(
           icon,
-          size: size == 'large' ? 24 : 20,
+          size: size == 'large' ? 16 : 14,
           color: isDisabled ? Colors.white54 : iconColor,
         ),
         label: Text(
@@ -2350,8 +2274,8 @@ class _VehicleListTabState extends State<VehicleListTab>
           backgroundColor: isDisabled ? color.withOpacity(0.6) : color,
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(
-            vertical: size == 'large' ? 16 : 14,
-            horizontal: size == 'large' ? 28 : 20,
+            vertical: size == 'large' ? 6 : 4,
+            horizontal: size == 'large' ? 6 : 4,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -2453,11 +2377,11 @@ class _VehicleSelectionDialogState extends State<_VehicleSelectionDialog>
               // Header
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.indigo, Colors.blue],
                   ),
-                  borderRadius: const BorderRadius.vertical(
+                  borderRadius: BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
                 ),
@@ -2603,7 +2527,7 @@ class _VehicleSelectionDialogState extends State<_VehicleSelectionDialog>
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Colors.blue),
+                            side: const BorderSide(color: Colors.blue),
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),

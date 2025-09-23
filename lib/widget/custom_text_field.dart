@@ -9,6 +9,8 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final bool enabled;
+  final String? Function(String?)? validator; // 👈 thêm
+
   const CustomTextField({
     Key? key,
     required this.controller,
@@ -17,6 +19,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.inputFormatters,
     this.enabled = true,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -33,8 +36,10 @@ class CustomTextField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
-          validator: (value) =>
-              value == null || value.isEmpty ? "Vui lòng nhập $label" : null,
+          validator: validator ??
+              (value) => value == null || value.isEmpty
+                  ? "Vui lòng nhập $label"
+                  : null,
           decoration: InputDecoration(
             labelText: label,
             prefixIcon: Icon(icon, color: Colors.blue),
@@ -44,9 +49,9 @@ class CustomTextField extends StatelessWidget {
           ),
           enabled: enabled,
           autofocus: false,
-          //focusNode: FocusNode(),
         ),
       ],
     );
   }
 }
+

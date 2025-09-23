@@ -582,7 +582,7 @@ class _HotlineCardState extends State<HotlineCard> {
   }
 
   Future<void> _callHotline() async {
-    final Uri telUri = Uri(scheme: 'tel', path: '19009082'); // số hotline
+    final Uri telUri = Uri(scheme: 'tel', path: '18009280'); // số hotline
     if (await canLaunchUrl(telUri)) {
       await launchUrl(telUri);
     }
@@ -633,7 +633,7 @@ class _HotlineCardState extends State<HotlineCard> {
             ),
             const SizedBox(height: 4),
             const Text(
-              "19009082",
+              "18009280 (Nhánh 2)",
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF6B7280),

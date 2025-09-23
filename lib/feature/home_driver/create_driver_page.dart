@@ -330,13 +330,26 @@ class _CreateDriverPageState extends State<CreateDriverPage> {
                     controller: _cccdController,
                     label: "CCCD",
                     icon: Icons.credit_card,
-                    keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _gplxController,
                     label: "GPLX",
                     icon: Icons.drive_eta,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(12),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Vui lòng nhập GPLX";
+                      }
+                      if (value.length != 12) {
+                        return "GPLX phải có đúng 12 số";
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   CustomDatePickerField(

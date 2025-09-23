@@ -1181,6 +1181,7 @@ import 'package:hino/utils/utils.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/text_converter.dart';
 
@@ -2274,7 +2275,6 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                 ],
                               ),
                               child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(40),
@@ -2298,102 +2298,186 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
-                                    child: Column(
+                                    child: Row(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          CrossAxisAlignment.end,
                                       children: [
-                                        Text(
-                                          '${d.prefix ?? ''} ${d.firstname ?? ''} ${d.lastname ?? ''}',
-                                          style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.black87),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Utils.swipeCard(d, context),
-                                        if (d.display_datetime_swipe
-                                                ?.isNotEmpty ==
-                                            true)
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 2),
-                                            child: Text(
-                                              d.display_datetime_swipe!,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black54),
-                                            ),
-                                          ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            if (d.vehicleName?.isNotEmpty ??
-                                                false)
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
                                               Text(
-                                                d.vehicleName!,
+                                                '${d.prefix ?? ''} ${d.firstname ?? ''} ${d.lastname ?? ''}',
                                                 style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Colors.black87),
-                                              ),
-                                            if (d.vehicle?.info?.licenseprov
-                                                    ?.isNotEmpty ??
-                                                false)
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 10),
-                                                child: Text(
-                                                  d.vehicle!.info!.licenseprov!,
-                                                  style: const TextStyle(
-                                                      fontSize: 13,
-                                                      color: Colors.black54),
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black87,
                                                 ),
                                               ),
+                                              const SizedBox(height: 4),
+                                              Utils.swipeCard(d, context),
+                                              if (d.display_datetime_swipe
+                                                      ?.isNotEmpty ==
+                                                  true)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 2),
+                                                  child: Text(
+                                                    d.display_datetime_swipe!,
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black54,
+                                                    ),
+                                                  ),
+                                                ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  if (d.vehicleName
+                                                          ?.isNotEmpty ??
+                                                      false)
+                                                    Text(
+                                                      d.vehicleName!,
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        color: Colors.black87,
+                                                      ),
+                                                    ),
+                                                  if (d
+                                                          .vehicle
+                                                          ?.info
+                                                          ?.licenseprov
+                                                          ?.isNotEmpty ??
+                                                      false)
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 10),
+                                                      child: Text(
+                                                        d.vehicle!.info!
+                                                            .licenseprov!,
+                                                        style: const TextStyle(
+                                                          fontSize: 13,
+                                                          color: Colors.black54,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+
+                                              // 👉 Thêm dòng số điện thoại tài xế
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 2),
+                                                child: (d.driver_phone_no !=
+                                                            null &&
+                                                        d.driver_phone_no!
+                                                            .isNotEmpty)
+                                                    ? GestureDetector(
+                                                        onTap: () async {
+                                                          final Uri telUri = Uri(
+                                                              scheme: 'tel',
+                                                              path: d
+                                                                  .driver_phone_no);
+                                                          if (await canLaunchUrl(
+                                                              telUri)) {
+                                                            await launchUrl(
+                                                                telUri);
+                                                          }
+                                                        },
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            const Icon(
+                                                                Icons.phone,
+                                                                size: 16,
+                                                                color: Colors
+                                                                    .blue),
+                                                            const SizedBox(
+                                                                width: 4),
+                                                            Text(
+                                                              d.driver_phone_no!,
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 13,
+                                                                color:
+                                                                    Colors.blue,
+                                                                decoration:
+                                                                    TextDecoration
+                                                                        .underline,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    : const Text(
+                                                        "Mời cập nhật số điện thoại",
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color:
+                                                              Colors.redAccent,
+                                                        ),
+                                                      ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            ElevatedButton.icon(
+                                              onPressed: _isNfcAvailable &&
+                                                      !isWritingNfc
+                                                  ? () => _writeNfcCard(d)
+                                                  : null,
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: isWritingNfc
+                                                    ? Colors.grey.shade400
+                                                    : ColorCustom.blue,
+                                                foregroundColor: Colors.white,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20)),
+                                              ),
+                                              icon: isWritingNfc
+                                                  ? const SizedBox(
+                                                      width: 12,
+                                                      height: 12,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                    Color>(
+                                                                Colors.white),
+                                                      ),
+                                                    )
+                                                  : const Icon(Icons.nfc,
+                                                      size: 14),
+                                              label: Text(
+                                                isWritingNfc
+                                                    ? "Đang ghi..."
+                                                    : "Ghi thẻ",
+                                                style: const TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Column(
-                                    children: [
-                                      ElevatedButton.icon(
-                                        onPressed:
-                                            _isNfcAvailable && !isWritingNfc
-                                                ? () => _writeNfcCard(d)
-                                                : null,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isWritingNfc
-                                              ? Colors.grey.shade400
-                                              : ColorCustom.blue,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 8),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20)),
-                                        ),
-                                        icon: isWritingNfc
-                                            ? const SizedBox(
-                                                width: 12,
-                                                height: 12,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(Colors.white),
-                                                ),
-                                              )
-                                            : const Icon(Icons.nfc, size: 14),
-                                        label: Text(
-                                          isWritingNfc
-                                              ? "Đang ghi..."
-                                              : "Ghi thẻ",
-                                          style: const TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ],
                               ),
