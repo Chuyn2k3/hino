@@ -473,7 +473,7 @@ class _PageState extends State<HomeDetailPage> {
                                     ),
                                   ),
                                   Text(
-                                    vehicleDetail!.gps!.display_gpsdate!,
+                                    vehicleDetail!.gps!.formattedGpsDate,
                                     style: TextStyle(
                                       color: ColorCustom.black,
                                       fontWeight: FontWeight.bold,
@@ -512,13 +512,13 @@ class _PageState extends State<HomeDetailPage> {
                                     overflow: TextOverflow.clip,
                                     maxLines: 3,
                                   ),
-                                  Text(
-                                    Languages.of(context)!.station,
-                                    style: TextStyle(
-                                      color: ColorCustom.black,
-                                      fontSize: 16,
-                                    ),
-                                  ),
+                                  // Text(
+                                  //   Languages.of(context)!.station,
+                                  //   style: TextStyle(
+                                  //     color: ColorCustom.black,
+                                  //     fontSize: 16,
+                                  //   ),
+                                  // ),
                                   Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,

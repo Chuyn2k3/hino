@@ -2644,7 +2644,6 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
     super.initState();
     checkLevelId();
     _checkNfcAvailability();
-    _checkNfcEnabled(); // Kiểm tra trạng thái NFC bật/tắt
     _fetchDrivers();
   }
 
@@ -2663,17 +2662,14 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
 
   Future<void> _checkNfcAvailability() async {
     bool available = await NfcHelper.isNfcAvailable();
-    setState(() {
-      _isNfcAvailable = available;
-    });
-  }
-
-  Future<void> _checkNfcEnabled() async {
-    if (!_isNfcAvailable) {
+    if (!available) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showNfcDisabledDialog();
       });
     }
+    setState(() {
+      _isNfcAvailable = available;
+    });
   }
 
   void _showNfcDisabledDialog() async {
@@ -2806,6 +2802,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
 
     // Start reading old card data
     DriverCardData? oldCardData = await _showNfcReadingDialogForWrite(driverId);
+
     if (oldCardData == null) {
       print("User cancelled NFC reading process");
       if (_writingNfcDrivers.contains(driverId)) {
@@ -2816,16 +2813,16 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
       return; // Thoát khỏi quá trình ghi
     }
 
-    print(oldCardData?.driverName);
-    print(oldCardData?.licenseNumber);
+    print(oldCardData.driverName);
+    print(oldCardData.licenseNumber);
 
     // Chỉ tiến hành ghi nếu chưa bị hủy và không có quá trình writing khác
     if (!_writingNfcDrivers.contains(driverId)) {
-      print("NFC writing process was cancelled");
-      return;
+      //   print("NFC writing process was cancelled");
+      //   return;
     }
-    print(oldCardData?.driverName);
-    print(oldCardData?.licenseNumber);
+    print(oldCardData.driverName);
+    print(oldCardData.licenseNumber);
     // Proceed to writing only after reading is complete
     if (_writingNfcDrivers.contains(driverId)) {
       await _showNfcWritingDialog(
@@ -3042,7 +3039,12 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           setState(() {
             _writingNfcDrivers.remove(driverId);
           });
-          Navigator.of(context).pop(); // Close writing dialog
+          // ✅ Đảm bảo đóng tất cả dialog cũ
+          while (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+
+          await Future.delayed(const Duration(milliseconds: 150));
           _showSuccessDialog(
             "Ghi NFC thành công!",
             "Thẻ NFC đã được ghi thông tin tài xế $driverName",
@@ -3062,7 +3064,12 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
           setState(() {
             _writingNfcDrivers.remove(driverId);
           });
-          Navigator.of(context).pop(); // Close writing dialog
+          // ✅ Đóng toàn bộ dialog cũ trước khi báo lỗi
+          while (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+
+          await Future.delayed(const Duration(milliseconds: 150));
           _showErrorDialog("Lỗi ghi NFC", error);
         },
       );
@@ -3130,7 +3137,7 @@ class _HomeDriverPageState extends State<HomeDriverPage> {
   }
 
   String cleanNfcString(String raw) {
-    return raw.replaceAll('', '').trim();
+    return raw.replaceAll(RegExp(r'[\u0000-\u001F]+'), '').trim();
   }
 
   void _showNfcReadingDialog() {

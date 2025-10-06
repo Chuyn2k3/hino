@@ -1,4 +1,5 @@
 import 'package:hino/model/location.dart';
+import 'package:intl/intl.dart';
 
 class Gps {
   String? imei;
@@ -130,5 +131,18 @@ class Gps {
       "display_gpsdate": display_gpsdate,
       "location": location?.toJson(),
     };
+  }
+
+  /// Trả về ngày giờ định dạng DD/MM/YYYY HH:mm:ss từ display_gpsdate
+  String get formattedGpsDate {
+    if (gpsdate == null || gpsdate!.isEmpty) return "";
+
+    try {
+      final parsed = DateFormat("yyyy-MM-dd HH:mm:ss").parse(gpsdate!);
+      return DateFormat("dd/MM/yyyy HH:mm:ss").format(parsed);
+    } catch (e) {
+      // nếu lỗi format, trả về chuỗi gốc
+      return gpsdate!;
+    }
   }
 }

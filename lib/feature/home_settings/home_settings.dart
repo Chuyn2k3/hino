@@ -178,10 +178,13 @@ class _HomeSettingsPageState extends State<HomeSettingsPage>
       ),
     );
   }
-void clearCacheOnLogout() {
-  listVehicle.clear();
-  DefaultCacheManager().emptyCache(); // Xóa cache file của flutter_cache_manager
-}
+
+  void clearCacheOnLogout() {
+    listVehicle.clear();
+    DefaultCacheManager()
+        .emptyCache(); // Xóa cache file của flutter_cache_manager
+  }
+
   Widget _buildSettingTile({
     required IconData icon,
     required String title,
@@ -594,69 +597,148 @@ class _HotlineCardState extends State<HotlineCard> {
     }
   }
 
+  Future<void> _openZalo() async {
+    final Uri zaloUri = Uri.parse("https://zalo.me/0797801422");
+    if (await canLaunchUrl(zaloUri)) {
+      await launchUrl(zaloUri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Không thể mở Zalo.")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: _callHotline,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10), // nhỏ hơn nữa
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // --- HÀNG NÚT HỖ TRỢ (HOTLINE + ZALO) ---
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- HOTLINE ---
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: _callHotline,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.phone_in_talk_rounded,
+                          color: Colors.blue,
+                          size: 42, // to hơn
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        "Hotline hỗ trợ",
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        "18009280 (Nhánh 2)",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.phone_in_talk_rounded,
-                color: Colors.blue,
-                size: 28,
+
+              const SizedBox(width: 10),
+
+              // --- ZALO ---
+              Expanded(
+                child: GestureDetector(
+                  onTap: _openZalo,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: Colors.blue.shade200, width: 0.8),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            'assets/images/zalo_support_qr.png',
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        "Zalo hỗ trợ",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        "0797 801 422",
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // --- PHIÊN BẢN APP ---
+          Text(
+            "Phiên bản $_appVersion",
+            style: const TextStyle(
+              fontSize: 10.5,
+              color: Color(0xFF9CA3AF),
+              fontWeight: FontWeight.w400,
             ),
-            const SizedBox(height: 12),
-            const Text(
-              "Hotline hỗ trợ",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2937),
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              "18009280 (Nhánh 2)",
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF6B7280),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Phiên bản $_appVersion",
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF9CA3AF),
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
