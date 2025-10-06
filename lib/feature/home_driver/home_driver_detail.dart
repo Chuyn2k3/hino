@@ -1044,17 +1044,29 @@ class _AccountTabState extends State<AccountTab> {
 
   //DateTime? _expiredDate;
   bool _isLoading = false;
-
+  Profile? _profile;
   @override
   void initState() {
     super.initState();
     // setState(() {
     //   _isCreatingAccount = widget.driverUser == null;
     // });
-
+    checkLevelId();
     print(widget.driverInfo?.toJson());
     _displayNameController.text = widget.driverName ?? '';
     _usernameController.text = 'hd${widget.driverInfo?.phone ?? ''}';
+  }
+
+  Future<void> checkLevelId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final profileString = prefs.getString("profile");
+
+    if (profileString == null) {
+      throw Exception("Không tìm thấy profile");
+    }
+
+    final profileJson = json.decode(profileString);
+    _profile = Profile.fromJson(profileJson);
   }
 
   @override
@@ -1220,7 +1232,7 @@ class _AccountTabState extends State<AccountTab> {
       );
     }
 
-    if (_isCreatingAccount) {
+    if (_isCreatingAccount && _profile?.userLevelId != 44) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -1861,7 +1873,7 @@ class _VehicleListTabState extends State<VehicleListTab>
               textAlign: TextAlign.center,
             ),
           )
-        : Container(
+        : SizedBox(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -2038,17 +2050,14 @@ class _VehicleListTabState extends State<VehicleListTab>
                           ],
                         ),
                         child: _isLoading
-                            ? _buildShimmerTable() // Circular loading table
+                            ? _buildShimmerTable()
                             : _isAllVehiclesLoaded
                                 ? FadeTransition(
                                     opacity: _fadeAnimation,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: _buildDataTable(),
-                                    ),
+                                    child: _buildDataTable(),
                                   )
                                 : _buildShimmerTable(),
-                      ),
+                      )
                     ],
                   ),
               ],
@@ -2133,96 +2142,149 @@ class _VehicleListTabState extends State<VehicleListTab>
   }
 
   Widget _buildDataTable() {
-    return DataTable2(
-      isVerticalScrollBarVisible: true,
-      // Không cần showCheckboxColumn: false, để mặc định hiển thị checkbox
-      isHorizontalScrollBarVisible: true,
-      minWidth: MediaQuery.of(context).size.width, // Full chiều rộng màn hình
-      headingRowHeight: 32,
-      dataRowHeight: 48,
-      dividerThickness: 1,
-      border: TableBorder.all(
-        color: Colors.grey[200]!,
-        width: 1,
-      ),
-      columnSpacing: 16, // Giảm khoảng cách giữa các cột
-      columns: const [
-        // Cột checkbox mặc định với chiều rộng nhỏ
-        DataColumn2(
-          label: Text(''),
-          fixedWidth: 40, // Chiều rộng nhỏ cho cột checkbox
-        ),
-        DataColumn2(
-          label: Text(
-            'Biển số xe',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.black87,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal, // Cho phép cuộn ngang nếu cần
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth:
+                  constraints.maxWidth, // Đảm bảo full chiều rộng màn hình
             ),
-          ),
-          size: ColumnSize.L, // Tự động điều chỉnh kích thước cột
-        ),
-        DataColumn2(
-          label: Text(
-            'Số VIN',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.black87,
-            ),
-          ),
-          size: ColumnSize.L,
-        ),
-      ],
-      rows: _assignedVehicles.asMap().entries.map((entry) {
-        final index = entry.key;
-        final vehicle = entry.value;
-        final vehicleId = vehicle.info?.vid;
-        final isSelected =
-            vehicleId != null && _selectedVehicles.contains(vehicleId);
-        final isEvenRow = index % 2 == 0;
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(Colors.blue[50]),
+              headingRowHeight: 32,
+              dataRowHeight: 48,
+              border: TableBorder.all(
+                color: Colors.grey[200]!,
+                width: 1,
+              ),
+              columnSpacing: 16,
+              // Chỉ định chiều rộng cột
+              columns: const [
+                // Checkbox column - KHÔNG CÓ LABEL
+                DataColumn(
+                  label: Text(''),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Biển số xe',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Số VIN',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+              // Đặt chiều rộng cột cố định
 
-        return DataRow2(
-          selected: isSelected, // Sử dụng checkbox mặc định của DataTable2
-          onSelectChanged: vehicleId != null
-              ? (bool? value) {
-                  _onVehicleSelected(value, vehicleId);
-                }
-              : null,
-          color: MaterialStateProperty.all(
-            isEvenRow ? Colors.grey[50] : Colors.white,
+              rows: _assignedVehicles.asMap().entries.map((entry) {
+                final index = entry.key;
+                final vehicle = entry.value;
+                final vehicleId = vehicle.info?.vid;
+                final isSelected =
+                    vehicleId != null && _selectedVehicles.contains(vehicleId);
+                final isEvenRow = index % 2 == 0;
+
+                return DataRow(
+                  color: MaterialStateProperty.all(
+                    isEvenRow ? Colors.grey[50] : Colors.white,
+                  ),
+                  cells: [
+                    // Checkbox cell - CHỈ CÓ 1 CHECKBOX VỚI INKWELL
+                    DataCell(
+                      SizedBox(
+                        width: 10, // Đảm bảo chiều rộng checkbox nhỏ gọn
+                        child: InkWell(
+                          onTap: vehicleId != null
+                              ? () => _onVehicleSelected(!isSelected, vehicleId)
+                              : null,
+                          child: Center(
+                            child: Transform.scale(
+                              scale: 1.1,
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: Checkbox(
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                  value: isSelected,
+                                  onChanged: vehicleId != null
+                                      ? (bool? value) {
+                                          _onVehicleSelected(value, vehicleId);
+                                        }
+                                      : null,
+                                  activeColor: Colors.blue[600],
+                                  checkColor: Colors.white,
+                                  side: MaterialStateBorderSide.resolveWith(
+                                    (states) => BorderSide(
+                                      width: 2,
+                                      color: isSelected
+                                          ? Colors.blue[300]!
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // License plate cell
+                    DataCell(
+                      InkWell(
+                        onTap: vehicleId != null
+                            ? () => _onVehicleSelected(!isSelected, vehicleId)
+                            : null,
+                        child: Text(
+                          vehicle.info?.licenseplate ?? 'N/A',
+                          style: TextStyle(
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 12,
+                            color:
+                                isSelected ? Colors.blue[700] : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // VIN cell
+                    DataCell(
+                      InkWell(
+                        onTap: vehicleId != null
+                            ? () => _onVehicleSelected(!isSelected, vehicleId)
+                            : null,
+                        child: Text(
+                          vehicle.info?.vin_no ?? 'N/A',
+                          style: TextStyle(
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 12,
+                            color:
+                                isSelected ? Colors.blue[700] : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
           ),
-          cells: [
-            // Cột checkbox (không cần nội dung vì checkbox mặc định sẽ hiển thị)
-            DataCell(
-              Container(), // Để trống vì checkbox mặc định được quản lý bởi DataRow2
-            ),
-            // Cột biển số xe
-            DataCell(
-              Text(
-                vehicle.info?.licenseplate ?? 'N/A',
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 12,
-                  color: isSelected ? Colors.blue[700] : Colors.black87,
-                ),
-              ),
-            ),
-            // Cột số VIN
-            DataCell(
-              Text(
-                vehicle.info?.vin_no ?? 'N/A',
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 12,
-                  color: isSelected ? Colors.blue[700] : Colors.black87,
-                ),
-              ),
-            ),
-          ],
         );
-      }).toList(),
+      },
     );
   }
 

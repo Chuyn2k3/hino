@@ -121,7 +121,7 @@ class Api {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = json.decode(response.body);
-        print(jsonResponse);
+        //print(jsonResponse);
         return jsonResponse;
       } else if (response.statusCode == 404) {
         // showAlertDialog(context, "Not found");

@@ -3,7 +3,9 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:hino/api/api.dart';
+import 'package:hino/feature/home_realtime/home_realtime_page.dart';
 import 'package:hino/feature/home_settings/agreement/agreement_screen.dart';
 import 'package:hino/localization/language/languages.dart';
 import 'package:hino/localization/locale_constant.dart';
@@ -152,6 +154,7 @@ class _HomeSettingsPageState extends State<HomeSettingsPage>
               AwesomeNotifications().cancelAll();
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
+              clearCacheOnLogout();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -175,7 +178,10 @@ class _HomeSettingsPageState extends State<HomeSettingsPage>
       ),
     );
   }
-
+void clearCacheOnLogout() {
+  listVehicle.clear();
+  DefaultCacheManager().emptyCache(); // Xóa cache file của flutter_cache_manager
+}
   Widget _buildSettingTile({
     required IconData icon,
     required String title,

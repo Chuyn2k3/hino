@@ -38,6 +38,8 @@ class _HomeCarPageState extends State<HomeCarPage> {
   void initState() {
     super.initState();
     listSearchVehicle = List.from(listVehicle);
+    print("list vehicle $listVehicle");
+    print("listSearchVehicle $listSearchVehicle");
     _fetchMembers();
   }
 
