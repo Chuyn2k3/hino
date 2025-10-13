@@ -14,6 +14,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hino/api/api.dart';
 import 'package:hino/feature/home/home.dart';
 import 'package:hino/feature/home_car/home_car.dart';
+import 'package:hino/feature/home_detail/home_detail.dart';
 import 'package:hino/feature/home_noti/home_noti.dart';
 import 'package:hino/feature/home_realtime/widget/vehicle_marker_widget.dart';
 import 'package:hino/localization/language/languages.dart';

@@ -6,6 +6,7 @@ import 'package:hino/model/driver_card.dart';
 import 'package:hino/model/fleet.dart';
 import 'package:hino/model/info.dart';
 import 'package:hino/model/maintenance.dart';
+import 'package:hino/model/new_canbus.dart';
 import 'package:hino/model/option_mvr.dart';
 import 'package:hino/model/option_snapshot.dart';
 
@@ -13,6 +14,7 @@ import 'gps.dart';
 
 class VehicleDetail {
   Maintenance? maintenance;
+  NewCanbus? new_canbus;
   Sensor? sensor;
   OptionMvr? optionMvr;
   List<OptionSnapshot> optionSnapshots = [];
@@ -29,6 +31,9 @@ class VehicleDetail {
 
     if (json.containsKey("Maintenance")) {
       maintenance = Maintenance.fromJson(json['Maintenance']);
+    }
+    if (json.containsKey("new_canbus")) {
+      new_canbus = NewCanbus.fromJson(json['new_canbus']);
     }
     if (json.containsKey("sensor")) {
       sensor = Sensor.fromJson(json['sensor']);
