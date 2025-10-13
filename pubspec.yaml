@@ -94,6 +94,8 @@ dependencies:
   flutter_widget_from_html: ^0.9.1
   logger:
   data_table_2:
+  dio:
+  android_id:
 #  custom_info_window: ^1.0.1
 
 
