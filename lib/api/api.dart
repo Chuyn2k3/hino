@@ -876,10 +876,15 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:hino/feature/home/home.dart';
 import 'package:hino/model/profile.dart';
 import 'package:hino/model/upload.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../feature/home_realtime/home_realtime_page.dart';
+import '../main.dart';
+import '../page/login.dart';
 
 class Api {
   // ===== Endpoints =====
@@ -1055,6 +1060,8 @@ class Api {
             final replay = await _retry(response.requestOptions);
             return handler.resolve(replay);
           } catch (e) {
+            _debug('❌ Token refresh failed in onResponse → logout');
+            _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
             return handler.reject(
               DioException(
                 requestOptions: response.requestOptions,
@@ -1079,6 +1086,8 @@ class Api {
             final replay = await _retry(response.requestOptions);
             return handler.resolve(replay);
           } catch (e) {
+            _debug('❌ Token refresh failed in onResponse → logout');
+            _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
             return handler.reject(
               DioException(
                 requestOptions: response.requestOptions,
@@ -1094,7 +1103,12 @@ class Api {
       },
       onError: (err, handler) async {
         _logError(err);
-
+// // 🔸 Nếu lỗi xảy ra trong lúc refresh token
+        if (err.requestOptions.extra['isRefresh'] == true) {
+          _debug('❌ Refresh API itself failed → logout');
+          _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+          return; // Dừng luôn, không retry nữa
+        }
         // True HTTP 401 → refresh + replay
         if (err.response?.statusCode == 401 &&
             err.requestOptions.extra['__retried'] != true &&
@@ -1105,13 +1119,160 @@ class Api {
             await _ensureRefreshedToken();
             final replay = await _retry(err.requestOptions);
             return handler.resolve(replay);
-          } catch (_) {}
+          } catch (_) {
+            _debug('❌ Token refresh failed in onError → logout');
+            _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+          }
         }
         handler.next(err);
       },
     ));
   }
 
+  static Future<void> _refreshToken() async {
+    final refreshToken =
+        profile?.userTokenInfo?.refreshToken ?? refreshTokenValue;
+    if (refreshToken == null || refreshToken.isEmpty) {
+      throw 'Missing refresh token';
+    }
+
+    try {
+      final res = await _dio
+          .post(
+        refreshTokenUrl,
+        data: {'refreshToken': refreshToken},
+        options: Options(
+          extra: {'isRefresh': true},
+          contentType: Headers.jsonContentType,
+        ),
+      )
+          .timeout(const Duration(seconds: 15), onTimeout: () {
+        _debug('⏰ Refresh request timeout after 15s → force logout');
+        _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+        throw TimeoutException('Refresh token request timed out');
+      });
+
+      // Kiểm tra response null, {}, hoặc code lỗi
+      if (res.data == null ||
+          (res.data is Map && (res.data as Map).isEmpty) ||
+          res.statusCode == 401) {
+        _debug('❌ Refresh response invalid → trigger logout');
+        _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+        throw 'Refresh token invalid';
+      }
+
+      if (res.statusCode == 200 && res.data is Map) {
+        final m = res.data as Map;
+        final newAccess = (m['accessToken'] ?? '').toString();
+        final newRefresh = (m['refreshToken'] ?? '').toString();
+
+        if (newAccess.isEmpty) {
+          _debug('❌ Empty access token → trigger logout');
+          _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+          throw 'Empty token';
+        }
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', newAccess);
+        await prefs.setString('refreshToken', newRefresh);
+
+        accessToken = newAccess;
+        refreshTokenValue = newRefresh;
+        profile?.userTokenInfo?.refreshToken = newRefresh;
+
+        if (onTokensUpdated != null) {
+          await onTokensUpdated!(
+              accessToken, newRefresh.isNotEmpty ? newRefresh : null);
+        }
+      } else {
+        _debug('❌ Refresh failed code ${res.statusCode}');
+        _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+        throw 'Refresh token failed (${res.statusCode})';
+      }
+    } catch (e) {
+      _debug('❌ Refresh error: $e');
+      _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+      rethrow;
+    }
+  }
+
+  static void _showForceLogoutPopup(BuildContext context) {
+    if (context == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.logout_rounded,
+                    color: Colors.red, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Flexible(
+                child: const Text(
+                  "Phiên đăng nhập hết hạn",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            "Phiên làm việc của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+            style:
+                TextStyle(fontSize: 16, color: Color(0xFF6B7280), height: 1.5),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                clearCacheOnLogout();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (_) => false,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[600],
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: const Text(
+                "Đăng nhập lại",
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  static void clearCacheOnLogout() {
+    listVehicle.clear();
+    DefaultCacheManager()
+        .emptyCache(); // Xóa cache file của flutter_cache_manager
+  }
   // ===== Public methods =====
 
   static setProfile(Profile p) {
@@ -1249,58 +1410,58 @@ class Api {
     }
   }
 
-  static Future<void> _refreshToken() async {
-    final refreshToken =
-        profile?.userTokenInfo?.refreshToken ?? refreshTokenValue;
-    if (refreshToken == null || refreshToken.isEmpty) {
-      throw 'Missing refresh token';
-    }
-
-    final res = await _dio.post(
-      refreshTokenUrl,
-      data: {
-        'refreshToken': refreshToken,
-      },
-      options: Options(
-        extra: {
-          'isRefresh': true,
-        },
-        contentType: Headers.jsonContentType,
-      ),
-    );
-
-    if (res.statusCode == 200 && res.data is Map) {
-      final m = res.data as Map;
-      final newAccess = (m['accessToken'] ?? '').toString();
-      final newRefresh = (m['refreshToken'] ?? '').toString();
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('accessToken', newAccess);
-
-      await prefs.setString('refreshToken', newRefresh);
-
-      _debug('newAccess token → $newAccess');
-      _debug('newRefresh token → $newRefresh');
-      if (newAccess.isEmpty) {
-        throw 'Refresh returned empty access token';
-      }
-      accessToken = newAccess;
-      profile!.userTokenInfo?.refreshToken = newRefresh;
-      if (newRefresh.isNotEmpty) {
-        refreshTokenValue = newRefresh;
-        if (profile != null)
-          profile!.userTokenInfo?.refreshToken = newRefresh; // rotate
-      }
-
-      if (onTokensUpdated != null) {
-        try {
-          await onTokensUpdated!(
-              accessToken, newRefresh.isNotEmpty ? newRefresh : null);
-        } catch (_) {}
-      }
-    } else {
-      throw 'Refresh token failed (${res.statusCode})';
-    }
-  }
+  // static Future<void> _refreshToken() async {
+  //   final refreshToken =
+  //       profile?.userTokenInfo?.refreshToken ?? refreshTokenValue;
+  //   if (refreshToken == null || refreshToken.isEmpty) {
+  //     throw 'Missing refresh token';
+  //   }
+  //
+  //   final res = await _dio.post(
+  //     refreshTokenUrl,
+  //     data: {
+  //       'refreshToken': refreshToken,
+  //     },
+  //     options: Options(
+  //       extra: {
+  //         'isRefresh': true,
+  //       },
+  //       contentType: Headers.jsonContentType,
+  //     ),
+  //   );
+  //
+  //   if (res.statusCode == 200 && res.data is Map) {
+  //     final m = res.data as Map;
+  //     final newAccess = (m['accessToken'] ?? '').toString();
+  //     final newRefresh = (m['refreshToken'] ?? '').toString();
+  //     final prefs = await SharedPreferences.getInstance();
+  //     await prefs.setString('accessToken', newAccess);
+  //
+  //     await prefs.setString('refreshToken', newRefresh);
+  //
+  //     _debug('newAccess token → $newAccess');
+  //     _debug('newRefresh token → $newRefresh');
+  //     if (newAccess.isEmpty) {
+  //       throw 'Refresh returned empty access token';
+  //     }
+  //     accessToken = newAccess;
+  //     profile!.userTokenInfo?.refreshToken = newRefresh;
+  //     if (newRefresh.isNotEmpty) {
+  //       refreshTokenValue = newRefresh;
+  //       if (profile != null)
+  //         profile!.userTokenInfo?.refreshToken = newRefresh; // rotate
+  //     }
+  //
+  //     if (onTokensUpdated != null) {
+  //       try {
+  //         await onTokensUpdated!(
+  //             accessToken, newRefresh.isNotEmpty ? newRefresh : null);
+  //       } catch (_) {}
+  //     }
+  //   } else {
+  //     throw 'Refresh token failed (${res.statusCode})';
+  //   }
+  // }
 
   static Future<Response<dynamic>> _retry(RequestOptions ro) {
     final newOptions = Options(
