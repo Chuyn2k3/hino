@@ -951,6 +951,10 @@ class Api {
   static String deleteDriver = "fleet/mobile/delete_driver";
   static String importDriver = "fleet/driver_changes/import";
   static String updateVehicleAssignment = "fleet/mobile/driver_manage_vehicle";
+  static String listCustomer =
+      "${Api.BaseUrlBuilding}fleet/master/util/options?optionGroup=Customer&Key=2";
+  static String updateCustomer =
+      "${Api.BaseUrlBuilding}fleet/driver/update-customer";
 
   // ===== Session state =====
   static Profile? profile;
@@ -1107,7 +1111,8 @@ class Api {
         if (err.requestOptions.extra['isRefresh'] == true) {
           _debug('❌ Refresh API itself failed → logout');
           _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
-          return; // Dừng luôn, không retry nữa
+          return handler.next(err);
+          ; // Dừng luôn, không retry nữa
         }
         // True HTTP 401 → refresh + replay
         if (err.response?.statusCode == 401 &&
@@ -1122,6 +1127,7 @@ class Api {
           } catch (_) {
             _debug('❌ Token refresh failed in onError → logout');
             _showForceLogoutPopup(MyApp.navigatorKey.currentContext!);
+            return handler.next(err);
           }
         }
         handler.next(err);

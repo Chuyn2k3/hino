@@ -128,7 +128,7 @@ class _PageState extends State<HomePlaybackEventSearchPage> {
                                               const BorderRadius.vertical(
                                                   top: Radius.circular(16)),
                                           child: Image.network(
-                                            "${Api.BaseUrlBuilding}fleet${e.url}",
+                                            e.url_new,
                                             width: double.infinity,
                                             height: screenWidth > 600
                                                 ? 240

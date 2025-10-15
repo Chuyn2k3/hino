@@ -17,6 +17,10 @@ class DriverDetail {
   DriverInfoModel? driverInfo;
   DriverUserModel? driverUser;
 
+  // ✅ NEW: bổ sung theo response
+  String? customerName;
+  int? customerId;
+
   DriverDetail({
     this.driverName,
     this.driverLicenseId,
@@ -29,6 +33,10 @@ class DriverDetail {
     this.eco = const [],
     this.driverInfo,
     this.driverUser,
+
+    // ✅ NEW
+    this.customerName,
+    this.customerId,
   });
 
   factory DriverDetail.fromJson(Map<String, dynamic> json) {
@@ -52,6 +60,10 @@ class DriverDetail {
       driverUser: json['driver_user'] != null
           ? DriverUserModel.fromJson(json['driver_user'])
           : null,
+
+      // ✅ NEW
+      customerName: json['customer_name'],
+      customerId: json['customer_id'],
     );
   }
 
@@ -68,6 +80,10 @@ class DriverDetail {
       "eco": eco.map((e) => e.toJson()).toList(),
       "driver_info": driverInfo?.toJson(),
       "driver_user": driverUser?.toJson(),
+
+      // ✅ NEW
+      "customer_name": customerName,
+      "customer_id": customerId,
     };
   }
 }

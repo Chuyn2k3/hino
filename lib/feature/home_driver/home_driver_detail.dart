@@ -138,8 +138,13 @@ class _DriverManagementPageState extends State<DriverManagementPage>
                       DriverDetailTab(
                           driver: widget.driver, driverDetail: driverDetail!),
                       DriverInfoTab(
-                          driver: widget.driver,
-                          driverInfo: driverDetail!.driverInfo),
+                        driver: widget.driver,
+                        driverInfo: driverDetail!.driverInfo,
+
+                        // ✅ NEW: truyền chủ sở hữu từ driver detail
+                        customerName: driverDetail!.customerName,
+                        customerId: driverDetail!.customerId,
+                      ),
                       AccountTab(
                           driver: widget.driver,
                           driverUser: driverDetail!.driverUser,
@@ -511,12 +516,34 @@ class DriverInfoTab extends StatefulWidget {
   final Driver driver;
   final DriverInfoModel? driverInfo;
 
-  const DriverInfoTab(
-      {Key? key, required this.driverInfo, required this.driver})
-      : super(key: key);
+  // ✅ NEW: chủ sở hữu hiển thị trên form
+  final String? customerName;
+  final int? customerId;
+
+  const DriverInfoTab({
+    Key? key,
+    required this.driverInfo,
+    required this.driver,
+    this.customerName,
+    this.customerId,
+  }) : super(key: key);
 
   @override
   State<DriverInfoTab> createState() => _DriverInfoTabState();
+}
+
+// ✅ NEW: option theo API {key, value}
+class CustomerOption {
+  final int id;
+  final String name;
+  CustomerOption({required this.id, required this.name});
+
+  factory CustomerOption.fromJson(Map<String, dynamic> j) {
+    final id =
+        (j['key'] is int) ? j['key'] as int : int.tryParse("${j['key']}") ?? 0;
+    final name = (j['value'] ?? "").toString();
+    return CustomerOption(id: id, name: name);
+  }
 }
 
 class _DriverInfoTabState extends State<DriverInfoTab> {
@@ -536,6 +563,13 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
   bool _isEditing = false;
   DriverInfoCreateModel? _originalDriverInfo;
 
+  // ✅ NEW: dữ liệu chủ sở hữu
+  String? _currentCustomerName;
+  int? _currentCustomerId;
+
+  // ✅ NEW: để check levelId == 21
+  Profile? _profile;
+
   @override
   void initState() {
     super.initState();
@@ -543,14 +577,10 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
       _originalDriverInfo =
           DriverInfoCreateModel.fromDriverInfoModel(widget.driverInfo!);
     }
-    // danh sách hợp lệ
     final validPrefixes = ["Anh", "Chị", "Ông", "Bà", ""];
-
-    // nếu prefix từ API không có trong list thì set về ""
     final prefixFromApi = widget.driverInfo?.prefix;
     _selectedPrefix =
         validPrefixes.contains(prefixFromApi) ? prefixFromApi : "";
-    // _selectedPrefix = widget.driverInfo?.prefix ?? "Ông";
     _firstnameController.text = widget.driverInfo?.firstname ?? '';
     _lastnameController.text = widget.driverInfo?.lastname ?? '';
     _phoneController.text = widget.driverInfo?.phone ?? '';
@@ -560,6 +590,24 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
     _birthDate = widget.driverInfo?.birthDate;
     _startDate = widget.driverInfo?.startDate;
     _cardExpiredDate = widget.driverInfo?.cardExpiredDate;
+
+    // ✅ NEW: init chủ sở hữu hiện tại
+    _currentCustomerName = widget.customerName;
+    _currentCustomerId = widget.customerId;
+
+    _loadProfileLevel();
+  }
+
+  Future<void> _loadProfileLevel() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final profileString = prefs.getString("profile");
+      if (profileString == null) return;
+      final profileJson = json.decode(profileString);
+      setState(() {
+        _profile = Profile.fromJson(profileJson);
+      });
+    } catch (_) {}
   }
 
   @override
@@ -675,10 +723,6 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
         cardExpiredDate: _cardExpiredDate,
       );
 
-      print("==== UPDATE DRIVER ====");
-      print("Token: $token");
-      print("Body: ${body.toString()}");
-      print("Url: $url");
       final response = await http.put(
         Uri.parse(url),
         headers: {
@@ -687,8 +731,6 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
         },
         body: json.encode(body.toJson()),
       );
-
-      print("Response: ${response.statusCode} ${response.body}");
 
       if (response.statusCode == 200) {
         final responseJson = json.decode(response.body);
@@ -726,8 +768,6 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
     });
 
     try {
-      // final prefs = await SharedPreferences.getInstance();
-      // final token = prefs.getString("accessToken");
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("accessToken");
       final profileString = prefs.getString("profile");
@@ -746,9 +786,6 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
       final url =
           "${Api.BaseUrlBuilding}${Api.deleteDriver}/${widget.driver.driver_id}";
 
-      print("==== DELETE DRIVER ====");
-      print("Token: $token");
-      print("Url: $url");
       final response = await http.put(
         Uri.parse(url),
         headers: {
@@ -757,8 +794,6 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
         },
         body: json.encode({"user_id": userId}),
       );
-
-      print("Response: ${response.statusCode} ${response.body}");
 
       if (response.statusCode == 200) {
         final responseJson = json.decode(response.body);
@@ -786,6 +821,291 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
     }
   }
 
+  // ✅ NEW: lấy danh sách chủ sở hữu từ options API (mảng [{key, value}])
+  // ✅ Lấy danh sách chủ sở hữu (options API {key, value}) qua Api.get (Dio)
+  Future<List<CustomerOption>> _fetchCustomers() async {
+    try {
+      // dùng base của app để tránh lệch host, đã có /prod/ ở cuối
+      final url = Api.listCustomer;
+
+      final data = await Api.get(context, url);
+      if (data == null) return [];
+
+      // API có thể trả mảng trực tiếp hoặc bọc trong { result: [...] }
+      final raw = (data is List)
+          ? data
+          : (data is Map && data['result'] is List
+              ? data['result']
+              : <dynamic>[]);
+
+      final items = raw
+          .where((e) => e != null && "${(e as Map)['value']}".trim().isNotEmpty)
+          .map<CustomerOption>((e) => CustomerOption.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ))
+          .toList();
+
+      return items;
+    } catch (e) {
+      context.showSnackBarFail(text: "Lỗi tải danh sách chủ sở hữu: $e");
+      return [];
+    }
+  }
+
+  // ✅ NEW: gọi API update chủ sở hữu
+  // ✅ Gọi API đổi chủ sở hữu qua Api.put (Dio)
+  Future<bool> _updateDriverCustomer(int newCustomerId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final profileString = prefs.getString("profile");
+      if (profileString == null) {
+        throw Exception("Không tìm thấy profile");
+      }
+      final profile = Profile.fromJson(json.decode(profileString));
+
+      // endpoint update – ghép với BaseUrlBuilding (đã có /prod/)
+      final url = Api.updateCustomer;
+
+      final body = json.encode({
+        "driver_id": widget.driver.driver_id,
+        "customer_id": newCustomerId,
+        "user_id": profile.userId,
+      });
+
+      final res = await Api.put(context, url, body);
+      if (res == null) throw Exception("Không nhận được phản hồi từ máy chủ");
+      if (res["code"] == 200) return true;
+
+      throw Exception(res["result"] ?? "Có lỗi xảy ra");
+    } catch (e) {
+      context.showSnackBarFail(text: "Lỗi cập nhật chủ sở hữu: $e");
+      return false;
+    }
+  }
+
+  // ✅ NEW: mở bottom sheet có ô search để chọn chủ sở hữu
+  Future<void> _openCustomerPicker() async {
+    // tải list
+    final items = await _fetchCustomers();
+    if (!mounted || items.isEmpty) {
+      context.showSnackBarInfo(text: 'Không có dữ liệu chủ sở hữu');
+      return;
+    }
+
+    String query = "";
+    List<CustomerOption> filtered = items;
+    final searchCtl = TextEditingController();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // cho phép sheet cao hơn mặc định
+      backgroundColor: Colors.transparent, // để bo góc mượt
+      barrierColor: Colors.black54,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            void applyFilter(String q) {
+              setSheetState(() {
+                query = q;
+                filtered = items
+                    .where((e) =>
+                        e.name.toLowerCase().contains(q.trim().toLowerCase()) ||
+                        "${e.id}".contains(q.trim()))
+                    .toList();
+              });
+            }
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.6, // 60% màn hình khi mở
+              minChildSize: 0.45, // không cho thu nhỏ quá
+              maxChildSize: 0.85, // không cho full màn hình
+              expand: false,
+              builder: (_, scrollController) {
+                return ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Material(
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 8),
+                        // drag handle
+                        Container(
+                          height: 4,
+                          width: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+
+                        // Header đẹp
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.indigo.shade500,
+                                Colors.blue.shade500
+                              ],
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.how_to_reg, color: Colors.white),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                  "Chọn chủ sở hữu",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                "${filtered.length}",
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Ô search
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                          child: TextField(
+                            controller: searchCtl,
+                            decoration: InputDecoration(
+                              hintText: "Tìm theo tên hoặc số điện thoại...",
+                              prefixIcon: const Icon(Icons.search),
+                              suffixIcon: query.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () {
+                                        searchCtl.clear();
+                                        applyFilter("");
+                                      },
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
+                              ),
+                            ),
+                            onChanged: applyFilter,
+                          ),
+                        ),
+
+                        const Divider(height: 1),
+
+                        // Danh sách – dùng controller của Draggable để cuộn mượt
+                        Expanded(
+                          child: filtered.isEmpty
+                              ? const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(24),
+                                    child: Text(
+                                      "Không tìm thấy kết quả",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                )
+                              : Scrollbar(
+                                  controller: scrollController,
+                                  thumbVisibility: true,
+                                  child: ListView.separated(
+                                    controller: scrollController,
+                                    keyboardDismissBehavior:
+                                        ScrollViewKeyboardDismissBehavior
+                                            .onDrag,
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    itemCount: filtered.length,
+                                    separatorBuilder: (_, __) => Divider(
+                                        height: 1, color: Colors.grey.shade200),
+                                    itemBuilder: (context, i) {
+                                      final it = filtered[i];
+                                      final selected =
+                                          it.id == (_currentCustomerId ?? -1);
+                                      return ListTile(
+                                        onTap: () async {
+                                          FocusScope.of(context).unfocus();
+                                          Navigator.of(context)
+                                              .pop(); // đóng sheet
+                                          final ok =
+                                              await _updateDriverCustomer(
+                                                  it.id);
+                                          if (ok && mounted) {
+                                            setState(() {
+                                              _currentCustomerId = it.id;
+                                              _currentCustomerName = it.name;
+                                            });
+                                            context.showSnackBarSuccess(
+                                                text:
+                                                    "Cập nhật chủ sở hữu thành công");
+                                            final parent =
+                                                context.findAncestorStateOfType<
+                                                    _DriverManagementPageState>();
+                                            parent?._fetchDriverDetail();
+                                          }
+                                        },
+                                        leading: Icon(
+                                          selected
+                                              ? Icons.radio_button_checked
+                                              : Icons.radio_button_off,
+                                          color: selected
+                                              ? Colors.blue
+                                              : Colors.grey,
+                                        ),
+                                        title: Text(
+                                          it.name,
+                                          style: TextStyle(
+                                            fontWeight: selected
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: selected
+                                                ? Colors.blue[700]
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                        trailing: selected
+                                            ? const Icon(Icons.check_circle,
+                                                color: Colors.green)
+                                            : null,
+                                      );
+                                    },
+                                  ),
+                                ),
+                        ),
+
+                        const SizedBox(height: 6),
+                        // SafeArea padding đáy cho iPhone có notch
+                        const SafeArea(child: SizedBox(height: 6)),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -799,12 +1119,50 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ✅ NEW: HÀNG “CHỦ SỞ HỮU” HIỆN ĐẦU FORM
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Chủ sở hữu: ",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _currentCustomerName ?? "-",
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (_profile?.userLevelId == 21)
+                  OutlinedButton.icon(
+                    onPressed: _openCustomerPicker,
+                    icon: const Icon(
+                      Icons.swap_horiz,
+                      size: 18,
+                      color: ColorCustom.blue,
+                    ),
+                    label: Text(
+                      "Đổi",
+                      style: TextStyle(color: ColorCustom.blue),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
+                  ),
+              ],
+            ),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  width: 150,
-                  height: 50,
+                  width: 100,
+                  height: 30,
                   child: ElevatedButton(
                     onPressed: _isLoading
                         ? null
@@ -851,7 +1209,7 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             const Text("Chức danh",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -981,10 +1339,7 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
                   width: 150,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed:
-                        //()
-                        //{},
-                        _isLoading || !_isEditing ? null : _updateDriver,
+                    onPressed: _isLoading || !_isEditing ? null : _updateDriver,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
@@ -996,9 +1351,7 @@ class _DriverInfoTabState extends State<DriverInfoTab> {
                   width: 150,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed:
-                        //() {},
-                        _isLoading ? null : _deleteDriver,
+                    onPressed: _isLoading ? null : _deleteDriver,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,

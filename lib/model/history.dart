@@ -3,7 +3,6 @@ import 'dart:ffi';
 import 'package:hino/model/location.dart';
 
 class History {
-
   String? gpsdate;
   double? lat;
   double? lng;
@@ -25,15 +24,16 @@ class History {
   }
 }
 
-
 class PlaybackHistory {
   int channel_no = 1;
   String take_photo_time = "";
   String url = "";
+  String url_new = "";
 
   PlaybackHistory.fromJson(Map<String, dynamic> json) {
     channel_no = json['channel_no'];
     take_photo_time = json['take_photo_time'];
     url = json['url'];
+    url_new = json['url_new'];
   }
 }
